@@ -1,0 +1,10 @@
+node_modules/
+.wrangler/
+.dev.vars
+.env
+.env.*
+!.env.example
+DEPLOY-REPORT.txt
+deploy-state.json
+.secrets.*
+

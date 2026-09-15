@@ -1,0 +1,31 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "local-autopilot-v1",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-10",
+  "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": true },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "local-autopilot-v1",
+      "database_id": "REPLACE_AFTER_D1_CREATE",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "MEDIA_KV",
+      "id": "REPLACE_AFTER_KV_CREATE"
+    }
+  ],
+  "triggers": {
+    "crons": ["*/15 * * * *", "17 3 * * *"]
+  },
+  "vars": {
+    "MAX_QUEUE_BATCH": "8",
+    "AI_PROVIDER": "gemini",
+    "EMAIL_PROVIDER": "brevo",
+    "PUBLIC_BASE_URL": "REPLACE_AFTER_DEPLOY",
+    "GEMINI_MODEL": "gemini-2.5-flash"
+  }
+}
