@@ -1,31 +1,40 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "local-autopilot-v1",
+  "account_id": "b72d4037bafea30b480d3545812ab253",
   "main": "src/index.js",
   "compatibility_date": "2026-09-10",
-  "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": true },
+  "workers_dev": true,
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "local-autopilot-v1",
-      "database_id": "REPLACE_AFTER_D1_CREATE",
+      "database_name": "local-autopilot",
+      "database_id": "1c083f00-443c-4f86-9dae-fca94c9b616b",
       "migrations_dir": "migrations"
     }
   ],
   "kv_namespaces": [
     {
       "binding": "MEDIA_KV",
-      "id": "REPLACE_AFTER_KV_CREATE"
+      "id": "7189620d965049f9ba52ab201268a3bc"
     }
   ],
   "triggers": {
-    "crons": ["*/15 * * * *", "17 3 * * *"]
+    "crons": [
+      "*/15 * * * *",
+      "17 3 * * *"
+    ]
   },
   "vars": {
     "MAX_QUEUE_BATCH": "8",
     "AI_PROVIDER": "gemini",
     "EMAIL_PROVIDER": "brevo",
-    "PUBLIC_BASE_URL": "REPLACE_AFTER_DEPLOY",
+    "PUBLIC_BASE_URL": "https://local-autopilot-v1.black-sea-41df.workers.dev",
     "GEMINI_MODEL": "gemini-2.5-flash"
   }
 }

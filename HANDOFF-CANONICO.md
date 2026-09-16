@@ -103,3 +103,17 @@ I segreti `TOKEN_SECRET`, `ADMIN_TOKEN`, `GEMINI_API_KEY` e `BREVO_API_KEY` non 
 ## Regola di modifica
 
 L'architettura è congelata. Si modifica soltanto per correggere un difetto P0/P1 dimostrato da un test ripetibile. Ogni futuro handoff deve aggiornare questo file nello stesso commit del codice a cui si riferisce.
+
+
+## Verifica Cloudflare — 2026-09-16
+
+Base verificata: main a 2cfbf28bfa8af61285eab67464fec701d67f6c57.
+Account: b72d4037bafea30b480d3545812ab253.
+Il pannello Workers & Pages non contiene progetti. Sottodominio account verificato: black-sea-41df.workers.dev.
+D1 riutilizzato: local-autopilot, ID 1c083f00-443c-4f86-9dae-fca94c9b616b.
+Il KV preesistente dichiarato in chat non risulta: elenco API completo e pannello entrambi vuoti. Creato local-autopilot-media, ID 7189620d965049f9ba52ab201268a3bc.
+Applicate le migrazioni 0001 e 0002 via API D1: 100 istruzioni riuscite, nessun errore. PRAGMA quick_check = ok. Aree: 41 quartieri, 4 municipi, 1 città. Etichetta pubblica e tagline verificate. Amazon/AdSense assenti e inattivi.
+wrangler.jsonc aggiornato con ID reali e URL di destinazione derivato dal nome Worker e dal sottodominio effettivo. Nessun segreto incluso.
+La configurazione è preparata, NON è prova di deploy. URL previsto: https://local-autopilot-v1.black-sea-41df.workers.dev; admin previsto: /admin.
+Blocco alla pubblicazione: API Worker restituisce 10000 Authentication error. Il flusso GitHub nel pannello richiede la creazione di un nuovo token utente; nessun token esistente selezionabile. Creazione non ancora autorizzata al momento della verifica.
+Secrets, deploy, cron live e test HTTP/admin/CRUD/UGC/desktop/mobile: NON ESEGUITI. Non dichiarare P0/P1 superati. Alla ripresa riusare D1/KV sopra e non ricreare risorse.
