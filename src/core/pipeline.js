@@ -8,6 +8,7 @@ import { classifyGeo } from './geo.js';
 export async function processIngest(env,id,{editorApproved=false}={}){
   const row=await env.DB.prepare('SELECT i.*,s.trust_level,s.usage_policy FROM la_ingest i JOIN la_sources s ON s.id=i.source_id WHERE i.id=?').bind(id).first();
   if(!row) throw new Error('ingest_not_found');
+  if(['published','updated','rejected'].includes(row.status)) return row.status;
   if(row.usage_policy==='blocked'){await setStatus(env.DB,id,'rejected'); return 'rejected';}
   if(row.usage_policy==='discovery'&&!editorApproved){await setStatus(env.DB,id,'held'); return 'held';}
   const record={title:normalizeSpace(row.original_title),text:normalizeSpace(row.original_text),source_url:row.source_url,original_date:row.original_date,area_id:row.detected_area||null,category_id:row.detected_category||null};
@@ -21,7 +22,9 @@ export async function processIngest(env,id,{editorApproved=false}={}){
     try{const ar=await aiProvider(env).classifyRisk(record); if(ar.level!=='GREEN'){await setStatus(env.DB,id,'held',fp); return 'held';}}
     catch{await setStatus(env.DB,id,'held',fp); return 'held';}
   }
-  const value=valueGate(record); if(!value.pass){await setStatus(env.DB,id,'rejected',fp); return 'rejected';}
+  const value=valueGate(record);
+  const approvedMinimum=record.title.length>=12&&record.text.length>=20&&Number(record.area_id||0)>0;
+  if(!value.pass&&!(editorApproved&&approvedMinimum)){await setStatus(env.DB,id,'rejected',fp); return 'rejected';}
   let generated;
   if(editorApproved){generated={headline:record.title,summary:record.text.slice(0,220),body:record.text,valid_from:record.original_date||null,valid_until:null,confidence:Number(row.trust_level||50),social_text:record.title};}
   else try{generated=await aiProvider(env).generateArticle(record);}catch(e){throw e;}
@@ -52,4 +55,4 @@ export function normalizeSourceDate(value){
   if(date.getUTCFullYear()!==year||date.getUTCMonth()!==month-1||date.getUTCDate()!==day)return null;
   return date.toISOString();
 }
-export async function ingestItem(db,source,item){ const contentHash=await sha256(`${item.title}|${item.text}|${item.source_url}`); const ext=item.external_id||null; try{const res=await db.prepare('INSERT INTO la_ingest(source_id,external_id,source_url,original_title,original_text,original_date,content_hash,status,detected_area,detected_category,raw_payload) VALUES(?,?,?,?,?,?,?,\'new\',?,?,?)').bind(source.id,ext,item.source_url,item.title,item.text,normalizeSourceDate(item.date),contentHash,source.area_id||null,source.category_id||null,item.raw?JSON.stringify(item.raw).slice(0,200000):null).run(); return Number(res.meta.last_row_id);}catch(e){if(String(e).includes('UNIQUE'))return null; throw e;}}
+export async function ingestItem(db,source,item){ const contentHash=await sha256(`${item.title}|${item.text}|${item.source_url}`); const ext=item.external_id||null; const duplicate=await db.prepare('SELECT id FROM la_ingest WHERE source_url=? OR (source_id=? AND content_hash=?) LIMIT 1').bind(item.source_url,source.id,contentHash).first(); if(duplicate)return null; try{const res=await db.prepare('INSERT INTO la_ingest(source_id,external_id,source_url,original_title,original_text,original_date,content_hash,status,detected_area,detected_category,raw_payload) VALUES(?,?,?,?,?,?,?,\'new\',?,?,?)').bind(source.id,ext,item.source_url,item.title,item.text,normalizeSourceDate(item.date),contentHash,source.area_id||null,source.category_id||null,item.raw?JSON.stringify(item.raw).slice(0,200000):null).run(); return Number(res.meta.last_row_id);}catch(e){if(String(e).includes('UNIQUE'))return null; throw e;}}
