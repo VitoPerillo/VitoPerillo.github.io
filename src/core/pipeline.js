@@ -28,7 +28,7 @@ export async function processIngest(env,id,{editorApproved=false}={}){
   let generated;
   if(editorApproved){generated={headline:record.title,summary:record.text.slice(0,220),body:record.text,valid_from:record.original_date||null,valid_until:null,confidence:Number(row.trust_level||50),social_text:record.title};}
   else try{generated=await aiProvider(env).generateArticle(record);}catch(e){throw e;}
-  const fact=factGate(record,generated); if(!fact.pass){await setStatus(env.DB,id,'held',fp); await log(env.DB,'warning','fact_gate','Generated facts not grounded',{ingest_id:id,violations:fact.violations}); return 'held';}
+  const fact=factGate(record,generated); if(!editorApproved&&!fact.pass){await setStatus(env.DB,id,'held',fp); await log(env.DB,'warning','fact_gate','Generated facts not grounded',{ingest_id:id,violations:fact.violations}); return 'held';}
   const contentId=await publishNews(env.DB,record,generated,existing,fp,row);
   await env.DB.prepare('UPDATE la_ingest SET status=?,fingerprint=?,content_id=?,updated_at=CURRENT_TIMESTAMP WHERE id=?').bind(existing?'updated':'published',fp,contentId,id).run();
   await enqueue(env.DB,'social_publish',contentId,{social_text:generated.social_text||generated.headline||record.title},200);
