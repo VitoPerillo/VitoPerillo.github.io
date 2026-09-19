@@ -30,6 +30,7 @@ test('P1 admin can list and review held ingests',()=>{const admin=fs.readFileSyn
 test('P0 completed ingests are idempotent and source items are deduplicated',()=>{const p=fs.readFileSync(new URL('../src/core/pipeline.js',import.meta.url),'utf8');assert.match(p,/published','updated','rejected/);assert.match(p,/SELECT id FROM la_ingest WHERE source_url=/)});
 test('P1 collected HTML entities are decoded before publication',()=>assert.match(fs.readFileSync(new URL('../src/core/pipeline.js',import.meta.url),'utf8'),/decodeHtmlEntities\(row\.original_title\)/));
 test('P0 reviewed deterministic copy does not depend on the AI fact gate',()=>assert.match(fs.readFileSync(new URL('../src/core/pipeline.js',import.meta.url),'utf8'),/!editorApproved&&!fact\.pass/));
+test('P0 discovery items bypass the processing queue and remain reviewable',()=>{assert.match(idx,/prepareDiscoveryReview/);assert.match(idx,/usage_policy==='discovery'/);assert.match(idx,/api\/admin\/ingests\/prepare/)});
 test('P1 canonical is absolute',()=>assert.equal(/canonicalUrl=root\+routeFor/.test(fs.readFileSync(new URL('../src/render/pages.js',import.meta.url),'utf8')),true));
 test('P1 area hub and internal links exist',()=>{const p=fs.readFileSync(new URL('../src/render/pages.js',import.meta.url),'utf8');assert.equal(/areaPage/.test(p)&&/Contenuti correlati/.test(p),true)});
 
