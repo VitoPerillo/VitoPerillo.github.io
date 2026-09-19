@@ -5,23 +5,26 @@ import { slugify,sha256,nowIso,normalizeSpace } from './utils.js';
 import { enqueue } from './queue.js';
 import { classifyGeo } from './geo.js';
 
-export async function processIngest(env,id){
+export async function processIngest(env,id,{editorApproved=false}={}){
   const row=await env.DB.prepare('SELECT i.*,s.trust_level,s.usage_policy FROM la_ingest i JOIN la_sources s ON s.id=i.source_id WHERE i.id=?').bind(id).first();
   if(!row) throw new Error('ingest_not_found');
   if(row.usage_policy==='blocked'){await setStatus(env.DB,id,'rejected'); return 'rejected';}
-  if(row.usage_policy==='discovery'){await setStatus(env.DB,id,'held'); return 'held';}
+  if(row.usage_policy==='discovery'&&!editorApproved){await setStatus(env.DB,id,'held'); return 'held';}
   const record={title:normalizeSpace(row.original_title),text:normalizeSpace(row.original_text),source_url:row.source_url,original_date:row.original_date,area_id:row.detected_area||null,category_id:row.detected_category||null};
   const geo=await classifyGeo(env.DB,record,row.detected_area||null); record.area_id=geo.area_id; record.geo_confidence=geo.confidence;
   if(!record.area_id || geo.reason==='ambiguous'){await setStatus(env.DB,id,'held'); return 'held';}
   const fp=await fingerprint(record); const existing=await findExisting(env.DB,fp,record);
   const risk=riskGate(record,Number(row.trust_level));
   if(risk.level==='RED'){await setStatus(env.DB,id,'rejected',fp); return 'rejected';}
+  if(risk.level==='YELLOW'&&editorApproved){await setStatus(env.DB,id,'held',fp); return 'held';}
   if(risk.level==='YELLOW'){
     try{const ar=await aiProvider(env).classifyRisk(record); if(ar.level!=='GREEN'){await setStatus(env.DB,id,'held',fp); return 'held';}}
     catch{await setStatus(env.DB,id,'held',fp); return 'held';}
   }
   const value=valueGate(record); if(!value.pass){await setStatus(env.DB,id,'rejected',fp); return 'rejected';}
-  let generated; try{generated=await aiProvider(env).generateArticle(record);}catch(e){throw e;}
+  let generated;
+  if(editorApproved){generated={headline:record.title,summary:record.text.slice(0,220),body:record.text,valid_from:record.original_date||null,valid_until:null,confidence:Number(row.trust_level||50),social_text:record.title};}
+  else try{generated=await aiProvider(env).generateArticle(record);}catch(e){throw e;}
   const fact=factGate(record,generated); if(!fact.pass){await setStatus(env.DB,id,'held',fp); await log(env.DB,'warning','fact_gate','Generated facts not grounded',{ingest_id:id,violations:fact.violations}); return 'held';}
   const contentId=await publishNews(env.DB,record,generated,existing,fp,row);
   await env.DB.prepare('UPDATE la_ingest SET status=?,fingerprint=?,content_id=?,updated_at=CURRENT_TIMESTAMP WHERE id=?').bind(existing?'updated':'published',fp,contentId,id).run();
