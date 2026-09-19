@@ -1,7 +1,7 @@
 import { aiProvider } from '../ai/gemini.js';
 import { riskGate,valueGate,factGate } from './gates.js';
 import { fingerprint,findExisting } from './dedupe.js';
-import { slugify,sha256,nowIso,normalizeSpace } from './utils.js';
+import { slugify,sha256,nowIso,normalizeSpace,decodeHtmlEntities } from './utils.js';
 import { enqueue } from './queue.js';
 import { classifyGeo } from './geo.js';
 
@@ -11,7 +11,7 @@ export async function processIngest(env,id,{editorApproved=false}={}){
   if(['published','updated','rejected'].includes(row.status)) return row.status;
   if(row.usage_policy==='blocked'){await setStatus(env.DB,id,'rejected'); return 'rejected';}
   if(row.usage_policy==='discovery'&&!editorApproved){await setStatus(env.DB,id,'held'); return 'held';}
-  const record={title:normalizeSpace(row.original_title),text:normalizeSpace(row.original_text),source_url:row.source_url,original_date:row.original_date,area_id:row.detected_area||null,category_id:row.detected_category||null};
+  const record={title:normalizeSpace(decodeHtmlEntities(row.original_title)),text:normalizeSpace(decodeHtmlEntities(row.original_text)),source_url:row.source_url,original_date:row.original_date,area_id:row.detected_area||null,category_id:row.detected_category||null};
   const geo=await classifyGeo(env.DB,record,row.detected_area||null); record.area_id=geo.area_id; record.geo_confidence=geo.confidence;
   if(!record.area_id || geo.reason==='ambiguous'){await setStatus(env.DB,id,'held'); return 'held';}
   const fp=await fingerprint(record); const existing=await findExisting(env.DB,fp,record);
