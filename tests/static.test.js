@@ -23,7 +23,7 @@ const checks={
 
 test('P0 verification/edit tokens are not stored cleartext in queue payload',()=>{assert.equal(/verify_token|edit_token/.test(idx.match(/enqueue\(env\.DB,'send_verify_email'[\s\S]{0,150}/)?.[0]||''),false)});
 test('P1 public forms and magic-link UI exist',()=>{assert.equal(fs.existsSync(new URL('../public/segnala.html',import.meta.url)),true);assert.equal(fs.existsSync(new URL('../public/gestisci.html',import.meta.url)),true)});
-test('P1 admin dashboard exists',()=>assert.equal(fs.existsSync(new URL('../public/admin.html',import.meta.url)),true));
+test('P1 admin dashboard exists',()=>assert.equal(fs.existsSync(new URL('../public/admin.html',import.meta.url)),true));\ntest('P1 protected source run endpoint exists',()=>assert.match(idx,/api\\/admin\\/source\\/run/));
 test('P1 canonical is absolute',()=>assert.equal(/canonicalUrl=root\+routeFor/.test(fs.readFileSync(new URL('../src/render/pages.js',import.meta.url),'utf8')),true));
 test('P1 area hub and internal links exist',()=>{const p=fs.readFileSync(new URL('../src/render/pages.js',import.meta.url),'utf8');assert.equal(/areaPage/.test(p)&&/Contenuti correlati/.test(p),true)});
 
