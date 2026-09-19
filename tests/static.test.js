@@ -27,6 +27,7 @@ test('P1 admin dashboard exists',()=>assert.equal(fs.existsSync(new URL('../publ
 test('P1 protected source run endpoint exists',()=>assert.match(idx,/api\/admin\/source\/run/));
 test('P0 discovery publication requires explicit admin review',()=>{assert.match(idx,/api\/admin\/ingest\/review/);assert.match(idx,/editorApproved:true/);assert.match(fs.readFileSync(new URL('../src/core/pipeline.js',import.meta.url),'utf8'),/discovery'&&!editorApproved/)});
 test('P1 admin can list and review held ingests',()=>{const admin=fs.readFileSync(new URL('../public/admin.html',import.meta.url),'utf8');assert.match(idx,/api\/admin\/ingests/);assert.match(admin,/Notizie da revisionare/);assert.match(admin,/reviewIngest/)});
+test('P0 completed ingests are idempotent and source items are deduplicated',()=>{const p=fs.readFileSync(new URL('../src/core/pipeline.js',import.meta.url),'utf8');assert.match(p,/published','updated','rejected/);assert.match(p,/SELECT id FROM la_ingest WHERE source_url=/)});
 test('P1 canonical is absolute',()=>assert.equal(/canonicalUrl=root\+routeFor/.test(fs.readFileSync(new URL('../src/render/pages.js',import.meta.url),'utf8')),true));
 test('P1 area hub and internal links exist',()=>{const p=fs.readFileSync(new URL('../src/render/pages.js',import.meta.url),'utf8');assert.equal(/areaPage/.test(p)&&/Contenuti correlati/.test(p),true)});
 
