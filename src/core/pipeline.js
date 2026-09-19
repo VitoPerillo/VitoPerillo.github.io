@@ -36,4 +36,17 @@ async function publishNews(db,r,g,existing,fp,row){
   const res=await db.prepare("INSERT INTO la_content(content_type,slug,title,summary,body,area_id,category_id,source_id,source_url,fingerprint,status,published_at,updated_at,valid_from,valid_until,confidence,risk_level,original_hash,auto_generated) VALUES('news',?,?,?,?,?,?,?,?,?,'published',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,?,?,?,?,?,1)").bind(slug,title,summary,body,r.area_id,r.category_id,row.source_id,r.source_url,fp,validFrom,validUntil,Number(g.confidence||50),'GREEN',row.content_hash).run(); return Number(res.meta.last_row_id);
 }
 export async function log(db,level,component,message,context={}){const safe={...context}; for(const k of Object.keys(safe)) if(/email|token|key|secret|phone/i.test(k)) delete safe[k]; await db.prepare('INSERT INTO la_logs(level,component,message,context_json) VALUES(?,?,?,?)').bind(level,component,message,JSON.stringify(safe)).run();}
-export async function ingestItem(db,source,item){ const contentHash=await sha256(`${item.title}|${item.text}|${item.source_url}`); const ext=item.external_id||null; try{const res=await db.prepare('INSERT INTO la_ingest(source_id,external_id,source_url,original_title,original_text,original_date,content_hash,status,detected_area,detected_category,raw_payload) VALUES(?,?,?,?,?,?,?,\'new\',?,?,?)').bind(source.id,ext,item.source_url,item.title,item.text,item.date?new Date(item.date).toISOString():null,contentHash,source.area_id||null,source.category_id||null,item.raw?JSON.stringify(item.raw).slice(0,200000):null).run(); return Number(res.meta.last_row_id);}catch(e){if(String(e).includes('UNIQUE'))return null; throw e;}}
+export function normalizeSourceDate(value){
+  if(!value)return null;
+  const raw=normalizeSpace(String(value));
+  const direct=Date.parse(raw);
+  if(Number.isFinite(direct))return new Date(direct).toISOString();
+  const months={gennaio:1,febbraio:2,marzo:3,aprile:4,maggio:5,giugno:6,luglio:7,agosto:8,settembre:9,ottobre:10,novembre:11,dicembre:12};
+  const m=raw.toLocaleLowerCase('it-IT').match(/^(\d{1,2})\s+([a-zà-ÿ]+)\s+(\d{4})$/i);
+  if(!m||!months[m[2]])return null;
+  const day=Number(m[1]),month=months[m[2]],year=Number(m[3]);
+  const date=new Date(Date.UTC(year,month-1,day));
+  if(date.getUTCFullYear()!==year||date.getUTCMonth()!==month-1||date.getUTCDate()!==day)return null;
+  return date.toISOString();
+}
+export async function ingestItem(db,source,item){ const contentHash=await sha256(`${item.title}|${item.text}|${item.source_url}`); const ext=item.external_id||null; try{const res=await db.prepare('INSERT INTO la_ingest(source_id,external_id,source_url,original_title,original_text,original_date,content_hash,status,detected_area,detected_category,raw_payload) VALUES(?,?,?,?,?,?,?,\'new\',?,?,?)').bind(source.id,ext,item.source_url,item.title,item.text,normalizeSourceDate(item.date),contentHash,source.area_id||null,source.category_id||null,item.raw?JSON.stringify(item.raw).slice(0,200000):null).run(); return Number(res.meta.last_row_id);}catch(e){if(String(e).includes('UNIQUE'))return null; throw e;}}
