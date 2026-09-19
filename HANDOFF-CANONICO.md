@@ -117,3 +117,20 @@ wrangler.jsonc aggiornato con ID reali e URL di destinazione derivato dal nome W
 La configurazione è preparata, NON è prova di deploy. URL previsto: https://local-autopilot-v1.black-sea-41df.workers.dev; admin previsto: /admin.
 Blocco alla pubblicazione: API Worker restituisce 10000 Authentication error. Il flusso GitHub nel pannello richiede la creazione di un nuovo token utente; nessun token esistente selezionabile. Creazione non ancora autorizzata al momento della verifica.
 Secrets, deploy, cron live e test HTTP/admin/CRUD/UGC/desktop/mobile: NON ESEGUITI. Non dichiarare P0/P1 superati. Alla ripresa riusare D1/KV sopra e non ricreare risorse.
+
+
+## Verifica live e correzione P0 — 2026-09-19
+
+Stato verificato sul Worker `https://local-autopilot-v1.black-sea-41df.workers.dev` tramite API HTTP dirette, senza dashboard Cloudflare:
+
+- homepage, quartieri, eventi, attività, form, admin, API aree/categorie e sitemap: HTTP 200;
+- health anonimo: HTTP 403; health autenticato: HTTP 200;
+- cron attivo, coda senza job falliti, D1 con 41 quartieri;
+- quattro fonti ufficiali Roma Capitale configurate in modalità `discovery` per Municipio I/Trastevere, XI, XII e XIII; test parser live riuscito per tutte;
+- nessuna pubblicazione automatica abilitata dalle fonti `discovery`.
+
+Difetto P0 dimostrato live: l'ingestione falliva su date italiane come `18 settembre 2026` con `RangeError: Invalid time value`. Correzione pubblicata su `main`: normalizzazione sicura delle date italiane e fallback `null` per date non riconosciute. Aggiunto endpoint amministrativo autenticato `POST /api/admin/source/run` per collaudi mirati senza dashboard. Test locali: 42/42 PASS; controllo sintattico PASS.
+
+Protezione deploy: `keep_vars: true` aggiunto a `wrangler.jsonc` per conservare le variabili runtime configurate nel dashboard durante i deploy, come previsto dalla documentazione Wrangler.
+
+Blocco residuo reale: il collegamento Git visibile in Cloudflare non esegue automaticamente il deploy dei nuovi commit e in questa sessione non è disponibile alcun connettore/API Cloudflare con credenziali di deploy. Il Worker live resta quindi sulla versione precedente: il fix è canonico su GitHub ma non ancora live. Non dichiarare ingestione o staging completi finché `/api/admin/source/run` non restituisce HTTP 200 e le fonti mostrano `last_success_at` valorizzato. Non creare nuove risorse Worker, D1 o KV.
