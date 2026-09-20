@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Pubblicità locale — LOCAL AUTOPILOT</title>
+    <link rel="stylesheet" href="/app.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-inner">
+        <a class="brand" href="/"
+          ><span class="brand-mark">LA</span
+          ><span
+            ><b>LOCAL AUTOPILOT</b><small>Roma Ovest / Sud-Ovest</small></span
+          ></a
+        >
+        <nav>
+          <a href="/quartieri">Quartieri</a><a href="/segnala">Segnala</a
+          ><a class="nav-cta" href="/">Home</a>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <section class="area-hero">
+        <div class="wrap">
+          <span class="kicker">MODALITÀ TEST</span>
+          <h1>Prova la pubblicità locale.</h1>
+          <p>
+            Configura una campagna dimostrativa. Non verrà richiesto né
+            incassato alcun pagamento e l'annuncio non sarà pubblicato
+            automaticamente.
+          </p>
+        </div>
+      </section>
+      <section class="section wrap">
+        <form id="f">
+          <label
+            >Attività o organizzazione<input
+              name="business_name"
+              required
+              maxlength="120" /></label
+          ><label
+            >Email<input
+              name="email"
+              type="email"
+              required
+              autocomplete="email" /></label
+          ><label
+            >Quartiere<select name="area_id" id="area" required>
+              <option value="">Caricamento…</option>
+            </select></label
+          ><label
+            >Pacchetto di prova<select name="package_code">
+              <option value="local_week">
+                7 giorni — prezzo futuro indicativo €4,90
+              </option>
+              <option value="local_month">
+                30 giorni — prezzo futuro indicativo €9,90
+              </option>
+              <option value="featured_month">
+                30 giorni in evidenza — prezzo futuro indicativo €19,90
+              </option>
+            </select></label
+          ><label
+            >Titolo annuncio<input
+              name="title"
+              required
+              maxlength="100" /></label
+          ><label
+            >Testo annuncio<textarea
+              name="body"
+              required
+              maxlength="500"
+            ></textarea></label
+          ><label
+            >Sito di destinazione<input
+              name="target_url"
+              type="url"
+              required
+              placeholder="https://..." /></label
+          ><input
+            name="website_hp"
+            tabindex="-1"
+            autocomplete="off"
+            style="position: absolute; left: -9999px"
+          /><input type="hidden" name="form_started_at" id="fst" /><label
+            class="check"
+            ><input
+              type="checkbox"
+              name="rights_declared"
+              value="1"
+              required
+            /><span
+              >Dichiaro di poter usare testi, marchi e materiali inviati.</span
+            ></label
+          ><label class="check"
+            ><input
+              type="checkbox"
+              name="terms_accepted"
+              value="1"
+              required
+            /><span
+              >Accetto la revisione preventiva e comprendo che questa è solo una
+              simulazione senza pubblicazione automatica.</span
+            ></label
+          ><button>Genera ordine di prova</button>
+        </form>
+        <div id="out" class="test-summary" hidden></div>
+      </section>
+    </main>
+    <footer>
+      <div class="wrap">LOCAL AUTOPILOT · Roma Ovest / Sud-Ovest</div>
+    </footer>
+    <script>
+      fst.value = Date.now();
+      fetch("/api/areas")
+        .then((r) => r.json())
+        .then(
+          (rows) =>
+            (area.innerHTML =
+              '<option value="">Scegli…</option>' +
+              rows
+                .filter((x) => x.kind === "neighborhood")
+                .map((x) => `<option value="${x.id}">${x.name}</option>`)
+                .join("")),
+        );
+      f.onsubmit = async (e) => {
+        e.preventDefault();
+        const d = Object.fromEntries(new FormData(f));
+        const r = await fetch("/api/ad-order", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(d),
+          }),
+          j = await r.json();
+        out.hidden = false;
+        if (!r.ok) {
+          out.textContent = "Invio non riuscito: " + (j.error || "errore");
+          return;
+        }
+        out.innerHTML = `<h2>Riepilogo ordine di prova</h2><p><b>Ordine TEST-${j.id}</b> · importo indicativo €${(j.price_cents / 100).toFixed(2).replace(".", ",")}</p><p><strong>Pagamento simulato — €0 incassati — documento non fiscale.</strong></p><p>La richiesta è in revisione e non attiva alcuna campagna.</p>`;
+        f.reset();
+        fst.value = Date.now();
+      };
+    </script>
+  </body>
+</html>

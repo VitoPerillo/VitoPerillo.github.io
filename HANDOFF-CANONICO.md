@@ -2,6 +2,15 @@
 
 Aggiornato: 2026-09-19
 
+## Modulo 0.5 — moderazione UGC e pubblicità test
+
+- Tutti gli invii degli utenti, anche a basso rischio, entrano in `held` e richiedono approvazione nel back office.
+- Ogni contenuto pubblico offre una segnalazione per errori, privacy, copyright, contenuti offensivi, possibili illeciti o spam.
+- `/pubblicita` crea soltanto ordini dimostrativi sottoposti a revisione: nessun pagamento, nessuna entrata e nessuna attivazione automatica.
+- Il riepilogo mostra obbligatoriamente: “Pagamento simulato — €0 incassati — documento non fiscale”.
+- Il documento fiscale reale resta bloccato finché il professionista fiscale non conferma regime e tipo di documento di Yoganostress.
+- Migrazione richiesta: `migrations/0003_safe_ugc_ads_test.sql`.
+
 ## Fonte unica di verità
 
 La fonte ufficiale è esclusivamente il branch `main` del repository pubblico:

@@ -1,82 +1,323 @@
 <!doctype html>
 <html lang="it">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>LOCAL AUTOPILOT — Back office</title>
-  <link rel="stylesheet" href="/app.css">
-</head>
-<body class="admin-shell">
-  <div class="admin-top"><div class="wrap admin-title"><div><b>LOCAL AUTOPILOT</b><div style="color:#6b7280;font-size:13px">Back office · Roma Ovest / Sud-Ovest</div></div><span class="status-ok" id="status">Connessione…</span></div></div>
-  <main class="wrap">
-    <div id="auth" class="panel" style="margin-top:22px">
-      <h2>Accesso amministratore</h2>
-      <p>Il collegamento di accesso creato dal deploy può autenticarti automaticamente. In alternativa inserisci il token amministratore.</p>
-      <label>Token<input id="t" type="password" autocomplete="off"></label>
-      <button id="load" style="margin-top:12px">Apri dashboard</button>
-    </div>
-    <div id="dash" hidden>
-      <div class="metrics">
-        <div class="metric"><small>Azione richiesta</small><b id="mAction">—</b></div>
-        <div class="metric"><small>Contenuti pubblicati</small><b id="mContent">—</b></div>
-        <div class="metric"><small>Quartieri coperti</small><b id="mAreas">—</b></div>
-        <div class="metric"><small>Entrate registrate</small><b id="mRevenue">€0</b></div>
-      </div>
-      <div class="admin-grid">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>LOCAL AUTOPILOT — Back office</title>
+    <link rel="stylesheet" href="/app.css" />
+  </head>
+  <body class="admin-shell">
+    <div class="admin-top">
+      <div class="wrap admin-title">
         <div>
-          <section class="panel"><h2>Stato del sistema</h2><div id="healthView"></div></section>
-          <section class="panel"><h2>Eccezioni / coda</h2><div id="queueView"></div></section>
-          <section class="panel"><h2>Fonti</h2><div id="sourcesView"></div></section>
-          <section class="panel">
-            <h2>Notizie da revisionare</h2>
-            <p style="color:#6b7280">Anteprima dalle fonti ufficiali. Pubblica solo ciò che è utile e corretto.</p>
-            <div id="ingestsView"></div>
-          </section>
+          <b>LOCAL AUTOPILOT</b>
+          <div style="color: #6b7280; font-size: 13px">
+            Back office · Roma Ovest / Sud-Ovest
+          </div>
         </div>
-        <div>
-          <section class="panel"><h2>Monetizzazione</h2><p style="color:#6b7280">House Ads e spazi locali sono predisposti. Amazon e AdSense restano disattivati finché non vengono collegati gli account e il consenso richiesto.</p><div id="adsView"></div></section>
-          <section class="panel"><h2>Invii degli utenti</h2><div id="subsView"></div></section>
-        </div>
+        <span class="status-ok" id="status">Connessione…</span>
       </div>
     </div>
-  </main>
-  <script>
-    const t=document.getElementById('t'),load=document.getElementById('load'),auth=document.getElementById('auth'),dash=document.getElementById('dash'),status=document.getElementById('status');
-    let token='';
-    const frag=new URLSearchParams(location.hash.replace(/^#/,''));
-    if(frag.get('token')){token=frag.get('token');sessionStorage.setItem('la_admin_token',token);history.replaceState(null,'',location.pathname);}
-    token=token||sessionStorage.getItem('la_admin_token')||'';
-    if(token)t.value=token;
-    async function get(p){const r=await fetch(p,{headers:{authorization:'Bearer '+token}});if(r.status===403)throw new Error('Token non valido');return r.json();}
-    async function post(p,data){const r=await fetch(p,{method:'POST',headers:{authorization:'Bearer '+token,'content-type':'application/json'},body:JSON.stringify(data)});const out=await r.json();if(!r.ok)throw new Error(out.error||'Operazione non riuscita');return out;}
-    const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    function table(rows,cols){if(!rows?.length)return '<p style="color:#6b7280">Nessun elemento.</p>';return '<div style="overflow:auto"><table class="table"><thead><tr>'+cols.map(c=>'<th>'+esc(c[0])+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+cols.map(c=>'<td>'+esc(r[c[1]])+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';}
-    function reviewCards(rows){
-      if(!rows?.length)return '<p style="color:#6b7280">Nessuna notizia in attesa.</p>';
-      return rows.map(r=>'<article id="ingest-'+Number(r.id)+'" style="border-top:1px solid #e5e7eb;padding:14px 0"><small>'+esc(r.source_name)+' · '+esc(r.area_name||'Area da verificare')+'</small><h3>'+esc(r.original_title)+'</h3><p>'+esc(r.original_text)+'</p><p><a href="'+esc(r.source_url)+'" target="_blank" rel="noopener">Apri la fonte integrale ↗</a></p><button onclick="previewIngest('+Number(r.id)+')">Prepara articolo completo</button> <button onclick="reviewIngest('+Number(r.id)+',\'reject\')">Rifiuta</button></article>').join('');
-    }
-    async function previewIngest(id){try{const d=await post('/api/admin/ingest/preview',{id});const el=document.getElementById('ingest-'+id);const facts=(d.facts||[]).map(f=>'<li>'+esc(f.text)+'</li>').join('');el.innerHTML='<small>'+esc(d.source_name)+' · '+esc(d.area_name||'Area da verificare')+' · '+esc(d.date||'data non indicata')+'</small><h3>'+esc(d.title)+'</h3><details open><summary>Fatti estratti dalla pagina integrale</summary><ul>'+facts+'</ul></details><label>Titolo originale<input id="headline-'+id+'" value="'+esc(d.title)+'"></label><label>Sommario originale (70-320 caratteri)<textarea id="summary-'+id+'" rows="3"></textarea></label><label>Articolo originale (140-700 parole)<textarea id="body-'+id+'" rows="14"></textarea></label><p style="color:#6b7280">Immagine: illustrazione originale LOCAL AUTOPILOT, licenza CC BY 4.0. Il sistema blocca numeri, date e nomi non presenti nella fonte e copie estese del comunicato.</p><p><a href="'+esc(d.source_url)+'" target="_blank" rel="noopener">Rileggi la fonte integrale ↗</a></p><button onclick="publishDraft('+id+')">Verifica e pubblica</button> <button onclick="reviewIngest('+id+',\'reject\')">Rifiuta</button>';}catch(e){alert(e.message);}}
-    async function publishDraft(id){const draft={headline:document.getElementById('headline-'+id).value,summary:document.getElementById('summary-'+id).value,body:document.getElementById('body-'+id).value};try{await post('/api/admin/ingest/review',{id,action:'approve',draft});await openDash();}catch(e){alert(e.message);}}
-    async function reviewIngest(id,action){try{await post('/api/admin/ingest/review',{id,action});await openDash();}catch(e){alert(e.message);}}
-    async function openDash(){
-      token=t.value.trim();sessionStorage.setItem('la_admin_token',token);status.textContent='Caricamento…';
-      try{
-        const [health,summary,queue,sources,subs,ads,ingests]=await Promise.all([get('/api/admin/health'),get('/api/admin/summary'),get('/api/admin/queue'),get('/api/admin/sources'),get('/api/admin/submissions'),get('/api/admin/ads'),get('/api/admin/ingests?status=review')]);
-        auth.hidden=true;dash.hidden=false;status.textContent=health.status==='OK'?'Sistema attivo':'Controllo richiesto';
-        document.getElementById('mAction').textContent=health.action_required;
-        document.getElementById('mContent').textContent=summary.content;
-        document.getElementById('mAreas').textContent=summary.areas;
-        document.getElementById('mRevenue').textContent='€'+(summary.revenue_cents/100).toFixed(2).replace('.',',');
-        document.getElementById('healthView').innerHTML=table([health],[['Stato','status'],['Azione','action_required'],['Errori','failed'],['Fonti ferme','sources_stale']]);
-        document.getElementById('queueView').innerHTML=table(queue,[['Tipo','job_type'],['Stato','status'],['Tentativi','attempts'],['Errore','last_error']]);
-        document.getElementById('sourcesView').innerHTML=table(sources,[['Fonte','name'],['Policy','usage_policy'],['Ultimo OK','last_success_at']]);
-        document.getElementById('ingestsView').innerHTML=reviewCards(ingests);
-        document.getElementById('subsView').innerHTML=table(subs,[['Tipo','submission_type'],['Stato','status'],['Creato','created_at']]);
-        document.getElementById('adsView').innerHTML=table(ads,[['Campagna','title'],['Tipo','ad_type'],['Attiva','active'],['Click','clicks']]);
-      }catch(e){status.textContent='Accesso non riuscito';alert(e.message);}
-    }
-    load.onclick=openDash;
-    if(token)openDash();
-  </script>
-</body>
+    <main class="wrap">
+      <div id="auth" class="panel" style="margin-top: 22px">
+        <h2>Accesso amministratore</h2>
+        <p>
+          Il collegamento di accesso creato dal deploy può autenticarti
+          automaticamente. In alternativa inserisci il token amministratore.
+        </p>
+        <label>Token<input id="t" type="password" autocomplete="off" /></label>
+        <button id="load" style="margin-top: 12px">Apri dashboard</button>
+      </div>
+      <div id="dash" hidden>
+        <div class="metrics">
+          <div class="metric">
+            <small>Azione richiesta</small><b id="mAction">—</b>
+          </div>
+          <div class="metric">
+            <small>Contenuti pubblicati</small><b id="mContent">—</b>
+          </div>
+          <div class="metric">
+            <small>Quartieri coperti</small><b id="mAreas">—</b>
+          </div>
+          <div class="metric">
+            <small>Entrate registrate</small><b id="mRevenue">€0</b>
+          </div>
+        </div>
+        <div class="admin-grid">
+          <div>
+            <section class="panel">
+              <h2>Stato del sistema</h2>
+              <div id="healthView"></div>
+            </section>
+            <section class="panel">
+              <h2>Eccezioni / coda</h2>
+              <div id="queueView"></div>
+            </section>
+            <section class="panel">
+              <h2>Fonti</h2>
+              <div id="sourcesView"></div>
+            </section>
+            <section class="panel">
+              <h2>Notizie da revisionare</h2>
+              <p style="color: #6b7280">
+                Anteprima dalle fonti ufficiali. Pubblica solo ciò che è utile e
+                corretto.
+              </p>
+              <div id="ingestsView"></div>
+            </section>
+          </div>
+          <div>
+            <section class="panel">
+              <h2>Monetizzazione</h2>
+              <p style="color: #6b7280">
+                House Ads e spazi locali sono predisposti. Amazon e AdSense
+                restano disattivati finché non vengono collegati gli account e
+                il consenso richiesto.
+              </p>
+              <div id="adsView"></div>
+            </section>
+            <section class="panel">
+              <h2>Invii degli utenti</h2>
+              <div id="subsView"></div>
+            </section>
+            <section class="panel">
+              <h2>Ordini pubblicitari di prova</h2>
+              <p style="color:#6b7280">Nessun pagamento reale e nessuna attivazione automatica.</p>
+              <div id="adOrdersView"></div>
+            </section>
+            <section class="panel">
+              <h2>Segnalazioni sui contenuti</h2>
+              <div id="reportsView"></div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script>
+      const t = document.getElementById("t"),
+        load = document.getElementById("load"),
+        auth = document.getElementById("auth"),
+        dash = document.getElementById("dash"),
+        status = document.getElementById("status");
+      let token = "";
+      const frag = new URLSearchParams(location.hash.replace(/^#/, ""));
+      if (frag.get("token")) {
+        token = frag.get("token");
+        sessionStorage.setItem("la_admin_token", token);
+        history.replaceState(null, "", location.pathname);
+      }
+      token = token || sessionStorage.getItem("la_admin_token") || "";
+      if (token) t.value = token;
+      async function get(p) {
+        const r = await fetch(p, {
+          headers: { authorization: "Bearer " + token },
+        });
+        if (r.status === 403) throw new Error("Token non valido");
+        return r.json();
+      }
+      async function post(p, data) {
+        const r = await fetch(p, {
+          method: "POST",
+          headers: {
+            authorization: "Bearer " + token,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+        const out = await r.json();
+        if (!r.ok) throw new Error(out.error || "Operazione non riuscita");
+        return out;
+      }
+      const esc = (s) =>
+        String(s ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      function table(rows, cols) {
+        if (!rows?.length)
+          return '<p style="color:#6b7280">Nessun elemento.</p>';
+        return (
+          '<div style="overflow:auto"><table class="table"><thead><tr>' +
+          cols.map((c) => "<th>" + esc(c[0]) + "</th>").join("") +
+          "</tr></thead><tbody>" +
+          rows
+            .map(
+              (r) =>
+                "<tr>" +
+                cols.map((c) => "<td>" + esc(r[c[1]]) + "</td>").join("") +
+                "</tr>",
+            )
+            .join("") +
+          "</tbody></table></div>"
+        );
+      }
+      function reviewCards(rows) {
+        if (!rows?.length)
+          return '<p style="color:#6b7280">Nessuna notizia in attesa.</p>';
+        return rows
+          .map(
+            (r) =>
+              '<article id="ingest-' +
+              Number(r.id) +
+              '" style="border-top:1px solid #e5e7eb;padding:14px 0"><small>' +
+              esc(r.source_name) +
+              " · " +
+              esc(r.area_name || "Area da verificare") +
+              "</small><h3>" +
+              esc(r.original_title) +
+              "</h3><p>" +
+              esc(r.original_text) +
+              '</p><p><a href="' +
+              esc(r.source_url) +
+              '" target="_blank" rel="noopener">Apri la fonte integrale ↗</a></p><button onclick="previewIngest(' +
+              Number(r.id) +
+              ')">Prepara articolo completo</button> <button onclick="reviewIngest(' +
+              Number(r.id) +
+              ",'reject')\">Rifiuta</button></article>",
+          )
+          .join("");
+      }
+      function moderationCards(rows,kind) {
+        if (!rows?.length) return '<p style="color:#6b7280">Nessun elemento in attesa.</p>';
+        return rows.map(r=>`<article style="border-top:1px solid #e5e7eb;padding:14px 0"><small>${esc(r.status)} · rischio ${esc(r.risk_score??'—')}</small><h3>${esc(r.title||r.business_name||('Contenuto '+r.content_id))}</h3><p>${esc(r.area_name||r.reason||r.submission_type||'')}</p>${kind==='submission'?`<button onclick="reviewSubmission(${Number(r.id)},'approve')">Approva e pubblica</button> <button onclick="reviewSubmission(${Number(r.id)},'reject')">Rifiuta</button>`:kind==='ad'?`<button onclick="reviewAd(${Number(r.id)},'approve_test')">Approva test</button> <button onclick="reviewAd(${Number(r.id)},'reject')">Rifiuta</button>`:`<button onclick="resolveReport(${Number(r.id)},'dismiss')">Archivia</button> <button onclick="resolveReport(${Number(r.id)},'remove')">Rimuovi contenuto</button>`}</article>`).join('');
+      }
+      async function reviewSubmission(id,action){try{await post('/api/admin/submissions/review',{id,action});await openDash();}catch(e){alert(e.message)}}
+      async function reviewAd(id,action){try{await post('/api/admin/ad-orders/review',{id,action});await openDash();}catch(e){alert(e.message)}}
+      async function resolveReport(id,action){try{await post('/api/admin/reports/resolve',{id,action});await openDash();}catch(e){alert(e.message)}}
+      async function previewIngest(id) {
+        try {
+          const d = await post("/api/admin/ingest/preview", { id });
+          const el = document.getElementById("ingest-" + id);
+          const facts = (d.facts || [])
+            .map((f) => "<li>" + esc(f.text) + "</li>")
+            .join("");
+          el.innerHTML =
+            "<small>" +
+            esc(d.source_name) +
+            " · " +
+            esc(d.area_name || "Area da verificare") +
+            " · " +
+            esc(d.date || "data non indicata") +
+            "</small><h3>" +
+            esc(d.title) +
+            "</h3><details open><summary>Fatti estratti dalla pagina integrale</summary><ul>" +
+            facts +
+            '</ul></details><label>Titolo originale<input id="headline-' +
+            id +
+            '" value="' +
+            esc(d.title) +
+            '"></label><label>Sommario originale (70-320 caratteri)<textarea id="summary-' +
+            id +
+            '" rows="3"></textarea></label><label>Articolo originale (140-700 parole)<textarea id="body-' +
+            id +
+            '" rows="14"></textarea></label><p style="color:#6b7280">Immagine: illustrazione originale LOCAL AUTOPILOT, licenza CC BY 4.0. Il sistema blocca numeri, date e nomi non presenti nella fonte e copie estese del comunicato.</p><p><a href="' +
+            esc(d.source_url) +
+            '" target="_blank" rel="noopener">Rileggi la fonte integrale ↗</a></p><button onclick="publishDraft(' +
+            id +
+            ')">Verifica e pubblica</button> <button onclick="reviewIngest(' +
+            id +
+            ",'reject')\">Rifiuta</button>";
+        } catch (e) {
+          alert(e.message);
+        }
+      }
+      async function publishDraft(id) {
+        const draft = {
+          headline: document.getElementById("headline-" + id).value,
+          summary: document.getElementById("summary-" + id).value,
+          body: document.getElementById("body-" + id).value,
+        };
+        try {
+          await post("/api/admin/ingest/review", {
+            id,
+            action: "approve",
+            draft,
+          });
+          await openDash();
+        } catch (e) {
+          alert(e.message);
+        }
+      }
+      async function reviewIngest(id, action) {
+        try {
+          await post("/api/admin/ingest/review", { id, action });
+          await openDash();
+        } catch (e) {
+          alert(e.message);
+        }
+      }
+      async function openDash() {
+        token = t.value.trim();
+        sessionStorage.setItem("la_admin_token", token);
+        status.textContent = "Caricamento…";
+        try {
+          const [health, summary, queue, sources, subs, ads, ingests, adOrders, reports] =
+            await Promise.all([
+              get("/api/admin/health"),
+              get("/api/admin/summary"),
+              get("/api/admin/queue"),
+              get("/api/admin/sources"),
+              get("/api/admin/submissions"),
+              get("/api/admin/ads"),
+              get("/api/admin/ingests?status=review"),
+              get("/api/admin/ad-orders"),
+              get("/api/admin/reports"),
+            ]);
+          auth.hidden = true;
+          dash.hidden = false;
+          status.textContent =
+            health.status === "OK" ? "Sistema attivo" : "Controllo richiesto";
+          document.getElementById("mAction").textContent =
+            health.action_required;
+          document.getElementById("mContent").textContent = summary.content;
+          document.getElementById("mAreas").textContent = summary.areas;
+          document.getElementById("mRevenue").textContent =
+            "€" + (summary.revenue_cents / 100).toFixed(2).replace(".", ",");
+          document.getElementById("healthView").innerHTML = table(
+            [health],
+            [
+              ["Stato", "status"],
+              ["Azione", "action_required"],
+              ["Errori", "failed"],
+              ["Fonti ferme", "sources_stale"],
+            ],
+          );
+          document.getElementById("queueView").innerHTML = table(queue, [
+            ["Tipo", "job_type"],
+            ["Stato", "status"],
+            ["Tentativi", "attempts"],
+            ["Errore", "last_error"],
+          ]);
+          document.getElementById("sourcesView").innerHTML = table(sources, [
+            ["Fonte", "name"],
+            ["Policy", "usage_policy"],
+            ["Ultimo OK", "last_success_at"],
+          ]);
+          document.getElementById("ingestsView").innerHTML =
+            reviewCards(ingests);
+          document.getElementById("subsView").innerHTML = moderationCards(subs.filter(x=>x.status==='held'),'submission');
+          document.getElementById("adOrdersView").innerHTML = moderationCards(adOrders.filter(x=>x.status==='held'),'ad');
+          document.getElementById("reportsView").innerHTML = moderationCards(reports,'report');
+          document.getElementById("adsView").innerHTML = table(ads, [
+            ["Campagna", "title"],
+            ["Tipo", "ad_type"],
+            ["Attiva", "active"],
+            ["Click", "clicks"],
+          ]);
+        } catch (e) {
+          status.textContent = "Accesso non riuscito";
+          alert(e.message);
+        }
+      }
+      load.onclick = openDash;
+      if (token) openDash();
+    </script>
+  </body>
 </html>
