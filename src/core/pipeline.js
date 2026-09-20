@@ -6,14 +6,19 @@ import { enqueue } from './queue.js';
 import { classifyGeo } from './geo.js';
 import { fetchArticleDetails, editorialDraftGate } from './article.js';
 
-export async function processIngest(env,id,{editorApproved=false,editorDraft=null,rebuild=false}={}){
+export async function processIngest(env,id,{editorApproved=false,editorDraft=null,rebuild=false,verifiedSource=null}={}){
   const row=await env.DB.prepare('SELECT i.*,s.trust_level,s.usage_policy FROM la_ingest i JOIN la_sources s ON s.id=i.source_id WHERE i.id=?').bind(id).first();
   if(!row) throw new Error('ingest_not_found');
   if(['published','updated','rejected'].includes(row.status)&&!rebuild) return row.status;
   if(row.usage_policy==='blocked'){await setStatus(env.DB,id,'rejected'); return 'rejected';}
   if(row.usage_policy==='discovery'&&!editorApproved){await setStatus(env.DB,id,'held'); return 'held';}
   let detail=null;
-  if(editorApproved)detail=await fetchArticleDetails(row.source_url);
+  if(editorApproved){
+    if(verifiedSource){
+      if(String(verifiedSource.source_url||'')!==String(row.source_url)||String(verifiedSource.text||'').length<300)throw new Error('verified_source_invalid');
+      detail={title:String(verifiedSource.title||row.original_title),date:verifiedSource.date||row.original_date,text:String(verifiedSource.text),source_url:row.source_url};
+    }else detail=await fetchArticleDetails(row.source_url);
+  }
   const record={title:normalizeSpace(decodeHtmlEntities(detail?.title||row.original_title)),text:detail?.text||normalizeSpace(decodeHtmlEntities(row.original_text)),source_url:row.source_url,original_date:normalizeSourceDate(detail?.date)||row.original_date,area_id:row.detected_area||null,category_id:row.detected_category||null};
   const geo=await classifyGeo(env.DB,record,row.detected_area||null); record.area_id=geo.area_id; record.geo_confidence=geo.confidence;
   if(!record.area_id || geo.reason==='ambiguous'){await setStatus(env.DB,id,'held'); return 'held';}

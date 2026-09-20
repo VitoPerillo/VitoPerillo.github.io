@@ -17,7 +17,7 @@ export const decodeHtmlEntities = s => String(s||'').replace(/&#(x?[0-9a-f]+);|&
 export const stripTags = s => normalizeSpace(decodeHtmlEntities(String(s||'').replace(/<[^>]*>/g,' ')));
 export const significantNumbers = s => [...String(s||'').matchAll(/\b\d+(?:[.,]\d+)?\b/g)].map(m=>m[0].replace(',','.'));
 export const datesAndTimes = s => [...String(s||'').matchAll(/\b(?:\d{1,2}[\/-]\d{1,2}(?:[\/-]\d{2,4})?|\d{4}-\d{2}-\d{2}|\d{1,2}[:.]\d{2})\b/g)].map(m=>m[0]);
-export const properNames = s => [...String(s||'').matchAll(/\b[A-ZÀ-ÖØ-Ý][\p{L}'’.-]+(?:\s+[A-ZÀ-ÖØ-Ý][\p{L}'’.-]+)+/gu)].map(m=>m[0]);
+export const properNames = s => [...String(s||'').matchAll(/\b[A-ZÀ-ÖØ-Ý][\p{L}'’-]+(?:[ \t]+[A-ZÀ-ÖØ-Ý][\p{L}'’-]+)+/gu)].map(m=>m[0]);
 export const responseJson = (data,status=200,headers={}) => new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store',...headers}});
 
 export async function hmacToken(secret,message){ if(!secret) throw new Error('token_secret_missing'); const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']); const sig=new Uint8Array(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(message))); return [...sig].map(b=>b.toString(16).padStart(2,'0')).join(''); }
