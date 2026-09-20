@@ -4,17 +4,20 @@ import { fingerprint,findExisting } from './dedupe.js';
 import { slugify,sha256,nowIso,normalizeSpace,decodeHtmlEntities } from './utils.js';
 import { enqueue } from './queue.js';
 import { classifyGeo } from './geo.js';
+import { fetchArticleDetails, editorialDraftGate } from './article.js';
 
-export async function processIngest(env,id,{editorApproved=false}={}){
+export async function processIngest(env,id,{editorApproved=false,editorDraft=null,rebuild=false}={}){
   const row=await env.DB.prepare('SELECT i.*,s.trust_level,s.usage_policy FROM la_ingest i JOIN la_sources s ON s.id=i.source_id WHERE i.id=?').bind(id).first();
   if(!row) throw new Error('ingest_not_found');
-  if(['published','updated','rejected'].includes(row.status)) return row.status;
+  if(['published','updated','rejected'].includes(row.status)&&!rebuild) return row.status;
   if(row.usage_policy==='blocked'){await setStatus(env.DB,id,'rejected'); return 'rejected';}
   if(row.usage_policy==='discovery'&&!editorApproved){await setStatus(env.DB,id,'held'); return 'held';}
-  const record={title:normalizeSpace(decodeHtmlEntities(row.original_title)),text:normalizeSpace(decodeHtmlEntities(row.original_text)),source_url:row.source_url,original_date:row.original_date,area_id:row.detected_area||null,category_id:row.detected_category||null};
+  let detail=null;
+  if(editorApproved)detail=await fetchArticleDetails(row.source_url);
+  const record={title:normalizeSpace(decodeHtmlEntities(detail?.title||row.original_title)),text:detail?.text||normalizeSpace(decodeHtmlEntities(row.original_text)),source_url:row.source_url,original_date:normalizeSourceDate(detail?.date)||row.original_date,area_id:row.detected_area||null,category_id:row.detected_category||null};
   const geo=await classifyGeo(env.DB,record,row.detected_area||null); record.area_id=geo.area_id; record.geo_confidence=geo.confidence;
   if(!record.area_id || geo.reason==='ambiguous'){await setStatus(env.DB,id,'held'); return 'held';}
-  const fp=await fingerprint(record); const existing=await findExisting(env.DB,fp,record);
+  const fp=await fingerprint(record); const existing=row.content_id?{id:Number(row.content_id)}:await findExisting(env.DB,fp,record);
   const risk=riskGate(record,Number(row.trust_level));
   if(risk.level==='RED'){await setStatus(env.DB,id,'rejected',fp); return 'rejected';}
   if(risk.level==='YELLOW'&&editorApproved){await setStatus(env.DB,id,'held',fp); return 'held';}
@@ -26,9 +29,14 @@ export async function processIngest(env,id,{editorApproved=false}={}){
   const approvedMinimum=record.title.length>=12&&record.text.length>=20&&Number(record.area_id||0)>0;
   if(!value.pass&&!(editorApproved&&approvedMinimum)){await setStatus(env.DB,id,'rejected',fp); return 'rejected';}
   let generated;
-  if(editorApproved){generated={headline:record.title,summary:record.text.slice(0,220),body:record.text,valid_from:record.original_date||null,valid_until:null,confidence:Number(row.trust_level||50),social_text:record.title};}
+  if(editorApproved){
+    if(!editorDraft)throw new Error('editor_draft_required');
+    const editorial=editorialDraftGate(record.text,editorDraft);
+    if(!editorial.pass)throw new Error(`editor_draft_invalid:${editorial.violations.join(',')}`);
+    generated={...editorDraft,valid_from:record.original_date||null,valid_until:null,confidence:Number(row.trust_level||50),social_text:editorDraft.social_text||editorDraft.headline};
+  }
   else try{generated=await aiProvider(env).generateArticle(record);}catch(e){throw e;}
-  const fact=factGate(record,generated); if(!editorApproved&&!fact.pass){await setStatus(env.DB,id,'held',fp); await log(env.DB,'warning','fact_gate','Generated facts not grounded',{ingest_id:id,violations:fact.violations}); return 'held';}
+  const fact=factGate(record,generated); if(!fact.pass){await setStatus(env.DB,id,'held',fp); await log(env.DB,'warning','fact_gate','Generated facts not grounded',{ingest_id:id,violations:fact.violations}); return 'held';}
   const contentId=await publishNews(env.DB,record,generated,existing,fp,row);
   await env.DB.prepare('UPDATE la_ingest SET status=?,fingerprint=?,content_id=?,updated_at=CURRENT_TIMESTAMP WHERE id=?').bind(existing?'updated':'published',fp,contentId,id).run();
   await enqueue(env.DB,'social_publish',contentId,{social_text:generated.social_text||generated.headline||record.title},200);
@@ -36,10 +44,10 @@ export async function processIngest(env,id,{editorApproved=false}={}){
 }
 async function setStatus(db,id,status,fp=null){await db.prepare('UPDATE la_ingest SET status=?,fingerprint=COALESCE(?,fingerprint),updated_at=CURRENT_TIMESTAMP WHERE id=?').bind(status,fp,id).run();}
 async function publishNews(db,r,g,existing,fp,row){
-  const title=normalizeSpace(g.headline||r.title),summary=normalizeSpace(g.summary||r.text.slice(0,220)),body=normalizeSpace(g.body||r.text),validFrom=g.valid_from||r.original_date||null,validUntil=g.valid_until||null;
-  if(existing){await db.prepare("UPDATE la_content SET title=?,summary=?,body=?,source_url=?,status='updated',updated_at=CURRENT_TIMESTAMP,valid_from=?,valid_until=?,confidence=?,risk_level='GREEN',original_hash=?,auto_generated=1 WHERE id=?").bind(title,summary,body,r.source_url,validFrom,validUntil,Number(g.confidence||50),row.content_hash,existing.id).run(); return existing.id;}
+  const title=normalizeSpace(g.headline||r.title),summary=normalizeSpace(g.summary||r.text.slice(0,220)),body=String(g.body||r.text).trim(),validFrom=g.valid_from||r.original_date||null,validUntil=g.valid_until||null,imageKey=g.image_key||`generated/area-${Number(r.area_id)}.svg`;
+  if(existing){await db.prepare("UPDATE la_content SET title=?,summary=?,body=?,source_url=?,status='updated',updated_at=CURRENT_TIMESTAMP,valid_from=?,valid_until=?,confidence=?,risk_level='GREEN',original_hash=?,auto_generated=1,image_key=? WHERE id=?").bind(title,summary,body,r.source_url,validFrom,validUntil,Number(g.confidence||50),row.content_hash,imageKey,existing.id).run(); return existing.id;}
   let slug=slugify(title); const clash=await db.prepare('SELECT 1 FROM la_content WHERE slug=?').bind(slug).first(); if(clash) slug=`${slug}-${String(fp).slice(0,8)}`;
-  const res=await db.prepare("INSERT INTO la_content(content_type,slug,title,summary,body,area_id,category_id,source_id,source_url,fingerprint,status,published_at,updated_at,valid_from,valid_until,confidence,risk_level,original_hash,auto_generated) VALUES('news',?,?,?,?,?,?,?,?,?,'published',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,?,?,?,?,?,1)").bind(slug,title,summary,body,r.area_id,r.category_id,row.source_id,r.source_url,fp,validFrom,validUntil,Number(g.confidence||50),'GREEN',row.content_hash).run(); return Number(res.meta.last_row_id);
+  const res=await db.prepare("INSERT INTO la_content(content_type,slug,title,summary,body,area_id,category_id,source_id,source_url,fingerprint,status,published_at,updated_at,valid_from,valid_until,confidence,risk_level,original_hash,auto_generated,image_key) VALUES('news',?,?,?,?,?,?,?,?,?,'published',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,?,?,?,?,?,1,?)").bind(slug,title,summary,body,r.area_id,r.category_id,row.source_id,r.source_url,fp,validFrom,validUntil,Number(g.confidence||50),'GREEN',row.content_hash,imageKey).run(); return Number(res.meta.last_row_id);
 }
 export async function log(db,level,component,message,context={}){const safe={...context}; for(const k of Object.keys(safe)) if(/email|token|key|secret|phone/i.test(k)) delete safe[k]; await db.prepare('INSERT INTO la_logs(level,component,message,context_json) VALUES(?,?,?,?)').bind(level,component,message,JSON.stringify(safe)).run();}
 export function normalizeSourceDate(value){
