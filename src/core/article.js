@@ -8,7 +8,7 @@ async function fetchOfficialHtml(url){
   let current=String(url); let response=null;
   for(let hop=0;hop<4;hop++){
     if(!safeSourceUrl(current))throw new Error('article_url_blocked');
-    response=await fetch(current,{headers:{'user-agent':'LOCAL-AUTOPILOT/1.0'},redirect:'manual',signal:AbortSignal.timeout(10000)});
+    response=await fetch(current,{headers:{'user-agent':'LOCAL-AUTOPILOT/1.0'},redirect:'manual'});
     if(REDIRECTS.has(response.status)){
       const location=response.headers.get('location');
       if(!location)throw new Error('article_redirect_without_location');
