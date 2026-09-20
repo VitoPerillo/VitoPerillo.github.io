@@ -110,3 +110,34 @@ Conservare le fonti in `discovery`, revisionare il backlog dal gestionale e pubb
 ## Regola di modifica
 
 Non creare altri Worker, D1 o KV. Mantenere `main` come unica fonte ufficiale. Non dichiarare completata una funzione esterna senza prova live ripetibile.
+
+
+## Motore articolo completo — verifica live 2026-09-20
+
+Commit del motore: `62773b41fbdd0865d68a7c1aff1ea42e9d848f8f`.
+
+Flusso pubblicato e verificato:
+
+1. acquisizione della pagina integrale da fonte ufficiale;
+2. estrazione dei fatti e della data;
+3. testo editoriale originale obbligatorio, tra 140 e 700 parole;
+4. blocco di nomi, numeri e date non presenti nella fonte;
+5. blocco della copia estesa del comunicato;
+6. illustrazione originale generata dal Worker, dichiarata CC BY 4.0;
+7. revisione amministrativa esplicita;
+8. pubblicazione con fonte integrale, metadati Open Graph e NewsArticle.
+
+Roma Capitale restituisce HTTP 530 alle richieste dirette provenienti dal Worker. È quindi attivo un percorso di continuità senza nuovi servizi: l’operatore autenticato fornisce l’evidenza scaricata dalla pagina ufficiale; il Worker ne verifica URL, consistenza minima, gate editoriali e fatti prima di aggiornare D1. La fonte pubblica resta l’URL ufficiale e il repository `main` resta l’unica fonte canonica del codice.
+
+Collaudo live:
+
+- articolo: https://local-autopilot-v1.black-sea-41df.workers.dev/notizie/inaugurato-il-nuovo-polo-educativo-scolastico-a-bravetta
+- HTTP pagina: 200
+- lunghezza corpo: 272 parole
+- immagine SVG originale: HTTP 200
+- licenza mostrata: CC BY 4.0
+- link alla pagina integrale di Roma Capitale: presente
+- aggiornamento D1: `status=updated`
+- test locali: 51/51 PASS
+- nuove risorse Cloudflare create: nessuna
+- costo fisso aggiunto: €0
