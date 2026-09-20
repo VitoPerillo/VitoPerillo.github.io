@@ -141,3 +141,13 @@ Collaudo live:
 - test locali: 51/51 PASS
 - nuove risorse Cloudflare create: nessuna
 - costo fisso aggiunto: €0
+
+
+## Estensione collaudo editoriale — 2026-09-20
+
+Altri due contenuti preesistenti sono stati ricostruiti dalla pagina ufficiale integrale, sottoposti ai gate e aggiornati in D1 senza creare duplicati:
+
+- https://local-autopilot-v1.black-sea-41df.workers.dev/notizie/buoni-libro-2026-2027-domande-online-fino-al-25-settembre — 270 parole, pagina 200, immagine 200, CC BY 4.0;
+- https://local-autopilot-v1.black-sea-41df.workers.dev/notizie/informa-energia-le-nuove-tappe-nei-municipi — 276 parole, pagina 200, immagine 200, CC BY 4.0.
+
+Il campione verificato sale quindi a tre articoli completi. Gli eventi già scaduti non sono stati ampliati soltanto per aumentare il numero di pubblicazioni.
