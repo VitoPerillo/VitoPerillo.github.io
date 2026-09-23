@@ -1,154 +1,150 @@
 {
   "site": "https://www.yoganostress.it",
-  "revision": 2,
+  "revision": 3,
   "expires_at": "2026-09-23T12:00:00Z",
   "actions": [
     {
-      "id": "r2-ansia-base-redir",
+      "id": "r3-open-16209-redir",
       "op": "redirect_set",
-      "from": "/da-dove-iniziare-quando-ansia-e-stress-diventano-costanti/",
-      "target": "/yoga-respirazione-ansia-stress-roma/",
+      "from": "/early-birds-open-day-pilates-yoga-mindfulness-thai-chi-blsd-e-yoga-teatro-per-bambini-a-roma-e/",
+      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
       "status": 301
     },
     {
-      "id": "r2-ansia-base-trash",
+      "id": "r3-open-16209-trash",
       "op": "trash_post",
-      "post_id": 18003
+      "post_id": 16209
     },
     {
-      "id": "r2-ansia-copy-redir",
+      "id": "r3-open-16202-redir",
       "op": "redirect_set",
-      "from": "/da-dove-iniziare-quando-ansia-e-stress-diventano-costanti-2/",
-      "target": "/yoga-respirazione-ansia-stress-roma/",
+      "from": "/open-day-pilates-thai-chi-yoga-teatro-per-bambini-meditazione-yoga-nidra-hatha-yoga/",
+      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
       "status": 301
     },
     {
-      "id": "r2-ansia-copy-trash",
+      "id": "r3-open-16202-trash",
       "op": "trash_post",
-      "post_id": 18008
+      "post_id": 16202
     },
     {
-      "id": "r2-allergie-page-redir",
+      "id": "r3-open-15782-redir",
       "op": "redirect_set",
-      "from": "/allergie-respiratorie-sinusiti-difficolta-a-respirare-workshop-teorico-pratico-giugno-prima-e-seconda-parte/",
-      "target": "/yoga-respirazione-ansia-stress-roma/",
+      "from": "/pronti-per-accogliervi-con-tante-novita-open-day-giornata-della-salute-yoga-teatro-per-bambini-tai-chi/",
+      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
       "status": 301
     },
     {
-      "id": "r2-allergie-page-trash",
+      "id": "r3-open-15782-trash",
       "op": "trash_post",
-      "post_id": 15526
+      "post_id": 15782
     },
     {
-      "id": "r2-allergie-page2-redir",
+      "id": "r3-open-15692-redir",
       "op": "redirect_set",
-      "from": "/allergie-respiratorie-sinusiti-difficolta-a-respirare-workshop-teorico-pratico-giugno-prima-e-seconda-parte-2/",
-      "target": "/yoga-respirazione-ansia-stress-roma/",
+      "from": "/yoga-sono-aperte-le-iscrizioni-per-lanno-2024-2025-scopri-il-metodo-yoganostress-di-vito-perillo/",
+      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
       "status": 301
     },
     {
-      "id": "r2-allergie-page2-trash",
+      "id": "r3-open-15692-trash",
       "op": "trash_post",
-      "post_id": 15548
+      "post_id": 15692
     },
     {
-      "id": "r2-allergie-post-redir",
+      "id": "r3-mind-16711-redir",
       "op": "redirect_set",
-      "from": "/allergie-respiratorie-sinusiti-difficolta-a-respirare-workshop-teorico-pratico/",
-      "target": "/yoga-respirazione-ansia-stress-roma/",
-      "status": 301
-    },
-    {
-      "id": "r2-allergie-post-trash",
-      "op": "trash_post",
-      "post_id": 15226
-    },
-    {
-      "id": "r2-allergie-post2-redir",
-      "op": "redirect_set",
-      "from": "/allergie-respiratorie-sinusiti-difficolta-a-respirare-workshop-teorico-pratico-2/",
-      "target": "/yoga-respirazione-ansia-stress-roma/",
-      "status": 301
-    },
-    {
-      "id": "r2-allergie-post2-trash",
-      "op": "trash_post",
-      "post_id": 15363
-    },
-    {
-      "id": "r2-mind-quote-redir",
-      "op": "redirect_set",
-      "from": "/quote-mindfulness-roma/",
+      "from": "/mindfulness-dal-26-marzo/",
       "target": "/metodo-yoganostress/",
       "status": 301
     },
     {
-      "id": "r2-mind-quote-trash",
+      "id": "r3-mind-16711-trash",
       "op": "trash_post",
-      "post_id": 18359
+      "post_id": 16711
     },
     {
-      "id": "r2-mbsr-page-redir",
+      "id": "r3-mind-16514-redir",
       "op": "redirect_set",
-      "from": "/mindfulness-mbsr-riduzione-di-stress-e-ansia-attraverso-la-consapevolezza/",
+      "from": "/percorso-mindfulness-dal-22-febbraio/",
       "target": "/metodo-yoganostress/",
       "status": 301
     },
     {
-      "id": "r2-mbsr-page-trash",
+      "id": "r3-mind-16514-trash",
       "op": "trash_post",
-      "post_id": 18198
+      "post_id": 16514
     },
     {
-      "id": "r2-mind-ind-redir",
+      "id": "r3-vipassana-15552-trash",
+      "op": "trash_post",
+      "post_id": 15552
+    },
+    {
+      "id": "r3-retreat-15218-trash",
+      "op": "trash_post",
+      "post_id": 15218
+    },
+    {
+      "id": "r3-natale-14979-trash",
+      "op": "trash_post",
+      "post_id": 14979
+    },
+    {
+      "id": "r3-orari-7301-redir",
       "op": "redirect_set",
-      "from": "/mindfulness-individuale/",
-      "target": "/sessioni-individuali-yoganostress/",
+      "from": "/orari-variazioni-luglio-e-agosto-i-nuovi-gruppi-di-yoga-on-line-le-vacanze-estive-ed-il-nuovo-inizio-2022-2023/",
+      "target": "/orari-corsi-yoga-a-roma/",
       "status": 301
     },
     {
-      "id": "r2-mind-ind-trash",
+      "id": "r3-orari-7301-trash",
       "op": "trash_post",
-      "post_id": 18065
+      "post_id": 7301
     },
     {
-      "id": "r2-mind-roma-redir",
+      "id": "r3-callanetica-6181-trash",
+      "op": "trash_post",
+      "post_id": 6181
+    },
+    {
+      "id": "r3-ag24-15016-redir",
       "op": "redirect_set",
-      "from": "/mindfulness-roma/",
-      "target": "/metodo-yoganostress/",
+      "from": "/finalmente-e-arrivata-lagenda-yoganostress-2024-idea-regalo-unica-utile-e-originale/",
+      "target": "/libri/",
       "status": 301
     },
     {
-      "id": "r2-mind-roma-trash",
+      "id": "r3-ag24-15016-trash",
       "op": "trash_post",
-      "post_id": 16373
+      "post_id": 15016
     },
     {
-      "id": "r2-mbsr-early-redir",
+      "id": "r3-ag24-14904-redir",
       "op": "redirect_set",
-      "from": "/percorso-mindfulness-mbsr-8-settimane-per-ridurre-ansia-stress-e-tensioni-early-birds/",
-      "target": "/metodo-yoganostress/",
+      "from": "/agenda-yoga-2024-yoganostress-amazon/",
+      "target": "/libri/",
       "status": 301
     },
     {
-      "id": "r2-mbsr-early-trash",
+      "id": "r3-ag24-14904-trash",
       "op": "trash_post",
-      "post_id": 17639
+      "post_id": 14904
     },
     {
-      "id": "r2-mbsr-post-redir",
+      "id": "r3-ag24-14891-redir",
       "op": "redirect_set",
-      "from": "/mindfulness-mbsr-8-incontri-per-ridurre-ansia-stress-e-tensioni/",
-      "target": "/metodo-yoganostress/",
+      "from": "/idea-regalo-originale-agenda-yoganostress-2024/",
+      "target": "/libri/",
       "status": 301
     },
     {
-      "id": "r2-mbsr-post-trash",
+      "id": "r3-ag24-14891-trash",
       "op": "trash_post",
-      "post_id": 17633
+      "post_id": 14891
     },
     {
-      "id": "r2-cache",
+      "id": "r3-cache",
       "op": "cache_flush"
     }
   ]
