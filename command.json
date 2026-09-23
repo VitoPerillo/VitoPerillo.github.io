@@ -1,150 +1,154 @@
 {
   "site": "https://www.yoganostress.it",
-  "revision": 3,
+  "revision": 4,
   "expires_at": "2026-09-23T12:00:00Z",
   "actions": [
     {
-      "id": "r3-open-16209-redir",
+      "id": "r4-ag-14886-redir",
       "op": "redirect_set",
-      "from": "/early-birds-open-day-pilates-yoga-mindfulness-thai-chi-blsd-e-yoga-teatro-per-bambini-a-roma-e/",
-      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
-      "status": 301
-    },
-    {
-      "id": "r3-open-16209-trash",
-      "op": "trash_post",
-      "post_id": 16209
-    },
-    {
-      "id": "r3-open-16202-redir",
-      "op": "redirect_set",
-      "from": "/open-day-pilates-thai-chi-yoga-teatro-per-bambini-meditazione-yoga-nidra-hatha-yoga/",
-      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
-      "status": 301
-    },
-    {
-      "id": "r3-open-16202-trash",
-      "op": "trash_post",
-      "post_id": 16202
-    },
-    {
-      "id": "r3-open-15782-redir",
-      "op": "redirect_set",
-      "from": "/pronti-per-accogliervi-con-tante-novita-open-day-giornata-della-salute-yoga-teatro-per-bambini-tai-chi/",
-      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
-      "status": 301
-    },
-    {
-      "id": "r3-open-15782-trash",
-      "op": "trash_post",
-      "post_id": 15782
-    },
-    {
-      "id": "r3-open-15692-redir",
-      "op": "redirect_set",
-      "from": "/yoga-sono-aperte-le-iscrizioni-per-lanno-2024-2025-scopri-il-metodo-yoganostress-di-vito-perillo/",
-      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
-      "status": 301
-    },
-    {
-      "id": "r3-open-15692-trash",
-      "op": "trash_post",
-      "post_id": 15692
-    },
-    {
-      "id": "r3-mind-16711-redir",
-      "op": "redirect_set",
-      "from": "/mindfulness-dal-26-marzo/",
-      "target": "/metodo-yoganostress/",
-      "status": 301
-    },
-    {
-      "id": "r3-mind-16711-trash",
-      "op": "trash_post",
-      "post_id": 16711
-    },
-    {
-      "id": "r3-mind-16514-redir",
-      "op": "redirect_set",
-      "from": "/percorso-mindfulness-dal-22-febbraio/",
-      "target": "/metodo-yoganostress/",
-      "status": 301
-    },
-    {
-      "id": "r3-mind-16514-trash",
-      "op": "trash_post",
-      "post_id": 16514
-    },
-    {
-      "id": "r3-vipassana-15552-trash",
-      "op": "trash_post",
-      "post_id": 15552
-    },
-    {
-      "id": "r3-retreat-15218-trash",
-      "op": "trash_post",
-      "post_id": 15218
-    },
-    {
-      "id": "r3-natale-14979-trash",
-      "op": "trash_post",
-      "post_id": 14979
-    },
-    {
-      "id": "r3-orari-7301-redir",
-      "op": "redirect_set",
-      "from": "/orari-variazioni-luglio-e-agosto-i-nuovi-gruppi-di-yoga-on-line-le-vacanze-estive-ed-il-nuovo-inizio-2022-2023/",
-      "target": "/orari-corsi-yoga-a-roma/",
-      "status": 301
-    },
-    {
-      "id": "r3-orari-7301-trash",
-      "op": "trash_post",
-      "post_id": 7301
-    },
-    {
-      "id": "r3-callanetica-6181-trash",
-      "op": "trash_post",
-      "post_id": 6181
-    },
-    {
-      "id": "r3-ag24-15016-redir",
-      "op": "redirect_set",
-      "from": "/finalmente-e-arrivata-lagenda-yoganostress-2024-idea-regalo-unica-utile-e-originale/",
+      "from": "/agenda-yoga-2024/",
       "target": "/libri/",
       "status": 301
     },
     {
-      "id": "r3-ag24-15016-trash",
+      "id": "r4-ag-14886-trash",
       "op": "trash_post",
-      "post_id": 15016
+      "post_id": 14886
     },
     {
-      "id": "r3-ag24-14904-redir",
+      "id": "r4-ag-7910-redir",
       "op": "redirect_set",
-      "from": "/agenda-yoga-2024-yoganostress-amazon/",
+      "from": "/agenda-yoga-2023-coaching-reiki-meditazione-olistico/",
       "target": "/libri/",
       "status": 301
     },
     {
-      "id": "r3-ag24-14904-trash",
+      "id": "r4-ag-7910-trash",
       "op": "trash_post",
-      "post_id": 14904
+      "post_id": 7910
     },
     {
-      "id": "r3-ag24-14891-redir",
+      "id": "r4-ag-7926-redir",
       "op": "redirect_set",
-      "from": "/idea-regalo-originale-agenda-yoganostress-2024/",
+      "from": "/2023-agenda-per-la-crescita-personale-e-spirituale-yoganostress-yoga-reiki-coaching/",
       "target": "/libri/",
       "status": 301
     },
     {
-      "id": "r3-ag24-14891-trash",
+      "id": "r4-ag-7926-trash",
       "op": "trash_post",
-      "post_id": 14891
+      "post_id": 7926
     },
     {
-      "id": "r3-cache",
+      "id": "r4-ag-7890-redir",
+      "op": "redirect_set",
+      "from": "/agenda-2023-libro-agenda-yoga-reiki-coaching-per-la-crescita-personale-e-spirituale/",
+      "target": "/libri/",
+      "status": 301
+    },
+    {
+      "id": "r4-ag-7890-trash",
+      "op": "trash_post",
+      "post_id": 7890
+    },
+    {
+      "id": "r4-ag-8742-redir",
+      "op": "redirect_set",
+      "from": "/agenda-settimananale-2024-meglio-dellagenda-2023-yoganostress-chiamarla-agenda-e-veramente-riduttivo-dice-francesca/",
+      "target": "/libri/",
+      "status": 301
+    },
+    {
+      "id": "r4-ag-8742-trash",
+      "op": "trash_post",
+      "post_id": 8742
+    },
+    {
+      "id": "r4-ag-8740-redir",
+      "op": "redirect_set",
+      "from": "/agenda-2024-dopo-lagenda-2023-yoganostress-e-in-arivo-lagenda-2024-yoganostress/",
+      "target": "/libri/",
+      "status": 301
+    },
+    {
+      "id": "r4-ag-8740-trash",
+      "op": "trash_post",
+      "post_id": 8740
+    },
+    {
+      "id": "r4-ag-8169-redir",
+      "op": "redirect_set",
+      "from": "/agenda-2023-yoganostress-pacco-a-sorpresa-per-la-dott-ssa-giulia/",
+      "target": "/libri/",
+      "status": 301
+    },
+    {
+      "id": "r4-ag-8169-trash",
+      "op": "trash_post",
+      "post_id": 8169
+    },
+    {
+      "id": "r4-ag-8140-redir",
+      "op": "redirect_set",
+      "from": "/agenda-2023-yoganostress-chiamarla-agenda-e-veramente-riduttivo-dice-francesca/",
+      "target": "/libri/",
+      "status": 301
+    },
+    {
+      "id": "r4-ag-8140-trash",
+      "op": "trash_post",
+      "post_id": 8140
+    },
+    {
+      "id": "r4-ag-8104-redir",
+      "op": "redirect_set",
+      "from": "/agenda-2023-limbarazzo-della-scelta-yoganostress/",
+      "target": "/libri/",
+      "status": 301
+    },
+    {
+      "id": "r4-ag-8104-trash",
+      "op": "trash_post",
+      "post_id": 8104
+    },
+    {
+      "id": "r4-ag-8086-redir",
+      "op": "redirect_set",
+      "from": "/calendario-yoga-2023/",
+      "target": "/libri/",
+      "status": 301
+    },
+    {
+      "id": "r4-ag-8086-trash",
+      "op": "trash_post",
+      "post_id": 8086
+    },
+    {
+      "id": "r4-ag-8063-redir",
+      "op": "redirect_set",
+      "from": "/agenda-yoga-2023-yoganostress-cosa-ne-pensa-chi-gia-ce-lha/",
+      "target": "/libri/",
+      "status": 301
+    },
+    {
+      "id": "r4-ag-8063-trash",
+      "op": "trash_post",
+      "post_id": 8063
+    },
+    {
+      "id": "r4-ag-8056-redir",
+      "op": "redirect_set",
+      "from": "/lagenda-yoga-2023-yoganostress-in-tutte-le-librerie/",
+      "target": "/libri/",
+      "status": 301
+    },
+    {
+      "id": "r4-ag-8056-trash",
+      "op": "trash_post",
+      "post_id": 8056
+    },
+    {
+      "id": "r4-cache",
       "op": "cache_flush"
     }
   ]
