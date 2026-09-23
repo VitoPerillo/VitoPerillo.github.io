@@ -1,136 +1,148 @@
 {
   "site": "https://www.yoganostress.it",
-  "revision": 7,
+  "revision": 8,
   "expires_at": "2026-09-23T12:00:00Z",
   "actions": [
     {
-      "id": "r7-trash-17013",
-      "op": "trash_post",
-      "post_id": 17013
-    },
-    {
-      "id": "r7-trash-16984",
-      "op": "trash_post",
-      "post_id": 16984
-    },
-    {
-      "id": "r7-trash-16946",
-      "op": "trash_post",
-      "post_id": 16946
-    },
-    {
-      "id": "r7-trash-16690",
-      "op": "trash_post",
-      "post_id": 16690
-    },
-    {
-      "id": "r7-trash-16641",
-      "op": "trash_post",
-      "post_id": 16641
-    },
-    {
-      "id": "r7-trash-16451",
-      "op": "trash_post",
-      "post_id": 16451
-    },
-    {
-      "id": "r7-trash-15386",
-      "op": "trash_post",
-      "post_id": 15386
-    },
-    {
-      "id": "r7-trash-15275",
-      "op": "trash_post",
-      "post_id": 15275
-    },
-    {
-      "id": "r7-trash-15257",
-      "op": "trash_post",
-      "post_id": 15257
-    },
-    {
-      "id": "r7-trash-15165",
-      "op": "trash_post",
-      "post_id": 15165
-    },
-    {
-      "id": "r7-trash-15112",
-      "op": "trash_post",
-      "post_id": 15112
-    },
-    {
-      "id": "r7-trash-15294",
-      "op": "trash_post",
-      "post_id": 15294
-    },
-    {
-      "id": "r7-trash-15280",
-      "op": "trash_post",
-      "post_id": 15280
-    },
-    {
-      "id": "r7-trash-16579",
-      "op": "trash_post",
-      "post_id": 16579
-    },
-    {
-      "id": "r7-trash-17002",
-      "op": "trash_post",
-      "post_id": 17002
-    },
-    {
-      "id": "r7-trash-15713",
-      "op": "trash_post",
-      "post_id": 15713
-    },
-    {
-      "id": "r7-trash-8422",
-      "op": "trash_post",
-      "post_id": 8422
-    },
-    {
-      "id": "r7-trash-5622",
-      "op": "trash_post",
-      "post_id": 5622
-    },
-    {
-      "id": "r7-coach-15685-redir",
+      "id": "r8-reiki-17557-redir",
       "op": "redirect_set",
-      "from": "/ansia-depressione-stress-insonnia-e-traumi-affrontali-con-il-mental-coaching-olistico-del-benessere-scopri-il-metodo-yoganostress-di-vito-perillo/",
-      "target": "/coaching-individuale-di-chiarezza-interiore/",
+      "from": "/le-tue-mani-donano-energia-e-salute-il-potere-del-reiki-ti-sta-chiamando/",
+      "target": "/attivazione-reiki-primo-livello-metodo-usui/",
       "status": 301
     },
     {
-      "id": "r7-coach-15685-trash",
+      "id": "r8-reiki-17557-trash",
       "op": "trash_post",
-      "post_id": 15685
+      "post_id": 17557
     },
     {
-      "id": "r7-ansia-15973-redir",
+      "id": "r8-reiki-17560-redir",
       "op": "redirect_set",
-      "from": "/come-posso-ridurre-ansia-e-stress-in-modo-naturale-senza-farmaci/",
-      "target": "/yoga-respirazione-ansia-stress-roma/",
+      "from": "/attivazione-reiki-prezzi-non-impari-il-reiki-lo-risvegli-quote-di-partecipazione-per-il-13-dic-e-il-31-gen-2025/",
+      "target": "/attivazione-reiki-primo-livello-metodo-usui/",
       "status": 301
     },
     {
-      "id": "r7-ansia-15973-trash",
+      "id": "r8-reiki-17560-trash",
       "op": "trash_post",
-      "post_id": 15973
+      "post_id": 17560
     },
     {
-      "id": "r7-mind-16895-redir",
+      "id": "r8-reiki-17476-redir",
       "op": "redirect_set",
-      "from": "/16895-2/",
+      "from": "/corso-di-attivazione-reiki-primo-livello-metodo-usui-sab-15-nov-quote/",
+      "target": "/attivazione-reiki-primo-livello-metodo-usui/",
+      "status": 301
+    },
+    {
+      "id": "r8-reiki-17476-trash",
+      "op": "trash_post",
+      "post_id": 17476
+    },
+    {
+      "id": "r8-reiki-17306-redir",
+      "op": "redirect_set",
+      "from": "/attivazione-reiki-primo-livello-sabato-27-settembre-2025-quote-di-partecipazione/",
+      "target": "/attivazione-reiki-primo-livello-metodo-usui/",
+      "status": 301
+    },
+    {
+      "id": "r8-reiki-17306-trash",
+      "op": "trash_post",
+      "post_id": 17306
+    },
+    {
+      "id": "r8-reiki-17452-redir",
+      "op": "redirect_set",
+      "from": "/attivazione-reiki-primo-livello-metodo-usui-roma-novembre/",
+      "target": "/attivazione-reiki-primo-livello-metodo-usui/",
+      "status": 301
+    },
+    {
+      "id": "r8-reiki-17452-trash",
+      "op": "trash_post",
+      "post_id": 17452
+    },
+    {
+      "id": "r8-sound-17631-redir",
+      "op": "redirect_set",
+      "from": "/bagno-sonoro-con-suoni-ancestrali-sabato-19-alle-1530-e-altre-date/",
+      "target": "/bagno-sonoro-a-roma-rilassamento-profondo-per-ansia-e-stress-yoganostress/",
+      "status": 301
+    },
+    {
+      "id": "r8-sound-17631-trash",
+      "op": "trash_post",
+      "post_id": 17631
+    },
+    {
+      "id": "r8-news-17599-trash",
+      "op": "trash_post",
+      "post_id": 17599
+    },
+    {
+      "id": "r8-natale-17648-trash",
+      "op": "trash_post",
+      "post_id": 17648
+    },
+    {
+      "id": "r8-reopen-17405-redir",
+      "op": "redirect_set",
+      "from": "/corsi-unici-eventi-e-novita-2025-26-riapertura-yoganostress-roma/",
+      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
+      "status": 301
+    },
+    {
+      "id": "r8-reopen-17405-trash",
+      "op": "trash_post",
+      "post_id": 17405
+    },
+    {
+      "id": "r8-workshop-17274-trash",
+      "op": "trash_post",
+      "post_id": 17274
+    },
+    {
+      "id": "r8-mind-17395-redir",
+      "op": "redirect_set",
+      "from": "/quote-early-birds-mindfulness-roma-partecipa-al-percorso-mbsr-con-il-metodo-yoganostress-ottobre/",
       "target": "/metodo-yoganostress/",
       "status": 301
     },
     {
-      "id": "r7-mind-16895-trash",
+      "id": "r8-mind-17395-trash",
       "op": "trash_post",
-      "post_id": 16895
+      "post_id": 17395
     },
     {
-      "id": "r7-cache",
+      "id": "r8-voucher-16882-trash",
+      "op": "trash_post",
+      "post_id": 16882
+    },
+    {
+      "id": "r8-yoga-day-5883-trash",
+      "op": "trash_post",
+      "post_id": 5883
+    },
+    {
+      "id": "r8-open-5751-redir",
+      "op": "redirect_set",
+      "from": "/open-days-lezioni-gratuite-dal-24-maggio-al-1-giugno-per-ripartire/",
+      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
+      "status": 301
+    },
+    {
+      "id": "r8-open-5751-trash",
+      "op": "trash_post",
+      "post_id": 5751
+    },
+    {
+      "id": "r8-flash-4460-trash",
+      "op": "trash_post",
+      "post_id": 4460
+    },
+    {
+      "id": "r8-cache",
       "op": "cache_flush"
     }
   ]
