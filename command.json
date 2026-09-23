@@ -1,154 +1,154 @@
 {
   "site": "https://www.yoganostress.it",
-  "revision": 5,
+  "revision": 6,
   "expires_at": "2026-09-23T12:00:00Z",
   "actions": [
     {
-      "id": "r5-8051-redir",
+      "id": "r6-8413-redir",
       "op": "redirect_set",
-      "from": "/yoga-in-regalo-con-lagenda-yoga-2023-yoganostress/",
-      "target": "/libri/",
-      "status": 301
-    },
-    {
-      "id": "r5-8051-trash",
-      "op": "trash_post",
-      "post_id": 8051
-    },
-    {
-      "id": "r5-8045-redir",
-      "op": "redirect_set",
-      "from": "/tra-i-libri-piu-venduti-ce-lagenda-yoga-2023-yoganostress/",
-      "target": "/libri/",
-      "status": 301
-    },
-    {
-      "id": "r5-8045-trash",
-      "op": "trash_post",
-      "post_id": 8045
-    },
-    {
-      "id": "r5-8028-redir",
-      "op": "redirect_set",
-      "from": "/il-mio-primo-autografo-agenda-yoga-2023-yoganostress/",
-      "target": "/libri/",
-      "status": 301
-    },
-    {
-      "id": "r5-8028-trash",
-      "op": "trash_post",
-      "post_id": 8028
-    },
-    {
-      "id": "r5-8018-redir",
-      "op": "redirect_set",
-      "from": "/agenda-yoga-2023-elegante-ed-esclusiva-con-la-copertina-nera-e-rigida/",
-      "target": "/libri/",
-      "status": 301
-    },
-    {
-      "id": "r5-8018-trash",
-      "op": "trash_post",
-      "post_id": 8018
-    },
-    {
-      "id": "r5-8010-redir",
-      "op": "redirect_set",
-      "from": "/agenda-2023-con-la-copertina-nera-e-rigida-elegante-ed-esclusiva/",
-      "target": "/libri/",
-      "status": 301
-    },
-    {
-      "id": "r5-8010-trash",
-      "op": "trash_post",
-      "post_id": 8010
-    },
-    {
-      "id": "r5-8006-redir",
-      "op": "redirect_set",
-      "from": "/agenda-2023-utilizzala-subito-13-mesi-a-partire-da-dicembre-2022/",
-      "target": "/libri/",
-      "status": 301
-    },
-    {
-      "id": "r5-8006-trash",
-      "op": "trash_post",
-      "post_id": 8006
-    },
-    {
-      "id": "r5-7988-redir",
-      "op": "redirect_set",
-      "from": "/idea-regalo-unica-ed-originale-per-lei-e-per-lui-agenda-2023-yoganostress/",
-      "target": "/libri/",
-      "status": 301
-    },
-    {
-      "id": "r5-7988-trash",
-      "op": "trash_post",
-      "post_id": 7988
-    },
-    {
-      "id": "r5-7939-redir",
-      "op": "redirect_set",
-      "from": "/agenda-yoga-2023-molto-piu-di-una-semplice-agenda/",
-      "target": "/libri/",
-      "status": 301
-    },
-    {
-      "id": "r5-7939-trash",
-      "op": "trash_post",
-      "post_id": 7939
-    },
-    {
-      "id": "r5-7916-redir",
-      "op": "redirect_set",
-      "from": "/2023-lunica-agenda-yoga-reiki-coaching-per-la-crescita-personale-e-spirituale-yoganostress/",
-      "target": "/libri/",
-      "status": 301
-    },
-    {
-      "id": "r5-7916-trash",
-      "op": "trash_post",
-      "post_id": 7916
-    },
-    {
-      "id": "r5-8711-redir",
-      "op": "redirect_set",
-      "from": "/yoga-online-luglio-e-agosto-2023-hatha-yoga-meditazione-yoga-nidra-meditazione/",
+      "from": "/hatha-yoga-meditazione-yoga-nidra-meditazione-on-line-aprile-2023/",
       "target": "/orari-corsi-yoga-a-roma/",
       "status": 301
     },
     {
-      "id": "r5-8711-trash",
+      "id": "r6-8413-trash",
       "op": "trash_post",
-      "post_id": 8711
+      "post_id": 8413
     },
     {
-      "id": "r5-8547-redir",
+      "id": "r6-8358-redir",
       "op": "redirect_set",
-      "from": "/hatha-yoga-meditazione-yoga-nidra-meditazione-online-giugno-2023/",
+      "from": "/hatha-yoga-meditazione-yoga-nidra-meditazione-on-line-marzo-2023-2/",
       "target": "/orari-corsi-yoga-a-roma/",
       "status": 301
     },
     {
-      "id": "r5-8547-trash",
+      "id": "r6-8358-trash",
       "op": "trash_post",
-      "post_id": 8547
+      "post_id": 8358
     },
     {
-      "id": "r5-8465-redir",
+      "id": "r6-8296-redir",
       "op": "redirect_set",
-      "from": "/hatha-yoga-meditazione-yoga-nidra-meditazione-on-line-maggio-2023/",
+      "from": "/hatha-yoga-meditazione-yoga-nidra-meditazione-on-line-febbraio-2023/",
       "target": "/orari-corsi-yoga-a-roma/",
       "status": 301
     },
     {
-      "id": "r5-8465-trash",
+      "id": "r6-8296-trash",
       "op": "trash_post",
-      "post_id": 8465
+      "post_id": 8296
     },
     {
-      "id": "r5-cache",
+      "id": "r6-8185-redir",
+      "op": "redirect_set",
+      "from": "/hatha-yoga-meditazione-yoga-nidra-meditazione-on-line-gennaio-2023/",
+      "target": "/orari-corsi-yoga-a-roma/",
+      "status": 301
+    },
+    {
+      "id": "r6-8185-trash",
+      "op": "trash_post",
+      "post_id": 8185
+    },
+    {
+      "id": "r6-17413-redir",
+      "op": "redirect_set",
+      "from": "/open-day-yoganostress-dal-22-al-30-settembre-2025/",
+      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
+      "status": 301
+    },
+    {
+      "id": "r6-17413-trash",
+      "op": "trash_post",
+      "post_id": 17413
+    },
+    {
+      "id": "r6-17352-redir",
+      "op": "redirect_set",
+      "from": "/open-day-yoganostress-tutto-quello-che-devi-sapere/",
+      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
+      "status": 301
+    },
+    {
+      "id": "r6-17352-trash",
+      "op": "trash_post",
+      "post_id": 17352
+    },
+    {
+      "id": "r6-17334-redir",
+      "op": "redirect_set",
+      "from": "/open-day-yoga-benessere/",
+      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
+      "status": 301
+    },
+    {
+      "id": "r6-17334-trash",
+      "op": "trash_post",
+      "post_id": 17334
+    },
+    {
+      "id": "r6-17330-redir",
+      "op": "redirect_set",
+      "from": "/riapre-yoganostress-yoga-pilates-e-benessere-dal-30-agosto/",
+      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
+      "status": 301
+    },
+    {
+      "id": "r6-17330-trash",
+      "op": "trash_post",
+      "post_id": 17330
+    },
+    {
+      "id": "r6-17287-redir",
+      "op": "redirect_set",
+      "from": "/ultimi-posti-per-lattivazione-reiki-del-26-luglio/",
+      "target": "/attivazione-reiki-primo-livello-metodo-usui/",
+      "status": 301
+    },
+    {
+      "id": "r6-17287-trash",
+      "op": "trash_post",
+      "post_id": 17287
+    },
+    {
+      "id": "r6-17146-redir",
+      "op": "redirect_set",
+      "from": "/corso-di-attivazione-reiki-primo-livello-sabato-26-luglio-a-roma-tra-villa-pamphili-e-il-centro-yoga-yoganostress/",
+      "target": "/attivazione-reiki-primo-livello-metodo-usui/",
+      "status": 301
+    },
+    {
+      "id": "r6-17146-trash",
+      "op": "trash_post",
+      "post_id": 17146
+    },
+    {
+      "id": "r6-17372-redir",
+      "op": "redirect_set",
+      "from": "/reiki-attivazione-reiki-primo-livello-roma-metodo-usui-27-settembre-2025/",
+      "target": "/attivazione-reiki-primo-livello-metodo-usui/",
+      "status": 301
+    },
+    {
+      "id": "r6-17372-trash",
+      "op": "trash_post",
+      "post_id": 17372
+    },
+    {
+      "id": "r6-17462-redir",
+      "op": "redirect_set",
+      "from": "/attivazione-reiki-primo-livello-metodo-usui-dom-9-nov/",
+      "target": "/attivazione-reiki-primo-livello-metodo-usui/",
+      "status": 301
+    },
+    {
+      "id": "r6-17462-trash",
+      "op": "trash_post",
+      "post_id": 17462
+    },
+    {
+      "id": "r6-cache",
       "op": "cache_flush"
     }
   ]
