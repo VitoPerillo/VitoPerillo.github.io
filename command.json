@@ -1,6 +1,16 @@
 {
   "site": "https://www.yoganostress.it",
-  "revision": 0,
-  "expires_at": null,
-  "actions": []
+  "revision": 1,
+  "expires_at": "2026-09-23T12:00:00Z",
+  "actions": [
+    {
+      "id": "bridge-test-cache",
+      "op": "cache_flush"
+    },
+    {
+      "id": "cleanup-yoga-famiglia-16744",
+      "op": "trash_post",
+      "post_id": 16744
+    }
+  ]
 }
