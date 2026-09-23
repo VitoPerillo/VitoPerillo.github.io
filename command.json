@@ -1,16 +1,155 @@
 {
   "site": "https://www.yoganostress.it",
-  "revision": 1,
+  "revision": 2,
   "expires_at": "2026-09-23T12:00:00Z",
   "actions": [
     {
-      "id": "bridge-test-cache",
-      "op": "cache_flush"
+      "id": "r2-ansia-base-redir",
+      "op": "redirect_set",
+      "from": "/da-dove-iniziare-quando-ansia-e-stress-diventano-costanti/",
+      "target": "/yoga-respirazione-ansia-stress-roma/",
+      "status": 301
     },
     {
-      "id": "cleanup-yoga-famiglia-16744",
+      "id": "r2-ansia-base-trash",
       "op": "trash_post",
-      "post_id": 16744
+      "post_id": 18003
+    },
+    {
+      "id": "r2-ansia-copy-redir",
+      "op": "redirect_set",
+      "from": "/da-dove-iniziare-quando-ansia-e-stress-diventano-costanti-2/",
+      "target": "/yoga-respirazione-ansia-stress-roma/",
+      "status": 301
+    },
+    {
+      "id": "r2-ansia-copy-trash",
+      "op": "trash_post",
+      "post_id": 18008
+    },
+    {
+      "id": "r2-allergie-page-redir",
+      "op": "redirect_set",
+      "from": "/allergie-respiratorie-sinusiti-difficolta-a-respirare-workshop-teorico-pratico-giugno-prima-e-seconda-parte/",
+      "target": "/yoga-respirazione-ansia-stress-roma/",
+      "status": 301
+    },
+    {
+      "id": "r2-allergie-page-trash",
+      "op": "trash_post",
+      "post_id": 15526
+    },
+    {
+      "id": "r2-allergie-page2-redir",
+      "op": "redirect_set",
+      "from": "/allergie-respiratorie-sinusiti-difficolta-a-respirare-workshop-teorico-pratico-giugno-prima-e-seconda-parte-2/",
+      "target": "/yoga-respirazione-ansia-stress-roma/",
+      "status": 301
+    },
+    {
+      "id": "r2-allergie-page2-trash",
+      "op": "trash_post",
+      "post_id": 15548
+    },
+    {
+      "id": "r2-allergie-post-redir",
+      "op": "redirect_set",
+      "from": "/allergie-respiratorie-sinusiti-difficolta-a-respirare-workshop-teorico-pratico/",
+      "target": "/yoga-respirazione-ansia-stress-roma/",
+      "status": 301
+    },
+    {
+      "id": "r2-allergie-post-trash",
+      "op": "trash_post",
+      "post_id": 15226
+    },
+    {
+      "id": "r2-allergie-post2-redir",
+      "op": "redirect_set",
+      "from": "/allergie-respiratorie-sinusiti-difficolta-a-respirare-workshop-teorico-pratico-2/",
+      "target": "/yoga-respirazione-ansia-stress-roma/",
+      "status": 301
+    },
+    {
+      "id": "r2-allergie-post2-trash",
+      "op": "trash_post",
+      "post_id": 15363
+    },
+    {
+      "id": "r2-mind-quote-redir",
+      "op": "redirect_set",
+      "from": "/quote-mindfulness-roma/",
+      "target": "/metodo-yoganostress/",
+      "status": 301
+    },
+    {
+      "id": "r2-mind-quote-trash",
+      "op": "trash_post",
+      "post_id": 18359
+    },
+    {
+      "id": "r2-mbsr-page-redir",
+      "op": "redirect_set",
+      "from": "/mindfulness-mbsr-riduzione-di-stress-e-ansia-attraverso-la-consapevolezza/",
+      "target": "/metodo-yoganostress/",
+      "status": 301
+    },
+    {
+      "id": "r2-mbsr-page-trash",
+      "op": "trash_post",
+      "post_id": 18198
+    },
+    {
+      "id": "r2-mind-ind-redir",
+      "op": "redirect_set",
+      "from": "/mindfulness-individuale/",
+      "target": "/sessioni-individuali-yoganostress/",
+      "status": 301
+    },
+    {
+      "id": "r2-mind-ind-trash",
+      "op": "trash_post",
+      "post_id": 18065
+    },
+    {
+      "id": "r2-mind-roma-redir",
+      "op": "redirect_set",
+      "from": "/mindfulness-roma/",
+      "target": "/metodo-yoganostress/",
+      "status": 301
+    },
+    {
+      "id": "r2-mind-roma-trash",
+      "op": "trash_post",
+      "post_id": 16373
+    },
+    {
+      "id": "r2-mbsr-early-redir",
+      "op": "redirect_set",
+      "from": "/percorso-mindfulness-mbsr-8-settimane-per-ridurre-ansia-stress-e-tensioni-early-birds/",
+      "target": "/metodo-yoganostress/",
+      "status": 301
+    },
+    {
+      "id": "r2-mbsr-early-trash",
+      "op": "trash_post",
+      "post_id": 17639
+    },
+    {
+      "id": "r2-mbsr-post-redir",
+      "op": "redirect_set",
+      "from": "/mindfulness-mbsr-8-incontri-per-ridurre-ansia-stress-e-tensioni/",
+      "target": "/metodo-yoganostress/",
+      "status": 301
+    },
+    {
+      "id": "r2-mbsr-post-trash",
+      "op": "trash_post",
+      "post_id": 17633
+    },
+    {
+      "id": "r2-cache",
+      "op": "cache_flush"
     }
   ]
 }
