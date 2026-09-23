@@ -1,154 +1,136 @@
 {
   "site": "https://www.yoganostress.it",
-  "revision": 6,
+  "revision": 7,
   "expires_at": "2026-09-23T12:00:00Z",
   "actions": [
     {
-      "id": "r6-8413-redir",
+      "id": "r7-trash-17013",
+      "op": "trash_post",
+      "post_id": 17013
+    },
+    {
+      "id": "r7-trash-16984",
+      "op": "trash_post",
+      "post_id": 16984
+    },
+    {
+      "id": "r7-trash-16946",
+      "op": "trash_post",
+      "post_id": 16946
+    },
+    {
+      "id": "r7-trash-16690",
+      "op": "trash_post",
+      "post_id": 16690
+    },
+    {
+      "id": "r7-trash-16641",
+      "op": "trash_post",
+      "post_id": 16641
+    },
+    {
+      "id": "r7-trash-16451",
+      "op": "trash_post",
+      "post_id": 16451
+    },
+    {
+      "id": "r7-trash-15386",
+      "op": "trash_post",
+      "post_id": 15386
+    },
+    {
+      "id": "r7-trash-15275",
+      "op": "trash_post",
+      "post_id": 15275
+    },
+    {
+      "id": "r7-trash-15257",
+      "op": "trash_post",
+      "post_id": 15257
+    },
+    {
+      "id": "r7-trash-15165",
+      "op": "trash_post",
+      "post_id": 15165
+    },
+    {
+      "id": "r7-trash-15112",
+      "op": "trash_post",
+      "post_id": 15112
+    },
+    {
+      "id": "r7-trash-15294",
+      "op": "trash_post",
+      "post_id": 15294
+    },
+    {
+      "id": "r7-trash-15280",
+      "op": "trash_post",
+      "post_id": 15280
+    },
+    {
+      "id": "r7-trash-16579",
+      "op": "trash_post",
+      "post_id": 16579
+    },
+    {
+      "id": "r7-trash-17002",
+      "op": "trash_post",
+      "post_id": 17002
+    },
+    {
+      "id": "r7-trash-15713",
+      "op": "trash_post",
+      "post_id": 15713
+    },
+    {
+      "id": "r7-trash-8422",
+      "op": "trash_post",
+      "post_id": 8422
+    },
+    {
+      "id": "r7-trash-5622",
+      "op": "trash_post",
+      "post_id": 5622
+    },
+    {
+      "id": "r7-coach-15685-redir",
       "op": "redirect_set",
-      "from": "/hatha-yoga-meditazione-yoga-nidra-meditazione-on-line-aprile-2023/",
-      "target": "/orari-corsi-yoga-a-roma/",
+      "from": "/ansia-depressione-stress-insonnia-e-traumi-affrontali-con-il-mental-coaching-olistico-del-benessere-scopri-il-metodo-yoganostress-di-vito-perillo/",
+      "target": "/coaching-individuale-di-chiarezza-interiore/",
       "status": 301
     },
     {
-      "id": "r6-8413-trash",
+      "id": "r7-coach-15685-trash",
       "op": "trash_post",
-      "post_id": 8413
+      "post_id": 15685
     },
     {
-      "id": "r6-8358-redir",
+      "id": "r7-ansia-15973-redir",
       "op": "redirect_set",
-      "from": "/hatha-yoga-meditazione-yoga-nidra-meditazione-on-line-marzo-2023-2/",
-      "target": "/orari-corsi-yoga-a-roma/",
+      "from": "/come-posso-ridurre-ansia-e-stress-in-modo-naturale-senza-farmaci/",
+      "target": "/yoga-respirazione-ansia-stress-roma/",
       "status": 301
     },
     {
-      "id": "r6-8358-trash",
+      "id": "r7-ansia-15973-trash",
       "op": "trash_post",
-      "post_id": 8358
+      "post_id": 15973
     },
     {
-      "id": "r6-8296-redir",
+      "id": "r7-mind-16895-redir",
       "op": "redirect_set",
-      "from": "/hatha-yoga-meditazione-yoga-nidra-meditazione-on-line-febbraio-2023/",
-      "target": "/orari-corsi-yoga-a-roma/",
+      "from": "/16895-2/",
+      "target": "/metodo-yoganostress/",
       "status": 301
     },
     {
-      "id": "r6-8296-trash",
+      "id": "r7-mind-16895-trash",
       "op": "trash_post",
-      "post_id": 8296
+      "post_id": 16895
     },
     {
-      "id": "r6-8185-redir",
-      "op": "redirect_set",
-      "from": "/hatha-yoga-meditazione-yoga-nidra-meditazione-on-line-gennaio-2023/",
-      "target": "/orari-corsi-yoga-a-roma/",
-      "status": 301
-    },
-    {
-      "id": "r6-8185-trash",
-      "op": "trash_post",
-      "post_id": 8185
-    },
-    {
-      "id": "r6-17413-redir",
-      "op": "redirect_set",
-      "from": "/open-day-yoganostress-dal-22-al-30-settembre-2025/",
-      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
-      "status": 301
-    },
-    {
-      "id": "r6-17413-trash",
-      "op": "trash_post",
-      "post_id": 17413
-    },
-    {
-      "id": "r6-17352-redir",
-      "op": "redirect_set",
-      "from": "/open-day-yoganostress-tutto-quello-che-devi-sapere/",
-      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
-      "status": 301
-    },
-    {
-      "id": "r6-17352-trash",
-      "op": "trash_post",
-      "post_id": 17352
-    },
-    {
-      "id": "r6-17334-redir",
-      "op": "redirect_set",
-      "from": "/open-day-yoga-benessere/",
-      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
-      "status": 301
-    },
-    {
-      "id": "r6-17334-trash",
-      "op": "trash_post",
-      "post_id": 17334
-    },
-    {
-      "id": "r6-17330-redir",
-      "op": "redirect_set",
-      "from": "/riapre-yoganostress-yoga-pilates-e-benessere-dal-30-agosto/",
-      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
-      "status": 301
-    },
-    {
-      "id": "r6-17330-trash",
-      "op": "trash_post",
-      "post_id": 17330
-    },
-    {
-      "id": "r6-17287-redir",
-      "op": "redirect_set",
-      "from": "/ultimi-posti-per-lattivazione-reiki-del-26-luglio/",
-      "target": "/attivazione-reiki-primo-livello-metodo-usui/",
-      "status": 301
-    },
-    {
-      "id": "r6-17287-trash",
-      "op": "trash_post",
-      "post_id": 17287
-    },
-    {
-      "id": "r6-17146-redir",
-      "op": "redirect_set",
-      "from": "/corso-di-attivazione-reiki-primo-livello-sabato-26-luglio-a-roma-tra-villa-pamphili-e-il-centro-yoga-yoganostress/",
-      "target": "/attivazione-reiki-primo-livello-metodo-usui/",
-      "status": 301
-    },
-    {
-      "id": "r6-17146-trash",
-      "op": "trash_post",
-      "post_id": 17146
-    },
-    {
-      "id": "r6-17372-redir",
-      "op": "redirect_set",
-      "from": "/reiki-attivazione-reiki-primo-livello-roma-metodo-usui-27-settembre-2025/",
-      "target": "/attivazione-reiki-primo-livello-metodo-usui/",
-      "status": 301
-    },
-    {
-      "id": "r6-17372-trash",
-      "op": "trash_post",
-      "post_id": 17372
-    },
-    {
-      "id": "r6-17462-redir",
-      "op": "redirect_set",
-      "from": "/attivazione-reiki-primo-livello-metodo-usui-dom-9-nov/",
-      "target": "/attivazione-reiki-primo-livello-metodo-usui/",
-      "status": 301
-    },
-    {
-      "id": "r6-17462-trash",
-      "op": "trash_post",
-      "post_id": 17462
-    },
-    {
-      "id": "r6-cache",
+      "id": "r7-cache",
       "op": "cache_flush"
     }
   ]
