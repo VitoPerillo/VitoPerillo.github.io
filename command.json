@@ -1,126 +1,51 @@
 {
   "site": "https://www.yoganostress.it",
-  "revision": 9,
+  "revision": 10,
   "expires_at": "2026-09-23T12:00:00Z",
   "actions": [
     {
-      "id": "r9-off-16949-trash",
-      "op": "trash_post",
-      "post_id": 16949
-    },
-    {
-      "id": "r9-off-16293-trash",
-      "op": "trash_post",
-      "post_id": 16293
-    },
-    {
-      "id": "r9-14579-redir",
+      "id": "r10-allergy-15340-redir",
       "op": "redirect_set",
-      "from": "/siamo-aperti-e-iniziato-lanno-accademico-2023-2024-scopri-le-novita/",
-      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
+      "from": "/allergie-respiratorie-sinusiti-difficolta-a-respirare-workshop-teorico-pratico-marzo-video-corso/",
+      "target": "/yoga-respirazione-ansia-stress-roma/",
       "status": 301
     },
     {
-      "id": "r9-14579-trash",
+      "id": "r10-allergy-15340-trash",
       "op": "trash_post",
-      "post_id": 14579
+      "post_id": 15340
     },
     {
-      "id": "r9-8554-redir",
+      "id": "r10-allergy-15234-redir",
       "op": "redirect_set",
-      "from": "/giovedi-1-giugno-e-sabato-3-giugno-le-lezioni-sono-regolari/",
-      "target": "/orari-corsi-yoga-a-roma/",
+      "from": "/allergie-respiratorie-sinusiti-difficolta-a-respirare-workshop-teorico-pratico-marzo/",
+      "target": "/yoga-respirazione-ansia-stress-roma/",
       "status": 301
     },
     {
-      "id": "r9-8554-trash",
+      "id": "r10-allergy-15234-trash",
       "op": "trash_post",
-      "post_id": 8554
+      "post_id": 15234
     },
     {
-      "id": "r9-7590-redir",
+      "id": "r10-retreat-15207-trash",
+      "op": "trash_post",
+      "post_id": 15207
+    },
+    {
+      "id": "r10-depression-4184-redir",
       "op": "redirect_set",
-      "from": "/hatha-yoga-roma-open-days-ed-altre-attivita-gratuite/",
-      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
+      "from": "/yoga-contro-stress-ansia-depressione/",
+      "target": "/yoga-respirazione-ansia-stress-roma/",
       "status": 301
     },
     {
-      "id": "r9-7590-trash",
+      "id": "r10-depression-4184-trash",
       "op": "trash_post",
-      "post_id": 7590
+      "post_id": 4184
     },
     {
-      "id": "r9-7511-redir",
-      "op": "redirect_set",
-      "from": "/yoga-2022-2023-quali-sono-le-novita-e-quando-ripartono-i-corsi/",
-      "target": "/orari-corsi-yoga-a-roma/",
-      "status": 301
-    },
-    {
-      "id": "r9-7511-trash",
-      "op": "trash_post",
-      "post_id": 7511
-    },
-    {
-      "id": "r9-4168-redir",
-      "op": "redirect_set",
-      "from": "/yoga-open-day-nuove-discipline/",
-      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
-      "status": 301
-    },
-    {
-      "id": "r9-4168-trash",
-      "op": "trash_post",
-      "post_id": 4168
-    },
-    {
-      "id": "r9-2911-redir",
-      "op": "redirect_set",
-      "from": "/open-day-ultimi-posti-merc-24-ott/",
-      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
-      "status": 301
-    },
-    {
-      "id": "r9-2911-trash",
-      "op": "trash_post",
-      "post_id": 2911
-    },
-    {
-      "id": "r9-2881-redir",
-      "op": "redirect_set",
-      "from": "/open-day-mercoledi-24-ott/",
-      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
-      "status": 301
-    },
-    {
-      "id": "r9-2881-trash",
-      "op": "trash_post",
-      "post_id": 2881
-    },
-    {
-      "id": "r9-2787-redir",
-      "op": "redirect_set",
-      "from": "/riapriamo-tante-novita-nuovi-orari-open-day/",
-      "target": "/orari-corsi-yoga-a-roma/",
-      "status": 301
-    },
-    {
-      "id": "r9-2787-trash",
-      "op": "trash_post",
-      "post_id": 2787
-    },
-    {
-      "id": "r9-2295-trash",
-      "op": "trash_post",
-      "post_id": 2295
-    },
-    {
-      "id": "r9-2236-trash",
-      "op": "trash_post",
-      "post_id": 2236
-    },
-    {
-      "id": "r9-cache",
+      "id": "r10-cache",
       "op": "cache_flush"
     }
   ]
