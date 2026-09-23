@@ -1,148 +1,126 @@
 {
   "site": "https://www.yoganostress.it",
-  "revision": 8,
+  "revision": 9,
   "expires_at": "2026-09-23T12:00:00Z",
   "actions": [
     {
-      "id": "r8-reiki-17557-redir",
+      "id": "r9-off-16949-trash",
+      "op": "trash_post",
+      "post_id": 16949
+    },
+    {
+      "id": "r9-off-16293-trash",
+      "op": "trash_post",
+      "post_id": 16293
+    },
+    {
+      "id": "r9-14579-redir",
       "op": "redirect_set",
-      "from": "/le-tue-mani-donano-energia-e-salute-il-potere-del-reiki-ti-sta-chiamando/",
-      "target": "/attivazione-reiki-primo-livello-metodo-usui/",
-      "status": 301
-    },
-    {
-      "id": "r8-reiki-17557-trash",
-      "op": "trash_post",
-      "post_id": 17557
-    },
-    {
-      "id": "r8-reiki-17560-redir",
-      "op": "redirect_set",
-      "from": "/attivazione-reiki-prezzi-non-impari-il-reiki-lo-risvegli-quote-di-partecipazione-per-il-13-dic-e-il-31-gen-2025/",
-      "target": "/attivazione-reiki-primo-livello-metodo-usui/",
-      "status": 301
-    },
-    {
-      "id": "r8-reiki-17560-trash",
-      "op": "trash_post",
-      "post_id": 17560
-    },
-    {
-      "id": "r8-reiki-17476-redir",
-      "op": "redirect_set",
-      "from": "/corso-di-attivazione-reiki-primo-livello-metodo-usui-sab-15-nov-quote/",
-      "target": "/attivazione-reiki-primo-livello-metodo-usui/",
-      "status": 301
-    },
-    {
-      "id": "r8-reiki-17476-trash",
-      "op": "trash_post",
-      "post_id": 17476
-    },
-    {
-      "id": "r8-reiki-17306-redir",
-      "op": "redirect_set",
-      "from": "/attivazione-reiki-primo-livello-sabato-27-settembre-2025-quote-di-partecipazione/",
-      "target": "/attivazione-reiki-primo-livello-metodo-usui/",
-      "status": 301
-    },
-    {
-      "id": "r8-reiki-17306-trash",
-      "op": "trash_post",
-      "post_id": 17306
-    },
-    {
-      "id": "r8-reiki-17452-redir",
-      "op": "redirect_set",
-      "from": "/attivazione-reiki-primo-livello-metodo-usui-roma-novembre/",
-      "target": "/attivazione-reiki-primo-livello-metodo-usui/",
-      "status": 301
-    },
-    {
-      "id": "r8-reiki-17452-trash",
-      "op": "trash_post",
-      "post_id": 17452
-    },
-    {
-      "id": "r8-sound-17631-redir",
-      "op": "redirect_set",
-      "from": "/bagno-sonoro-con-suoni-ancestrali-sabato-19-alle-1530-e-altre-date/",
-      "target": "/bagno-sonoro-a-roma-rilassamento-profondo-per-ansia-e-stress-yoganostress/",
-      "status": 301
-    },
-    {
-      "id": "r8-sound-17631-trash",
-      "op": "trash_post",
-      "post_id": 17631
-    },
-    {
-      "id": "r8-news-17599-trash",
-      "op": "trash_post",
-      "post_id": 17599
-    },
-    {
-      "id": "r8-natale-17648-trash",
-      "op": "trash_post",
-      "post_id": 17648
-    },
-    {
-      "id": "r8-reopen-17405-redir",
-      "op": "redirect_set",
-      "from": "/corsi-unici-eventi-e-novita-2025-26-riapertura-yoganostress-roma/",
+      "from": "/siamo-aperti-e-iniziato-lanno-accademico-2023-2024-scopri-le-novita/",
       "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
       "status": 301
     },
     {
-      "id": "r8-reopen-17405-trash",
+      "id": "r9-14579-trash",
       "op": "trash_post",
-      "post_id": 17405
+      "post_id": 14579
     },
     {
-      "id": "r8-workshop-17274-trash",
-      "op": "trash_post",
-      "post_id": 17274
-    },
-    {
-      "id": "r8-mind-17395-redir",
+      "id": "r9-8554-redir",
       "op": "redirect_set",
-      "from": "/quote-early-birds-mindfulness-roma-partecipa-al-percorso-mbsr-con-il-metodo-yoganostress-ottobre/",
-      "target": "/metodo-yoganostress/",
+      "from": "/giovedi-1-giugno-e-sabato-3-giugno-le-lezioni-sono-regolari/",
+      "target": "/orari-corsi-yoga-a-roma/",
       "status": 301
     },
     {
-      "id": "r8-mind-17395-trash",
+      "id": "r9-8554-trash",
       "op": "trash_post",
-      "post_id": 17395
+      "post_id": 8554
     },
     {
-      "id": "r8-voucher-16882-trash",
-      "op": "trash_post",
-      "post_id": 16882
-    },
-    {
-      "id": "r8-yoga-day-5883-trash",
-      "op": "trash_post",
-      "post_id": 5883
-    },
-    {
-      "id": "r8-open-5751-redir",
+      "id": "r9-7590-redir",
       "op": "redirect_set",
-      "from": "/open-days-lezioni-gratuite-dal-24-maggio-al-1-giugno-per-ripartire/",
+      "from": "/hatha-yoga-roma-open-days-ed-altre-attivita-gratuite/",
       "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
       "status": 301
     },
     {
-      "id": "r8-open-5751-trash",
+      "id": "r9-7590-trash",
       "op": "trash_post",
-      "post_id": 5751
+      "post_id": 7590
     },
     {
-      "id": "r8-flash-4460-trash",
-      "op": "trash_post",
-      "post_id": 4460
+      "id": "r9-7511-redir",
+      "op": "redirect_set",
+      "from": "/yoga-2022-2023-quali-sono-le-novita-e-quando-ripartono-i-corsi/",
+      "target": "/orari-corsi-yoga-a-roma/",
+      "status": 301
     },
     {
-      "id": "r8-cache",
+      "id": "r9-7511-trash",
+      "op": "trash_post",
+      "post_id": 7511
+    },
+    {
+      "id": "r9-4168-redir",
+      "op": "redirect_set",
+      "from": "/yoga-open-day-nuove-discipline/",
+      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
+      "status": 301
+    },
+    {
+      "id": "r9-4168-trash",
+      "op": "trash_post",
+      "post_id": 4168
+    },
+    {
+      "id": "r9-2911-redir",
+      "op": "redirect_set",
+      "from": "/open-day-ultimi-posti-merc-24-ott/",
+      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
+      "status": 301
+    },
+    {
+      "id": "r9-2911-trash",
+      "op": "trash_post",
+      "post_id": 2911
+    },
+    {
+      "id": "r9-2881-redir",
+      "op": "redirect_set",
+      "from": "/open-day-mercoledi-24-ott/",
+      "target": "/benvenuto-alla-tua-prima-esperienza-yoganostress/",
+      "status": 301
+    },
+    {
+      "id": "r9-2881-trash",
+      "op": "trash_post",
+      "post_id": 2881
+    },
+    {
+      "id": "r9-2787-redir",
+      "op": "redirect_set",
+      "from": "/riapriamo-tante-novita-nuovi-orari-open-day/",
+      "target": "/orari-corsi-yoga-a-roma/",
+      "status": 301
+    },
+    {
+      "id": "r9-2787-trash",
+      "op": "trash_post",
+      "post_id": 2787
+    },
+    {
+      "id": "r9-2295-trash",
+      "op": "trash_post",
+      "post_id": 2295
+    },
+    {
+      "id": "r9-2236-trash",
+      "op": "trash_post",
+      "post_id": 2236
+    },
+    {
+      "id": "r9-cache",
       "op": "cache_flush"
     }
   ]
