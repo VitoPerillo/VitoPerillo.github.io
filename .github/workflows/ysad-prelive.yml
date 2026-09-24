@@ -18,10 +18,6 @@ on:
         required: true
         default: "https://www.yoganostress.it/staging-gestionale/yoganostress-adesso/"
         type: string
-  push:
-    paths:
-      - "ops/yoganostress-adesso/**"
-      - ".github/workflows/ysad-prelive.yml"
 
 permissions:
   contents: read
@@ -111,7 +107,7 @@ jobs:
       WP_APP_PASSWORD: ${{ secrets.YSAD_STAGING_APP_PASSWORD }}
       STAGING_APP_URL: ${{ inputs.staging_app_url }}
     steps:
-      - uses: actions/checkout4
+      - uses: actions/checkout@v4
 
       - uses: actions/download-artifact@v4
         with:
