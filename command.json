@@ -1,51 +1,12 @@
 {
   "site": "https://www.yoganostress.it",
-  "revision": 12,
+  "revision": 13,
   "expires_at": "2026-09-26T12:00:00Z",
   "actions": [
     {
-      "id": "r12-reiki-conversion",
-      "op": "replace_post_text",
-      "post_id": 18787,
-      "field": "post_content",
-      "old": "Una guida pratica ai simboli del secondo livello e ai trattamenti Reiki a distanza.",
-      "new": "Una guida pratica ai simboli del secondo livello e ai trattamenti Reiki a distanza.\n\n<div class=\"yns-book-conversion\" style=\"margin:22px 0;padding:20px;border:1px solid #e7e3dc;border-radius:16px;background:#faf9f6;\">\n<p><strong>Per chi è:</strong> per chi ha già ricevuto il Primo Livello e vuole approfondire il Secondo con una guida ordinata da consultare prima e dopo il seminario.</p>\n<p><strong>Cosa trovi:</strong> simboli, pratica, trattamento a distanza e risposte operative ai dubbi più frequenti.</p>\n<p style=\"margin-bottom:0;\"><a href=\"https://www.amazon.it/dp/B0GVT3RW4D?tag=tie07-21\" rel=\"sponsored noopener\" target=\"_blank\"><strong>VEDI IL LIBRO SU AMAZON →</strong></a></p>\n</div>"
-    },
-    {
-      "id": "r12-tempesta-conversion",
-      "op": "replace_post_text",
-      "post_id": 18784,
-      "field": "post_content",
-      "old": "Una guida pratica per riconoscere prima il sovraccarico, orientarti durante i momenti difficili e tornare a scegliere dopo la tempesta.",
-      "new": "Una guida pratica per riconoscere prima il sovraccarico, orientarti durante i momenti difficili e tornare a scegliere dopo la tempesta.\n\n<div class=\"yns-book-conversion\" style=\"margin:22px 0;padding:20px;border:1px solid #e7e3dc;border-radius:16px;background:#faf9f6;\">\n<p><strong>Per chi è:</strong> per chi sente che stress, ansia, emozioni o pensieri stanno occupando troppo spazio e vuole un percorso concreto da seguire.</p>\n<p><strong>Cosa trovi:</strong> strumenti pratici, un percorso graduale e indicazioni per riportare attenzione al presente senza promesse irrealistiche.</p>\n<p style=\"margin-bottom:0;\"><a href=\"https://www.amazon.it/dp/B0HBRGGDN1?tag=tie07-21\" rel=\"sponsored noopener\" target=\"_blank\"><strong>VEDI IL LIBRO SU AMAZON →</strong></a></p>\n</div>"
-    },
-    {
-      "id": "r12-adolescenti-conversion",
-      "op": "replace_post_text",
-      "post_id": 18786,
-      "field": "post_content",
-      "old": "Per aiutare genitori e adolescenti a comunicare meglio senza trasformare ogni confronto in uno scontro.",
-      "new": "Per aiutare genitori e adolescenti a comunicare meglio senza trasformare ogni confronto in uno scontro.\n\n<div class=\"yns-book-conversion\" style=\"margin:22px 0;padding:20px;border:1px solid #e7e3dc;border-radius:16px;background:#faf9f6;\">\n<p><strong>Per chi è:</strong> per genitori che vogliono capire meglio cosa accade nelle conversazioni quotidiane con un adolescente senza cercare formule magiche.</p>\n<p><strong>Cosa trovi:</strong> situazioni reali, interpretazioni da verificare, domande utili e modi più chiari per affrontare i conflitti.</p>\n<p style=\"margin-bottom:0;\"><a href=\"https://www.amazon.it/dp/B0HF4K86FG?tag=tie07-21\" rel=\"sponsored noopener\" target=\"_blank\"><strong>VEDI IL LIBRO SU AMAZON →</strong></a></p>\n</div>"
-    },
-    {
-      "id": "r12-universita-conversion",
-      "op": "replace_post_text",
-      "post_id": 18801,
-      "field": "post_content",
-      "old": "Una guida per affrontare l'università quando il problema non è soltanto il metodo di studio.",
-      "new": "Una guida per affrontare l'università quando il problema non è soltanto il metodo di studio.\n\n<div class=\"yns-book-conversion\" style=\"margin:22px 0;padding:20px;border:1px solid #e7e3dc;border-radius:16px;background:#faf9f6;\">\n<p><strong>Per chi è:</strong> per studenti che studiano ma restano bloccati, rimandano gli esami o non riescono a capire dove si inceppa davvero il percorso.</p>\n<p><strong>Cosa trovi:</strong> un metodo per distinguere organizzazione, studio, pressione, motivazione e blocchi che richiedono strategie diverse.</p>\n<p style=\"margin-bottom:0;\"><a href=\"https://www.amazon.it/dp/B0HDTWQGF1?tag=tie07-21\" rel=\"sponsored noopener\" target=\"_blank\"><strong>VEDI IL LIBRO SU AMAZON →</strong></a></p>\n</div>"
-    },
-    {
-      "id": "r12-agenda-conversion",
-      "op": "replace_post_text",
-      "post_id": 18838,
-      "field": "post_content",
-      "old": "Un anno da organizzare accompagnati dal Metodo Yoganostress.",
-      "new": "Un anno da organizzare accompagnati dal Metodo Yoganostress.\n\n<div class=\"yns-book-conversion\" style=\"margin:22px 0;padding:20px;border:1px solid #e7e3dc;border-radius:16px;background:#faf9f6;\">\n<p><strong>Per chi è:</strong> per chi vuole trasformare intenzioni e buoni propositi in appuntamenti concreti durante l'anno.</p>\n<p><strong>Cosa trovi:</strong> 53 settimane per organizzare pratica, consapevolezza e scelte quotidiane con continuità.</p>\n<p style=\"margin-bottom:0;\"><a href=\"https://www.amazon.it/dp/B0H8FD1NNC?tag=tie07-21\" rel=\"sponsored noopener\" target=\"_blank\"><strong>VEDI L'AGENDA SU AMAZON →</strong></a></p>\n</div>"
-    },
-    {
-      "id": "r12-cache",
-      "op": "cache_flush"
+      "id": "r13-self-update-book-meta-read",
+      "op": "self_update",
+      "sha256": "54aae58f450090a2722f6ee5176cff1eda3525aea9d309ac823466cb97c75c87"
     }
   ]
 }
