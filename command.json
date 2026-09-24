@@ -1,18 +1,34 @@
 {
   "site": "https://www.yoganostress.it",
-  "revision": 14,
+  "revision": 15,
   "expires_at": "2026-09-26T12:00:00Z",
   "actions": [
     {
-      "id": "r14-reiki-article-cta-high",
+      "id": "r15-reiki-cta-variant-1",
       "op": "replace_post_text",
       "post_id": 19055,
       "field": "post_content",
-      "old": "Il punto non è accumulare tecniche. Un simbolo, da solo, non sostituisce l’esperienza. Per questo è utile affrontare il Secondo Livello quando la pratica del Primo non è più soltanto qualcosa che “si conosce”, ma qualcosa che si utilizza con una certa continuità.",
-      "new": "Il punto non è accumulare tecniche. Un simbolo, da solo, non sostituisce l’esperienza. Per questo è utile affrontare il Secondo Livello quando la pratica del Primo non è più soltanto qualcosa che “si conosce”, ma qualcosa che si utilizza con una certa continuità.<br><br><strong>Se hai già ricevuto il Primo Livello e vuoi approfondire il passaggio successivo:</strong><br><a href=\"https://www.yoganostress.it/libri/reiki-2-livello-trattamenti-a-distanza/?utm_source=articolo&utm_medium=internal&utm_campaign=reiki2&utm_content=cta_alta\"><strong>Scopri cosa contiene il libro →</strong></a><br><a href=\"https://www.amazon.it/dp/B0GVT3RW4D?tag=tie07-21\" rel=\"sponsored noopener\" target=\"_blank\"><strong>Vedi direttamente su Amazon →</strong></a><br><small>In qualità di Affiliato Amazon ricevo un guadagno dagli acquisti idonei.</small>"
+      "old": "Il punto non è accumulare tecniche.",
+      "new": "Il punto non è accumulare tecniche.<br><br><strong>Hai già il Primo Livello Reiki?</strong> Se vuoi approfondire simboli e trattamento a distanza:<br><a href=\"https://www.yoganostress.it/libri/reiki-2-livello-trattamenti-a-distanza/?utm_source=articolo&utm_medium=internal&utm_campaign=reiki2&utm_content=cta_alta\"><strong>Scopri cosa contiene il libro →</strong></a><br><a href=\"https://www.amazon.it/dp/B0GVT3RW4D?tag=tie07-21\" rel=\"sponsored noopener\" target=\"_blank\"><strong>Vedi direttamente su Amazon →</strong></a><br><small>In qualità di Affiliato Amazon ricevo un guadagno dagli acquisti idonei.</small><br><br>"
     },
     {
-      "id": "r14-cache",
+      "id": "r15-reiki-cta-variant-2",
+      "op": "replace_post_text",
+      "post_id": 19055,
+      "field": "post_content",
+      "old": "Il punto non &egrave; accumulare tecniche.",
+      "new": "Il punto non &egrave; accumulare tecniche.<br><br><strong>Hai già il Primo Livello Reiki?</strong> Se vuoi approfondire simboli e trattamento a distanza:<br><a href=\"https://www.yoganostress.it/libri/reiki-2-livello-trattamenti-a-distanza/?utm_source=articolo&utm_medium=internal&utm_campaign=reiki2&utm_content=cta_alta\"><strong>Scopri cosa contiene il libro →</strong></a><br><a href=\"https://www.amazon.it/dp/B0GVT3RW4D?tag=tie07-21\" rel=\"sponsored noopener\" target=\"_blank\"><strong>Vedi direttamente su Amazon →</strong></a><br><small>In qualità di Affiliato Amazon ricevo un guadagno dagli acquisti idonei.</small><br><br>"
+    },
+    {
+      "id": "r15-reiki-cta-variant-3",
+      "op": "replace_post_text",
+      "post_id": 19055,
+      "field": "post_content",
+      "old": "Il punto non &#232; accumulare tecniche.",
+      "new": "Il punto non &#232; accumulare tecniche.<br><br><strong>Hai già il Primo Livello Reiki?</strong> Se vuoi approfondire simboli e trattamento a distanza:<br><a href=\"https://www.yoganostress.it/libri/reiki-2-livello-trattamenti-a-distanza/?utm_source=articolo&utm_medium=internal&utm_campaign=reiki2&utm_content=cta_alta\"><strong>Scopri cosa contiene il libro →</strong></a><br><a href=\"https://www.amazon.it/dp/B0GVT3RW4D?tag=tie07-21\" rel=\"sponsored noopener\" target=\"_blank\"><strong>Vedi direttamente su Amazon →</strong></a><br><small>In qualità di Affiliato Amazon ricevo un guadagno dagli acquisti idonei.</small><br><br>"
+    },
+    {
+      "id": "r15-cache",
       "op": "cache_flush"
     }
   ]
