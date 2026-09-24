@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Assistente Yoganostress</title>
+<style>
+:root{font-family:Arial,Helvetica,sans-serif;color:#1f2937;background:#fff}
+*{box-sizing:border-box}body{margin:0;padding:0;background:#fff}
+.wrap{max-width:760px;margin:0 auto;padding:18px}
+.card{border:1px solid #e5e7eb;border-radius:18px;padding:20px;background:#fff}
+.eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.65}
+h1{font-size:clamp(1.55rem,5vw,2.2rem);line-height:1.08;margin:.3rem 0 .55rem}
+p{line-height:1.55}.intro{margin-top:0}
+.chips{display:flex;gap:.5rem;overflow-x:auto;padding:.25rem 0 .9rem}
+.chip{white-space:nowrap;border:1px solid #9ca3af;background:#fff;border-radius:999px;padding:.55rem .8rem;cursor:pointer}
+label{display:block;font-weight:700;margin:.5rem 0}.row{display:grid;grid-template-columns:1fr auto;gap:.5rem}
+input{min-width:0;border:1px solid #cbd5e1;border-radius:12px;padding:.9rem 1rem;font:inherit}
+button.ask,.cta{border:0;border-radius:12px;padding:.9rem 1rem;font:inherit;font-weight:700;background:#1f2937;color:#fff;text-decoration:none;cursor:pointer}
+.answer{margin-top:1rem;padding:1rem;border-radius:14px;background:#f8fafc;display:none}
+.answer.show{display:block}.answer p{margin-top:0}.note{font-size:.9rem;opacity:.72;margin-top:.6rem}
+@media(max-width:560px){.row{grid-template-columns:1fr}.ask{width:100%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<section class="card">
+<div class="eyebrow">Metodo Yoganostress</div>
+<h1>Cosa stai cercando per il tuo benessere?</h1>
+<p class="intro">Raccontaci brevemente se c’è qualcosa in particolare su cui vorresti essere accompagnato.</p>
+<div class="chips">
+<button class="chip" data-q="Ho mal di schiena e rigidità">Schiena e postura</button>
+<button class="chip" data-q="Cerco meditazione o mindfulness">Meditazione / mindfulness</button>
+<button class="chip" data-q="Vorrei essere seguito individualmente">Percorso individuale</button>
+<button class="chip" data-q="Ho bisogno di mental coaching">Mental Coaching</button>
+<button class="chip" data-q="Cerco Reiki">Reiki</button>
+<button class="chip" data-q="Cerco un ritiro o un bagno sonoro">Ritiri ed eventi</button>
+</div>
+<form id="f">
+<label for="q">Scrivi qui la tua domanda</label>
+<div class="row">
+<input id="q" maxlength="400" placeholder="Es. Dormo male e faccio fatica a rilassarmi" required>
+<button class="ask" type="submit">Chiedi</button>
+</div>
+</form>
+<div id="a" class="answer" aria-live="polite"></div>
+</section>
+</div>
+<script>
+const URLS={
+method:"https://www.yoganostress.it/metodo-yoganostress/",
+first:"https://www.yoganostress.it/benvenuto-alla-tua-prima-esperienza-yoganostress/",
+individual:"https://www.yoganostress.it/sessioni-individuali-yoganostress/",
+events:"https://www.yoganostress.it/percorsi-eventi-roma/",
+hatha:"https://www.yoganostress.it/corsi-di-hatha-yoga-scegli-il-metodo-yoganostress/",
+nidra:"https://www.yoganostress.it/benefici-della-pratica-di-yoga-nidra/"
+};
+const norm=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+const has=(s,a)=>a.some(x=>s.includes(x));
+function classify(q){
+ const s=norm(q);
+ const tests=[
+ ["sanitario",["ernia","diagnosi","l5","s1","sciatica","protrusione","operato","intervento","patologia","dolore forte","fase acuta","farmaco","medico","osteoporosi","artrosi","artrite","fibromialgia","scoliosi","ipertensione","gravidanza","frattura","discopatia"]],
+ ["meditazione",["mindfulness","meditazione","meditare","consapevolezza","mente sempre attiva"]],
+ ["individuale",["individuale","lezione privata","lezione personale","uno a uno","1 a 1","seguito personalmente","percorso personalizzato"]],
+ ["coaching",["mental coach","mental coaching","coaching","chiarezza","decisione","cambiamento","blocco mentale"]],
+ ["reiki_corso",["corso reiki","attivazione reiki","livello reiki"]],
+ ["reiki",["reiki","trattamento energetico","riequilibrio energetico"]],
+ ["eventi",["ritiro","bagno sonoro","campane tibetane","workshop","seminario","evento","approfondimento"]],
+ ["postura",["schiena","lombar","postura","posturale","spalle","colonna","cervicale","rigid","allineamento","mobilita","acciacchi"]],
+ ["sonno",["sonno","insonnia","dormire","riposo"]],
+ ["online",["online","da casa","a distanza","on demand"]],
+ ["orari",["orario","orari","domani","oggi","prima esperienza","prenot"]],
+ ["stress",["stress","ansia","agitazione","rimugin","preoccup","rilassamento","sovraccarico"]],
+ ["quote",["prezzo","costo","quota","abbonamento","quanto costa"]],
+ ["no_yoga",["non voglio yoga","non cerco yoga","senza yoga","non mi interessa yoga"]]
+ ];
+ for(const [c,w] of tests) if(has(s,w)) return c;
+ return "altro";
+}
+function answer(q){
+ const c=classify(q);
+ const m={
+ sanitario:["Nel Metodo Yoganostress non diamo una lista di posizioni in base a una diagnosi: conta soprattutto come la pratica viene adattata alla persona. Prima della Prima Esperienza è meglio parlarne con noi. La segreteria riceve solo su appuntamento. Se la situazione è acuta o presenta sintomi importanti, confrontati anche con il professionista sanitario che ti segue.",URLS.method,"Scopri il Metodo Yoganostress"],
+ meditazione:["Se stai cercando meditazione o mindfulness, nel Metodo Yoganostress ti orientiamo in primo luogo verso Yoga Nidra. Nel corso integriamo anche pratiche di mindfulness e la consapevolezza è uno dei fili conduttori della pratica. Yoga Nidra è guidato e si pratica generalmente da sdraiati, quindi può essere un modo accessibile per avvicinarsi alla meditazione.",URLS.nidra,"Scopri Yoga Nidra"],
+ individuale:["Se preferisci essere seguito personalmente puoi scegliere un percorso individuale: lezioni personali di yoga, lavoro posturale, Yoga Nidra, Reiki, Mental Coaching o un percorso integrato del Metodo Yoganostress.",URLS.individual,"Scopri i percorsi individuali"],
+ coaching:["Se cerchi chiarezza, stai vivendo un cambiamento o devi prendere decisioni, puoi valutare il Mental Coaching del Metodo Yoganostress: un percorso individuale basato su consapevolezza, domande mirate e lavoro sul presente.",URLS.individual,"Scopri il Mental Coaching"],
+ reiki:["Se cerchi Reiki puoi valutare un trattamento individuale oppure, quando disponibili, percorsi di formazione e attivazione all’interno del Metodo Yoganostress.",URLS.individual,"Scopri il Reiki"],
+ reiki_corso:["Per corsi e attivazioni Reiki consulta i percorsi e gli eventi attivi Yoganostress.",URLS.events,"Vedi Reiki ed eventi"],
+ eventi:["Per ritiri, bagni sonori, workshop e approfondimenti consulta la sezione eventi Yoganostress. Se non c’è una data attiva, non presentiamo l’attività come disponibile.",URLS.events,"Vedi ritiri ed eventi"],
+ postura:["Per schiena, cervicale, rigidità, postura o mobilità, l’Hatha Yoga del Metodo Yoganostress è il percorso di gruppo più naturale da valutare. Comprende posture, corretto allineamento, respirazione, rilassamento, meditazione in movimento ed elementi di meditazione, con particolare attenzione alla colonna vertebrale.",URLS.hatha,"Scopri Hatha Yoga"],
+ sonno:["Se il bisogno principale è dormire meglio o recuperare, Yoga Nidra è spesso il punto di partenza più diretto: pratica guidata, generalmente da sdraiati, con rilassamento profondo e consapevolezza.",URLS.nidra,"Scopri Yoga Nidra"],
+ online:["Puoi seguire il Metodo Yoganostress anche online, sia con Hatha Yoga sia con Yoga Nidra, secondo le modalità disponibili.",URLS.first,"Scopri la Prima Esperienza"],
+ orari:["Per orari e prenotazioni parti dalla Prima Esperienza Yoganostress, dove puoi verificare le possibilità disponibili.",URLS.first,"Vedi la Prima Esperienza"],
+ stress:["Per stress e sovraccarico la scelta dipende da come lo vivi: Hatha Yoga se prevalgono tensione fisica e bisogno di movimento; Yoga Nidra se prevalgono bisogno di fermarti e rilassarti; percorso individuale o coaching se il bisogno è più personale.",URLS.method,"Scopri il Metodo Yoganostress"],
+ quote:["Le quote dipendono dalla modalità e dalla frequenza. Parti dal Metodo Yoganostress per capire il percorso più adatto e arrivare poi alle informazioni aggiornate.",URLS.method,"Scopri il Metodo Yoganostress"],
+ no_yoga:["Non devi necessariamente scegliere una lezione di yoga: puoi valutare percorsi individuali, Mental Coaching, Reiki, ritiri e approfondimenti.",URLS.individual,"Scopri i percorsi individuali"],
+ altro:["Vogliamo orientarti senza inventare informazioni. Parti dal Metodo Yoganostress e raccontaci ciò che stai cercando: da lì puoi capire il percorso più adatto.",URLS.method,"Scopri il Metodo Yoganostress"]
+ };
+ return m[c]||m.altro;
+}
+function render(q){
+ const [txt,url,cta]=answer(q);
+ const box=document.getElementById("a");
+ box.innerHTML="";
+ const p=document.createElement("p");p.textContent=txt;box.appendChild(p);
+ const a=document.createElement("a");a.className="cta";a.href=url;a.target="_top";a.textContent=cta;box.appendChild(a);
+ const n=document.createElement("div");n.className="note";n.textContent="Ti accompagniamo al passo successivo più adatto.";box.appendChild(n);
+ box.classList.add("show");
+}
+document.getElementById("f").addEventListener("submit",e=>{e.preventDefault();render(document.getElementById("q").value.trim())});
+document.querySelectorAll("[data-q]").forEach(b=>b.addEventListener("click",()=>{document.getElementById("q").value=b.dataset.q;render(b.dataset.q)}));
+</script>
+</body>
+</html>
