@@ -1,0 +1,44 @@
+name: YSAD bootstrap deploy agent
+
+on:
+  push:
+    branches: ['ysad-pipeline-v1']
+    paths:
+      - '.yns-deploy/yoganostress-adesso/infra/yns-github-deploy-agent/**'
+      - '.github/workflows/ysad-bootstrap-agent.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ysad-bootstrap-agent
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ysad-pipeline-v1
+      - name: Package deploy agent
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=".yns-deploy/yoganostress-adesso/infra/yns-github-deploy-agent"
+          OUT=".yns-deploy/yoganostress-adesso/bootstrap"
+          mkdir -p "$OUT"
+          rm -f "$OUT/yns-github-deploy-agent.zip" "$OUT/SHA256SUMS.txt"
+          (cd "$(dirname "$SRC")" && zip -q -r "$GITHUB_WORKSPACE/$OUT/yns-github-deploy-agent.zip" "$(basename "$SRC")")
+          sha256sum "$OUT/yns-github-deploy-agent.zip" > "$OUT/SHA256SUMS.txt"
+          php -l "$SRC/yns-github-deploy-agent.php"
+      - name: Commit bootstrap artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "YSAD Bootstrap Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add .yns-deploy/yoganostress-adesso/bootstrap/
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "YSAD: package GitHub deploy agent"
+          git push origin HEAD:ysad-pipeline-v1
