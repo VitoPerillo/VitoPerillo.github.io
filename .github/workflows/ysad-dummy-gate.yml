@@ -1,0 +1,43 @@
+name: YSAD Mandatory Dummy Gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      dummy_url:
+        description: "Frontend URL to test"
+        required: true
+        default: "https://www.yoganostress.it/staging-gestionale/yoganostress-adesso-anteprima-v121/"
+        type: string
+  push:
+    paths:
+      - "ops/yoganostress-adesso/qa/**"
+      - ".github/workflows/ysad-dummy-gate.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  dummy_gate:
+    name: Dummy Test — mobile + desktop
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DUMMY_URL: ${{ github.event.inputs.dummy_url || 'https://www.yoganostress.it/staging-gestionale/yoganostress-adesso-anteprima-v121/' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Mandatory zero-knowledge user flow
+        run: npx playwright test ops/yoganostress-adesso/qa/dummy.spec.js --reporter=line
+
+      - name: Preserve screenshots and traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ysad-dummy-gate-results
+          path: test-results/
+          if-no-files-found: ignore
