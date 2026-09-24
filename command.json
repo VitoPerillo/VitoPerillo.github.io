@@ -1,34 +1,42 @@
 {
   "site": "https://www.yoganostress.it",
-  "revision": 15,
+  "revision": 16,
   "expires_at": "2026-09-26T12:00:00Z",
   "actions": [
     {
-      "id": "r15-reiki-cta-variant-1",
+      "id": "r16-tempesta-cta",
       "op": "replace_post_text",
-      "post_id": 19055,
+      "post_id": 19056,
       "field": "post_content",
-      "old": "Il punto non è accumulare tecniche.",
-      "new": "Il punto non è accumulare tecniche.<br><br><strong>Hai già il Primo Livello Reiki?</strong> Se vuoi approfondire simboli e trattamento a distanza:<br><a href=\"https://www.yoganostress.it/libri/reiki-2-livello-trattamenti-a-distanza/?utm_source=articolo&utm_medium=internal&utm_campaign=reiki2&utm_content=cta_alta\"><strong>Scopri cosa contiene il libro →</strong></a><br><a href=\"https://www.amazon.it/dp/B0GVT3RW4D?tag=tie07-21\" rel=\"sponsored noopener\" target=\"_blank\"><strong>Vedi direttamente su Amazon →</strong></a><br><small>In qualità di Affiliato Amazon ricevo un guadagno dagli acquisti idonei.</small><br><br>"
+      "old": "Dieci minuti ben usati ogni giorno possono essere più utili di una grande ripartenza che dura due giorni.",
+      "new": "Dieci minuti ben usati ogni giorno possono essere più utili di una grande ripartenza che dura due giorni.<br><br><strong>Se vuoi un percorso scritto e graduale per lavorare sul sovraccarico:</strong><br><a href=\"https://www.yoganostress.it/libri/non-sei-la-tua-tempesta/?utm_source=articolo&utm_medium=internal&utm_campaign=libri_porta&utm_content=tempesta_cta\"><strong>Scopri cosa contiene il libro →</strong></a><br><a href=\"https://www.amazon.it/dp/B0HBRGGDN1?tag=tie07-21\" rel=\"sponsored noopener\" target=\"_blank\"><strong>Vedi direttamente su Amazon →</strong></a><br><small>In qualità di Affiliato Amazon ricevo un guadagno dagli acquisti idonei.</small><br><br>"
     },
     {
-      "id": "r15-reiki-cta-variant-2",
+      "id": "r16-adolescenti-cta",
       "op": "replace_post_text",
-      "post_id": 19055,
+      "post_id": 19057,
       "field": "post_content",
-      "old": "Il punto non &egrave; accumulare tecniche.",
-      "new": "Il punto non &egrave; accumulare tecniche.<br><br><strong>Hai già il Primo Livello Reiki?</strong> Se vuoi approfondire simboli e trattamento a distanza:<br><a href=\"https://www.yoganostress.it/libri/reiki-2-livello-trattamenti-a-distanza/?utm_source=articolo&utm_medium=internal&utm_campaign=reiki2&utm_content=cta_alta\"><strong>Scopri cosa contiene il libro →</strong></a><br><a href=\"https://www.amazon.it/dp/B0GVT3RW4D?tag=tie07-21\" rel=\"sponsored noopener\" target=\"_blank\"><strong>Vedi direttamente su Amazon →</strong></a><br><small>In qualità di Affiliato Amazon ricevo un guadagno dagli acquisti idonei.</small><br><br>"
+      "old": "Comprendere non significa rinunciare a limiti, responsabilità o regole. Significa evitare che ogni limite diventi una battaglia personale.",
+      "new": "Comprendere non significa rinunciare a limiti, responsabilità o regole. Significa evitare che ogni limite diventi una battaglia personale.<br><br><strong>Se vuoi lavorare su dialoghi reali tra genitori e adolescenti:</strong><br><a href=\"https://www.yoganostress.it/libri/tu-non-capisci-niente/?utm_source=articolo&utm_medium=internal&utm_campaign=libri_porta&utm_content=adolescenti_cta\"><strong>Scopri cosa contiene il libro →</strong></a><br><a href=\"https://www.amazon.it/dp/B0HF4K86FG?tag=tie07-21\" rel=\"sponsored noopener\" target=\"_blank\"><strong>Vedi direttamente su Amazon →</strong></a><br><small>In qualità di Affiliato Amazon ricevo un guadagno dagli acquisti idonei.</small><br><br>"
     },
     {
-      "id": "r15-reiki-cta-variant-3",
+      "id": "r16-universita-cta",
       "op": "replace_post_text",
-      "post_id": 19055,
+      "post_id": 19058,
       "field": "post_content",
-      "old": "Il punto non &#232; accumulare tecniche.",
-      "new": "Il punto non &#232; accumulare tecniche.<br><br><strong>Hai già il Primo Livello Reiki?</strong> Se vuoi approfondire simboli e trattamento a distanza:<br><a href=\"https://www.yoganostress.it/libri/reiki-2-livello-trattamenti-a-distanza/?utm_source=articolo&utm_medium=internal&utm_campaign=reiki2&utm_content=cta_alta\"><strong>Scopri cosa contiene il libro →</strong></a><br><a href=\"https://www.amazon.it/dp/B0GVT3RW4D?tag=tie07-21\" rel=\"sponsored noopener\" target=\"_blank\"><strong>Vedi direttamente su Amazon →</strong></a><br><small>In qualità di Affiliato Amazon ricevo un guadagno dagli acquisti idonei.</small><br><br>"
+      "old": "Una nuova tecnica di memoria non risolve una cattiva pianificazione.",
+      "new": "Una nuova tecnica di memoria non risolve una cattiva pianificazione.<br><br><strong>Se vuoi capire prima dove si blocca davvero il tuo percorso universitario:</strong><br><a href=\"https://www.yoganostress.it/libri/universita-in-corso-la-guida/?utm_source=articolo&utm_medium=internal&utm_campaign=libri_porta&utm_content=universita_cta\"><strong>Scopri cosa contiene il libro →</strong></a><br><a href=\"https://www.amazon.it/dp/B0HDTWQGF1?tag=tie07-21\" rel=\"sponsored noopener\" target=\"_blank\"><strong>Vedi direttamente su Amazon →</strong></a><br><small>In qualità di Affiliato Amazon ricevo un guadagno dagli acquisti idonei.</small><br><br>"
     },
     {
-      "id": "r15-cache",
+      "id": "r16-agenda-cta",
+      "op": "replace_post_text",
+      "post_id": 19059,
+      "field": "post_content",
+      "old": "Se il tuo programma funziona solo quando tutto va bene, non è ancora un programma.",
+      "new": "Se il tuo programma funziona solo quando tutto va bene, non è ancora un programma.<br><br><strong>Se vuoi trasformare le intenzioni in 53 settimane concrete:</strong><br><a href=\"https://www.yoganostress.it/libri/agenda-yoga-2027/?utm_source=articolo&utm_medium=internal&utm_campaign=libri_porta&utm_content=agenda_cta\"><strong>Scopri cosa contiene il libro →</strong></a><br><a href=\"https://www.amazon.it/dp/B0H8FD1NNC?tag=tie07-21\" rel=\"sponsored noopener\" target=\"_blank\"><strong>Vedi direttamente su Amazon →</strong></a><br><small>In qualità di Affiliato Amazon ricevo un guadagno dagli acquisti idonei.</small><br><br>"
+    },
+    {
+      "id": "r16-cache",
       "op": "cache_flush"
     }
   ]
