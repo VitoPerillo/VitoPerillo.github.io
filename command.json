@@ -1,34 +1,18 @@
 {
   "site": "https://www.yoganostress.it",
-  "revision": 17,
+  "revision": 18,
   "expires_at": "2026-09-27T12:00:00Z",
   "actions": [
     {
-      "id": "r17-reiki-map-second-level-book",
+      "id": "r18-reiki-map-book-cta",
       "op": "replace_post_text",
       "post_id": 17825,
       "field": "post_content",
-      "old": "Link dedicato al 2° livello: in arrivo",
-      "new": "Per approfondire il Secondo Livello puoi anche usare il manuale <strong>“REIKI 2° LIVELLO – TRATTAMENTI A DISTANZA”</strong>: <a href=\"https://www.yoganostress.it/libri/reiki-2-livello-trattamenti-a-distanza/?utm_source=pagina_reiki&utm_medium=internal&utm_campaign=reiki2&utm_content=mappa_livelli\"><strong>vedi la scheda del libro →</strong></a> oppure <a href=\"https://www.amazon.it/dp/B0GVT3RW4D?tag=tie07-21\" rel=\"sponsored noopener\" target=\"_blank\"><strong>vai direttamente su Amazon →</strong></a>"
+      "old": "Portare Reiki in modo più “mirato” e a distanza",
+      "new": "Portare Reiki in modo più “mirato” e a distanza<br><br><strong>Approfondimento scritto del Secondo Livello:</strong> <a href=\"https://www.yoganostress.it/libri/reiki-2-livello-trattamenti-a-distanza/?utm_source=pagina_reiki&utm_medium=internal&utm_campaign=reiki2&utm_content=mappa_livelli\"><strong>REIKI 2° LIVELLO – TRATTAMENTI A DISTANZA →</strong></a><br><a href=\"https://www.amazon.it/dp/B0GVT3RW4D?tag=tie07-21\" rel=\"sponsored noopener\" target=\"_blank\"><strong>Vedi su Amazon →</strong></a>"
     },
     {
-      "id": "r17-reiki-main-current-title",
-      "op": "replace_post_text",
-      "post_id": 4018,
-      "field": "post_content",
-      "old": "Reiki Usui Secondo Livello – Manuale pratico di attivazione, simboli, trattamenti e Reiki a distanza",
-      "new": "REIKI 2° LIVELLO – TRATTAMENTI A DISTANZA"
-    },
-    {
-      "id": "r17-reiki-main-book-page-link",
-      "op": "replace_post_text",
-      "post_id": 4018,
-      "field": "post_content",
-      "old": "Vito Perillo è autore del libro:",
-      "new": "Vito Perillo è autore del libro:<br><strong>REIKI 2° LIVELLO – TRATTAMENTI A DISTANZA</strong><br><a href=\"https://www.yoganostress.it/libri/reiki-2-livello-trattamenti-a-distanza/?utm_source=pagina_reiki&utm_medium=internal&utm_campaign=reiki2&utm_content=pagina_principale\"><strong>Leggi la scheda completa →</strong></a> · <a href=\"https://www.amazon.it/dp/B0GVT3RW4D?tag=tie07-21\" rel=\"sponsored noopener\" target=\"_blank\"><strong>Amazon →</strong></a><br>"
-    },
-    {
-      "id": "r17-cache",
+      "id": "r18-cache",
       "op": "cache_flush"
     }
   ]
