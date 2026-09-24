@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "channel": "yoganostress-adesso",
+  "action": "none",
+  "deployment_id": "",
+  "plugin_slug": "yoganostress-adesso",
+  "version": "",
+  "package_url": "",
+  "package_sha256": "",
+  "issued_at": "",
+  "expires_at": ""
+}
