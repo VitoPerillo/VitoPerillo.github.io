@@ -5,8 +5,8 @@
   "public_key": "66BfGfPtw7G43f7gWmJ3poUod0rdHwDl3dGRtl69AWU=",
   "bootstrap_package": {
     "version": "0.4.21-security",
-    "package_sha256": "263e5ac4f958607053198154fb11ce31090063b91f4e380843dbd6bf423fae62",
-    "payload_sha256": "da1e81d28bdb4afb73118b5624d7ed86cc6d7d541bc4e855d709c5bd040cdda8",
+    "package_sha256": "867c1d330d5f1da60bc65357dffce186ea98d173efbca67519fe16486a17c270",
+    "payload_sha256": "66dba74bffee67df14cb296bf98cdf36a43ddf4ef8ab0b3bf23131f9f1ab3790",
     "payload_path": ".yns-deploy/staging-gestionale/payloads/bootstrap-0421-current.bin"
   }
 }
