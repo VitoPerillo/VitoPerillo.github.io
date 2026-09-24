@@ -1,0 +1,161 @@
+name: YSAD Pre-Live Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_to_staging:
+        description: "Deploy to staging after all gates pass"
+        required: true
+        default: false
+        type: boolean
+      dummy_url:
+        description: "Pre-deploy Dummy Test URL"
+        required: true
+        default: "https://www.yoganostress.it/staging-gestionale/yoganostress-adesso-anteprima-v121/"
+        type: string
+      staging_app_url:
+        description: "Post-deploy staging app URL"
+        required: true
+        default: "https://www.yoganostress.it/staging-gestionale/yoganostress-adesso/"
+        type: string
+  push:
+    paths:
+      - "ops/yoganostress-adesso/**"
+      - ".github/workflows/ysad-prelive.yml"
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: ysad-staging
+  cancel-in-progress: false
+
+jobs:
+  qa_build:
+    name: QA + Dummy Gate + SHA-256
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DUMMY_URL: ${{ github.event.inputs.dummy_url || 'https://www.yoganostress.it/staging-gestionale/yoganostress-adesso-anteprima-v121/' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare plugin source
+        run: |
+          set -euo pipefail
+          rm -rf build
+          mkdir -p build
+          unzip -q ops/yoganostress-adesso/source/yoganostress-adesso.zip -d build
+          test -f build/yoganostress-adesso/yoganostress-adesso.php
+
+      - name: PHP syntax gate
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' f; do php -l "$f"; done < <(find build/yoganostress-adesso -name '*.php' -print0)
+
+      - name: JS syntax + JSON gate
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' f; do node --check "$f"; done < <(find build/yoganostress-adesso -name '*.js' -print0)
+          python3 - <<'PY'
+          import json, pathlib
+          for p in pathlib.Path("build/yoganostress-adesso").rglob("*.json"):
+              json.loads(p.read_text(encoding="utf-8"))
+              print("JSON OK", p)
+          PY
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Dummy Test gate — mobile + desktop
+        run: npx playwright test ops/yoganostress-adesso/qa/dummy.spec.js --reporter=line
+        env:
+          DUMMY_URL: ${{ env.DUMMY_URL }}
+
+      - name: Build deterministic ZIP + SHA-256
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          find build/yoganostress-adesso -exec touch -t 202609240000 {} +
+          (cd build && zip -X -q -r ../dist/YOGANOSTRESS_ADESSO_PRELIVE.zip yoganostress-adesso)
+          sha256sum dist/YOGANOSTRESS_ADESSO_PRELIVE.zip | tee dist/YOGANOSTRESS_ADESSO_PRELIVE.zip.sha256
+
+      - name: Upload signed build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: yoganostress-adesso-prelive
+          path: |
+            dist/YOGANOSTRESS_ADESSO_PRELIVE.zip
+            dist/YOGANOSTRESS_ADESSO_PRELIVE.zip.sha256
+            test-results/
+          if-no-files-found: error
+
+      - name: GitHub build provenance attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: dist/YOGANOSTRESS_ADESSO_PRELIVE.zip
+
+  deploy_staging:
+    name: Direct Plugin Bridge → staging → verify → rollback
+    needs: qa_build
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_to_staging }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      STAGING_URL: ${{ secrets.YSAD_STAGING_URL }}
+      WP_USER: ${{ secrets.YSAD_STAGING_USER }}
+      WP_APP_PASSWORD: ${{ secrets.YSAD_STAGING_APP_PASSWORD }}
+      STAGING_APP_URL: ${{ inputs.staging_app_url }}
+    steps:
+      - uses: actions/checkout4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: yoganostress-adesso-prelive
+          path: dist
+
+      - name: Fail closed if direct credentials are absent
+        run: |
+          set -euo pipefail
+          test -n "$STAGING_URL"
+          test -n "$WP_USER"
+          test -n "$WP_APP_PASSWORD"
+
+      - name: Deploy directly through Plugin Bridge
+        id: deploy
+        run: |
+          python3 ops/yoganostress-adesso/scripts/deploy_bridge.py \
+            --zip dist/YOGANOSTRESS_ADESSO_PRELIVE.zip \
+            --slug yoganostress-adesso \
+            --activate \
+            --state deploy-state.json
+          cat deploy-state.json
+
+      - name: Install Playwright for post-deploy Dummy Gate
+        run: |
+          npm install --no-save @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Post-deploy Dummy Test — mandatory
+        id: postdummy
+        continue-on-error: true
+        run: npx playwright test ops/yoganostress-adesso/qa/dummy.spec.js --reporter=line
+        env:
+          DUMMY_URL: ${{ env.STAGING_APP_URL }}
+
+      - name: Roll back automatically if post-deploy gate fails
+        if: ${{ steps.postdummy.outcome != 'success' }}
+        run: |
+          python3 ops/yoganostress-adesso/scripts/deploy_bridge.py \
+            --rollback-from-state deploy-state.json
+          echo "::error::Post-deploy Dummy Gate failed. Automatic rollback executed."
+          exit 1
+
+      - name: Final direct verification
+        run: |
+          python3 ops/yoganostress-adesso/scripts/deploy_bridge.py \
+            --verify yoganostress-adesso
