@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "site": "https://www.yoganostress.it",
+  "policy": "zero-wpvibe-primary",
+  "channels": [
+    {
+      "priority": 1,
+      "id": "yns-control-bridge",
+      "transport": "github-pull",
+      "status": "active",
+      "cost_fixed_eur": 0
+    },
+    {
+      "priority": 2,
+      "id": "wordpress-rest-direct",
+      "transport": "wp-rest-application-password",
+      "status": "bootstrap_pending",
+      "cost_fixed_eur": 0
+    },
+    {
+      "priority": 3,
+      "id": "wp-cli-host",
+      "transport": "host-cli",
+      "status": "available-when-host-accessible",
+      "cost_fixed_eur": 0
+    },
+    {
+      "priority": 4,
+      "id": "wpvibe",
+      "transport": "third-party-mcp",
+      "status": "emergency-only",
+      "cost_fixed_eur": 0
+    }
+  ],
+  "rules": {
+    "never_block_on_wpvibe": true,
+    "live_readback_required": true,
+    "no_paid_upgrade": true,
+    "no_secrets_in_repository": true
+  }
+}
