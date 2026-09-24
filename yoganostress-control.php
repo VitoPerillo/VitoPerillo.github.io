@@ -2,13 +2,13 @@
 /**
  * Plugin Name: Yoganostress Control Bridge
  * Description: Zero-cost, allowlisted GitHub command bridge for safe Yoganostress maintenance.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: Yoganostress
  */
 
 if (!defined('ABSPATH')) { exit; }
 
-define('YNS_CONTROL_VERSION', '1.1.0');
+define('YNS_CONTROL_VERSION', '1.2.0');
 define('YNS_CONTROL_MANIFEST', 'https://raw.githubusercontent.com/VitoPerillo/VitoPerillo.github.io/yoganostress-control/command.json');
 define('YNS_CONTROL_SOURCE', 'https://raw.githubusercontent.com/VitoPerillo/VitoPerillo.github.io/yoganostress-control/yoganostress-control.php');
 define('YNS_CONTROL_SITE', 'https://www.yoganostress.it');
@@ -74,6 +74,61 @@ function yns_control_book_meta_snapshot($post_id) {
     }
     ksort($out);
     return $out;
+}
+
+
+function yns_control_sync_assistant() {
+    global $wpdb;
+
+    $source = 'https://raw.githubusercontent.com/VitoPerillo/VitoPerillo.github.io/main/ops/yns-assistant/current.php';
+    $r = wp_remote_get($source, array(
+        'timeout'=>20,
+        'redirection'=>2,
+        'user-agent'=>'Yoganostress-Control/'.YNS_CONTROL_VERSION,
+        'headers'=>array('Cache-Control'=>'no-cache','Accept'=>'text/plain')
+    ));
+    if (is_wp_error($r) || wp_remote_retrieve_response_code($r) !== 200) {
+        return new WP_Error('assistant_fetch_failed','Assistant source fetch failed');
+    }
+
+    $body = (string) wp_remote_retrieve_body($r);
+    if (strlen($body) < 1000 || strlen($body) > 100000 || strpos($body,'YNS_Benessere_') === false) {
+        return new WP_Error('assistant_source_invalid','Assistant source invalid');
+    }
+    if (preg_match('~<\\?php|shell_exec\\s*\\(|system\\s*\\(|passthru\\s*\\(|proc_open\\s*\\(|popen\\s*\\(~i',$body)) {
+        return new WP_Error('assistant_source_unsafe','Assistant source failed safety check');
+    }
+
+    $table = $wpdb->prefix . 'snippets';
+    $exists = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s',$table));
+    if ($exists !== $table) return new WP_Error('snippets_table_missing','Code Snippets table not found');
+
+    $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table} WHERE id=%d",7),ARRAY_A);
+    if (!$row) return new WP_Error('assistant_snippet_missing','Assistant snippet ID 7 not found');
+
+    $cols = $wpdb->get_col("DESCRIBE {$table}",0);
+    $data = array('code'=>$body);
+    $format = array('%s');
+
+    if (in_array('name',$cols,true)) { $data['name']='Yoganostress Assistente Benessere V0.5.3'; $format[]='%s'; }
+    if (in_array('desc',$cols,true)) { $data['desc']='Assistente Yoganostress sincronizzato dal Control Bridge GitHub.'; $format[]='%s'; }
+    if (in_array('description',$cols,true)) { $data['description']='Assistente Yoganostress sincronizzato dal Control Bridge GitHub.'; $format[]='%s'; }
+    if (in_array('scope',$cols,true)) { $data['scope']='global'; $format[]='%s'; }
+    if (in_array('priority',$cols,true)) { $data['priority']=10; $format[]='%d'; }
+    if (in_array('active',$cols,true)) { $data['active']=1; $format[]='%d'; }
+    if (in_array('modified',$cols,true)) { $data['modified']=current_time('mysql',true); $format[]='%s'; }
+
+    $u = $wpdb->update($table,$data,array('id'=>7),$format,array('%d'));
+    if ($u === false) return new WP_Error('assistant_update_failed','Assistant snippet update failed');
+
+    wp_cache_flush();
+    return array(
+        'snippet_id'=>7,
+        'bytes'=>strlen($body),
+        'sha256'=>hash('sha256',$body),
+        'updated'=>(int)$u,
+        'source'=>$source
+    );
 }
 
 function yns_control_apply_action($a) {
@@ -151,6 +206,12 @@ function yns_control_apply_action($a) {
         $snapshot = yns_control_book_meta_snapshot($post_id);
         if (is_wp_error($snapshot)) return yns_control_safe_result($id,$op,false,$snapshot->get_error_message(),array('post_id'=>$post_id));
         return yns_control_safe_result($id,$op,true,'Book meta listed',array('post_id'=>$post_id,'meta'=>$snapshot));
+    }
+
+    if ($op === 'sync_assistant') {
+        $r = yns_control_sync_assistant();
+        if (is_wp_error($r)) return yns_control_safe_result($id,$op,false,$r->get_error_message());
+        return yns_control_safe_result($id,$op,true,'Assistant synchronized',$r);
     }
 
     if ($op === 'cache_flush') {
