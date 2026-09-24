@@ -2,13 +2,13 @@
 /**
  * Plugin Name: Yoganostress Control Bridge
  * Description: Zero-cost, allowlisted GitHub command bridge for safe Yoganostress maintenance.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Yoganostress
  */
 
 if (!defined('ABSPATH')) { exit; }
 
-define('YNS_CONTROL_VERSION', '1.0.0');
+define('YNS_CONTROL_VERSION', '1.1.0');
 define('YNS_CONTROL_MANIFEST', 'https://raw.githubusercontent.com/VitoPerillo/VitoPerillo.github.io/yoganostress-control/command.json');
 define('YNS_CONTROL_SOURCE', 'https://raw.githubusercontent.com/VitoPerillo/VitoPerillo.github.io/yoganostress-control/yoganostress-control.php');
 define('YNS_CONTROL_SITE', 'https://www.yoganostress.it');
@@ -53,6 +53,28 @@ add_action('template_redirect', function () {
     wp_safe_redirect($target, $status, 'Yoganostress Control Bridge');
     exit;
 }, 1);
+
+function yns_control_book_meta_snapshot($post_id) {
+    $p = get_post($post_id);
+    if (!$p || $p->post_type !== 'libro') return new WP_Error('not_libro','Libro not found');
+    $all = get_post_meta($post_id);
+    $out = array();
+    foreach ($all as $key => $values) {
+        if (strpos((string)$key, 'ybc_') !== 0) continue;
+        if (preg_match('/(secret|token|password|passwd|auth|nonce|api[_-]?key|private|credential)/i', (string)$key)) continue;
+        $raw = isset($values[0]) ? $values[0] : '';
+        $value = maybe_unserialize($raw);
+        if (is_array($value) || is_object($value)) {
+            $value = wp_json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        } else {
+            $value = (string)$value;
+        }
+        if (strlen($value) > 8000) $value = substr($value,0,8000).'...[truncated]';
+        $out[(string)$key] = $value;
+    }
+    ksort($out);
+    return $out;
+}
 
 function yns_control_apply_action($a) {
     $id = $a['id'] ?? '';
@@ -122,6 +144,13 @@ function yns_control_apply_action($a) {
         if (!$p || $p->post_type !== 'attachment') return yns_control_safe_result($id,$op,false,'Attachment not found');
         $r = wp_trash_post($post_id);
         return yns_control_safe_result($id,$op,(bool)$r,$r?'Attachment moved to trash':'Trash failed',array('attachment_id'=>$post_id));
+    }
+
+    if ($op === 'book_meta_list') {
+        $post_id = absint($a['post_id'] ?? 0);
+        $snapshot = yns_control_book_meta_snapshot($post_id);
+        if (is_wp_error($snapshot)) return yns_control_safe_result($id,$op,false,$snapshot->get_error_message(),array('post_id'=>$post_id));
+        return yns_control_safe_result($id,$op,true,'Book meta listed',array('post_id'=>$post_id,'meta'=>$snapshot));
     }
 
     if ($op === 'cache_flush') {
