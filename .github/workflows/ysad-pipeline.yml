@@ -1,0 +1,214 @@
+name: YSAD release pipeline
+
+on:
+  pull_request:
+    paths:
+      - '.yns-deploy/yoganostress-adesso/source/**'
+      - '.yns-deploy/yoganostress-adesso/qa/**'
+      - '.yns-deploy/yoganostress-adesso/infra/**'
+      - '.github/workflows/ysad-pipeline.yml'
+  push:
+    branches: ['main','ysad-pipeline-v1']
+    paths:
+      - '.yns-deploy/yoganostress-adesso/source/**'
+      - '.yns-deploy/yoganostress-adesso/qa/**'
+      - '.yns-deploy/yoganostress-adesso/infra/**'
+      - '.github/workflows/ysad-pipeline.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ysad-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  qa:
+    name: Dummy Gate + static QA
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      package_sha256: ${{ steps.hash.outputs.package_sha256 }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Rebuild source ZIP from split base64
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .build
+          cat .yns-deploy/yoganostress-adesso/source/current.zip.b64.part* | base64 -d > .build/source.zip
+          unzip -q .build/source.zip -d .build/unpacked
+          test -f .build/unpacked/yoganostress-adesso/yoganostress-adesso.php
+
+      - name: Static QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          find .build/unpacked/yoganostress-adesso -name '*.php' -print0 | xargs -0 -n1 php -l
+          find .build/unpacked/yoganostress-adesso -name '*.js' -print0 | xargs -0 -n1 node --check
+          python3 - <<'PY'
+          import json, pathlib
+          for p in pathlib.Path('.build/unpacked/yoganostress-adesso').rglob('*.json'):
+              json.loads(p.read_text(encoding='utf-8'))
+          PY
+
+      - name: Read version
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          V=$(sed -n 's/^ \* Version: //p' .build/unpacked/yoganostress-adesso/yoganostress-adesso.php | head -1)
+          test -n "$V"
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare Dummy harness
+        shell: bash
+        run: |
+          cp .yns-deploy/yoganostress-adesso/qa/harness.html .build/unpacked/yoganostress-adesso/qa-harness.html
+
+      - name: Install Playwright
+        shell: bash
+        run: |
+          npm install --no-save @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start local app harness
+        shell: bash
+        run: |
+          python3 -m http.server 4173 --directory .build/unpacked/yoganostress-adesso > .build/http.log 2>&1 &
+          echo $! > .build/http.pid
+          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/qa-harness.html >/dev/null && exit 0; sleep 1; done
+          cat .build/http.log
+          exit 1
+
+      - name: Mandatory Dummy Test desktop + mobile
+        shell: bash
+        run: |
+          npx playwright test .yns-deploy/yoganostress-adesso/qa/dummy.spec.js --config=.yns-deploy/yoganostress-adesso/qa/playwright.config.cjs
+
+      - name: Build deterministic release ZIP
+        shell: bash
+        run: |
+          rm -f .build/unpacked/yoganostress-adesso/qa-harness.html
+          python3 - <<'PY'
+          from pathlib import Path
+          import zipfile, os
+          src=Path('.build/unpacked/yoganostress-adesso')
+          out=Path('.build/yoganostress-adesso.zip')
+          with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for p in sorted(src.rglob('*')):
+                  if not p.is_file(): continue
+                  info=zipfile.ZipInfo(('yoganostress-adesso/'+p.relative_to(src).as_posix()),date_time=(2026,9,24,8,0,0))
+                  info.compress_type=zipfile.ZIP_DEFLATED
+                  info.external_attr=(0o644 & 0xffff)<<16
+                  z.writestr(info,p.read_bytes())
+          PY
+
+      - name: SHA-256 gate
+        id: hash
+        shell: bash
+        run: |
+          set -euo pipefail
+          H=$(sha256sum .build/yoganostress-adesso.zip | awk '{print $1}')
+          echo "$H  yoganostress-adesso.zip" > .build/SHA256SUMS.txt
+          echo "package_sha256=$H" >> "$GITHUB_OUTPUT"
+
+      - name: Upload validated package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ysad-validated-package
+          path: |
+            .build/yoganostress-adesso.zip
+            .build/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ysad-playwright-report
+          path: playwright-report
+          if-no-files-found: ignore
+          retention-days: 14
+
+  release:
+    name: Publish manifest for staging
+    needs: qa
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ysad-validated-package
+          path: .build
+
+      - name: Publish immutable release + manifest
+        shell: bash
+        env:
+          VERSION: ${{ needs.qa.outputs.version }}
+          PACKAGE_SHA256: ${{ needs.qa.outputs.package_sha256 }}
+        run: |
+          set -euo pipefail
+          SHORT="${GITHUB_SHA::12}"
+          DEPLOYMENT_ID="ysad-${VERSION}-${SHORT}"
+          RELEASE_DIR=".yns-deploy/yoganostress-adesso/releases"
+          RELEASE_FILE="yoganostress-adesso-${VERSION}-${SHORT}.zip"
+          mkdir -p "$RELEASE_DIR"
+          cp .build/yoganostress-adesso.zip "$RELEASE_DIR/$RELEASE_FILE"
+          export DEPLOYMENT_ID RELEASE_FILE
+          python3 - <<'PY'
+          import json, os, datetime, pathlib
+          now=datetime.datetime.now(datetime.timezone.utc)
+          manifest={
+            "schema":1,
+            "channel":"yoganostress-adesso",
+            "action":"deploy",
+            "deployment_id":os.environ["DEPLOYMENT_ID"],
+            "plugin_slug":"yoganostress-adesso",
+            "version":os.environ["VERSION"],
+            "package_url":"https://raw.githubusercontent.com/VitoPerillo/VitoPerillo.github.io/main/.yns-deploy/yoganostress-adesso/releases/"+os.environ["RELEASE_FILE"],
+            "package_sha256":os.environ["PACKAGE_SHA256"],
+            "issued_at":now.isoformat().replace("+00:00","Z"),
+            "expires_at":(now+datetime.timedelta(hours=2)).isoformat().replace("+00:00","Z")
+          }
+          pathlib.Path('.yns-deploy/yoganostress-adesso/manifest.json').write_text(json.dumps(manifest,indent=2)+"\n")
+          PY
+          git config user.name "YSAD Release Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$RELEASE_DIR/$RELEASE_FILE" .yns-deploy/yoganostress-adesso/manifest.json
+          git commit -m "YSAD release ${VERSION} [${DEPLOYMENT_ID}]"
+          git push origin HEAD:main
+          echo "DEPLOYMENT_ID=$DEPLOYMENT_ID" >> "$GITHUB_ENV"
+
+      - name: Wait for staging Agent verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://www.yoganostress.it/staging-gestionale/wp-json/yns-github-deploy/v1/status"
+          for i in {1..72}; do
+            JSON=$(curl -fsS "$URL" || true)
+            echo "$JSON"
+            ID=$(printf '%s' "$JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("deployment_id",""))' 2>/dev/null || true)
+            ST=$(printf '%s' "$JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("status",""))' 2>/dev/null || true)
+            if [ "$ID" = "$DEPLOYMENT_ID" ] && [ "$ST" = "verified" ]; then exit 0; fi
+            if [ "$ID" = "$DEPLOYMENT_ID" ] && { [ "$ST" = "rolled_back" ] || [ "$ST" = "failed" ]; }; then exit 1; fi
+            sleep 10
+          done
+          echo "Timeout: staging Agent did not verify deployment."
+          exit 1
