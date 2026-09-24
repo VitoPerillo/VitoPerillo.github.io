@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>YSAD Dummy QA</title><link rel="stylesheet" href="assets/css/app.css"><style>body{margin:0}</style></head><body>
+<div id="ysad-app" class="ysad-app" aria-live="polite"><header class="ysad-head"><a class="ysad-brand" href="#" aria-label="Yoganostress Adesso"><img src="assets/img/yoganostress-logo-original.png" alt="Yoganostress"><span>ADESSO</span></a><div class="ysad-head-copy"><strong>La pratica giusta per come stai oggi.</strong><small>Ascolto · sicurezza · progressione</small></div></header><main id="ysad-main"><div class="ysad-loading">Sto preparando il tuo spazio…</div></main><nav id="ysad-nav" class="ysad-nav" hidden aria-label="Yoganostress Adesso"><button data-view="home">Oggi</button><button data-view="archive">Dirette & replay</button><button data-view="map">Mappa</button><button data-view="gift">Regala</button><button data-view="profile">Profilo</button></nav></div>
+<script>
+const qs=new URLSearchParams(location.search);
+window.YSAD={rest:'/mock/',nonce:'qa',app:location.pathname,sw:'',vapid:'',loggedIn:qs.get('logged')==='1',logo:'assets/img/yoganostress-logo-original.png',hero:'assets/img/vito-hero.jpg',version:'qa'};
+const plans=[{id:1,code:'FREE',name:'FREE',monthly:0,annual:0},{id:2,code:'ESSENZIALE',name:'ESSENZIALE',monthly:9.9,annual:79},{id:3,code:'EVOLUZIONE',name:'EVOLUZIONE',monthly:14.9,annual:119},{id:4,code:'COMPLETO',name:'COMPLETO',monthly:19.9,annual:159}];
+function resp(body,status=200){return Promise.resolve(new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json'}}))}
+window.fetch=(url,opt={})=>{const path=String(url).replace(/^.*\/mock\//,'');let body={};try{body=JSON.parse(opt.body||'{}')}catch(e){}
+if(path==='plans')return resp(plans);
+if(path==='me')return resp({nonce:'qa',paypal_configured:false,user:{name:'Dummy',email:'dummy@example.test'},entitlement:{code:'ESSENZIALE',name:'ESSENZIALE',source:'manual'},profile:{onboarding_complete:1,calibration_complete:0,completed_sessions:0,age_band:'55-64',experience_level:'base',mobility_level:'normal',balance_level:'normal',conditions_json:'[]'},bonus_state:{unlocked:[],active:null}});
+if(path==='today')return resp({can_start:true,session:null});
+if(path==='archive')return resp({hatha:[],nidra:[]});
+if(path==='weekly')return resp({sessions:0,best_family:null});
+if(path==='map/current')return resp({sessions:0,positive_rate:0,best_family:null,best_context:null,message:'Calibrazione in corso.'});
+if(path==='test'||path==='checkins'){const stop=body.pain_state==='strong'||body.symptom_change==='new_worse';return resp({need:stop?'PRUDENZA':'CALMARE',why:stop?'Oggi il Safety Gate evita la pratica fisica automatica.':'Oggi serve una pratica breve e semplice.',safety:{mode:stop?'NON_PHYSICAL_SUPPORT':'WELLNESS_AUTO',message:stop?'Dolore importante o sintomo nuovo/peggiorato: niente pratica fisica automatica.':'Niente dolore, niente forzatura.',started:false},session_id:17,calibrating:true,practice:{id:stop?901:101,title:stop?'Supporto prudente non fisico':'Respiro naturale e ascolto',family:stop?'presenza':'respiro',duration_seconds:Number(body.available_minutes||7)*60,instructions:stop?'Siediti o sdraiati in modo comodo. Non eseguire movimenti. Osserva il respiro naturale senza modificarlo.':'Trova una posizione stabile. Lascia il respiro naturale e osserva senza forzare.',principle:'Ahimsa: nessuna forzatura.',audio_url:null,source:{tradition:'Satyananda',source_code:'APMB',evidence:'Natural breathing / relaxation'}}});}
+if(/^session\/\d+\/start$/.test(path))return resp({ok:true});
+if(/^session\/\d+\/feedback$/.test(path))return resp({ok:true,principle:'Continuità senza forzatura.'});
+if(path==='logout'||path==='profile/onboarding'||path==='gifts/create')return resp({ok:true});
+return resp({ok:true});};
+</script><script src="assets/js/app.js"></script></body></html>
