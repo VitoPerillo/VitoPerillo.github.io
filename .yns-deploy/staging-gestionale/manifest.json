@@ -1,0 +1,7 @@
+{
+  "schema": 1,
+  "channel": "staging-gestionale",
+  "action": "none",
+  "updated_at": "2026-09-24T01:30:00Z",
+  "note": "YNS Direct Deploy control channel. No deployment pending."
+}
