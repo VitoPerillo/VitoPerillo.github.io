@@ -1,0 +1,86 @@
+name: YNS Live REST Read Audit
+
+on:
+  push:
+    paths:
+      - ".github/workflows/yns-live-rest-read-audit.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      LIVE_URL: https://www.yoganostress.it
+      WP_USER: ${{ secrets.YSAD_STAGING_USER }}
+      WP_APP_PASSWORD: ${{ secrets.YSAD_STAGING_APP_PASSWORD }}
+    steps:
+      - name: Fail closed if credentials are absent
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$WP_USER"
+          test -n "$WP_APP_PASSWORD"
+
+      - name: Test authenticated WordPress REST on live
+        shell: bash
+        run: |
+          set -euo pipefail
+          code="$(curl -sS -u "$WP_USER:$WP_APP_PASSWORD" -o /tmp/me.json -w "%{http_code}" "$LIVE_URL/wp-json/wp/v2/users/me?context=edit")"
+          echo "AUTH_HTTP=$code"
+          if [ "$code" != "200" ]; then
+            python3 - <<'PY'
+import json
+try:
+    d=json.load(open('/tmp/me.json'))
+    print('AUTH_ERROR_CODE='+str(d.get('code','unknown')))
+except Exception:
+    print('AUTH_ERROR_CODE=unparseable')
+PY
+            exit 1
+          fi
+          python3 - <<'PY'
+import json
+d=json.load(open('/tmp/me.json'))
+print('AUTH_OK=1')
+print('USER_ID='+str(d.get('id','')))
+print('USER_NAME='+str(d.get('name','')))
+PY
+
+      - name: Discover front page and audit suspicious content
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sS -u "$WP_USER:$WP_APP_PASSWORD" "$LIVE_URL/wp-json/wp/v2/settings" -o /tmp/settings.json
+          FRONT_ID="$(python3 - <<'PY'
+import json
+d=json.load(open('/tmp/settings.json'))
+print(d.get('page_on_front',0))
+PY
+)"
+          echo "FRONT_PAGE_ID=$FRONT_ID"
+          test "$FRONT_ID" != "0"
+          curl -sS -u "$WP_USER:$WP_APP_PASSWORD" "$LIVE_URL/wp-json/wp/v2/pages/$FRONT_ID?context=edit" -o /tmp/front.json
+          python3 - <<'PY'
+import json,re
+d=json.load(open('/tmp/front.json'))
+raw=d.get('content',{}).get('raw','')
+print('FRONT_TITLE='+d.get('title',{}).get('raw',''))
+print('FRONT_CONTENT_LEN='+str(len(raw)))
+checks={
+ 'RAW_JSONLD': '@context' in raw and 'FAQPage' in raw,
+ 'LITERAL_DOUBLE_GT': '>>' in raw,
+ 'EMPTY_H2': bool(re.search(r'<h2[^>]*>\s*</h2>|^\s*##\s*$',raw,re.M)),
+ 'LITERAL_GT_LINE': bool(re.search(r'(^|\n)\s*>\s*(\n|$)',raw)),
+}
+for k,v in checks.items():
+    print(f'{k}={int(v)}')
+for needle in ['@context','>>','I lavoro è progressivo','FAQPage']:
+    i=raw.find(needle)
+    if i>=0:
+        sn=raw[max(0,i-140):min(len(raw),i+280)].replace('\n',' ')
+        print('SNIPPET_'+needle.replace(' ','_').replace('@','AT')+'='+sn)
+PY
