@@ -41,7 +41,7 @@ final class YNS_Benessere_V052 {
     $s=self::n($q);
     $m=[
       'health'=>['ernia','diagnosi','l5','s1','sciatica','protrusione','patologia','dolore forte','fase acuta','osteoporosi','artrosi','artrite','fibromialgia','scoliosi','frattura','discopatia'],
-      'sala'=>['affitto sala','affittare sala','utilizzo sala','uso sala','gestione sala','cerco una sala','spazio per evento','spazio per corso','sala yoga'],
+      'sala'=>['affitto sala','affittare sala','utilizzo sala','utilizzare la sala','usare la sala','uso sala','gestione sala','cerco una sala','spazio per evento','spazio per corso','sala yoga'],
       'collab'=>['collaborazione','collaborare','proposta professionale','proporre un corso','sono un insegnante','sono un operatore','lavorare con voi','partnership'],
       'nidra'=>['mindfulness','meditazione','meditare','consapevolezza','insonnia','sonno','dormire','mente sempre attiva'],
       'individual'=>['individuale','lezione privata','lezione personale','uno a uno','seguito personalmente','percorso personalizzato'],
