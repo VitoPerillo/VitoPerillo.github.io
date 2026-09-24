@@ -1,0 +1,50 @@
+name: YNS Live Direct
+
+on:
+  push:
+    paths:
+      - "ops/yns-direct/commands/live.json"
+      - ".github/workflows/yns-live-direct.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: yns-live-direct
+  cancel-in-progress: false
+
+jobs:
+  command:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate command
+        run: |
+          set -euo pipefail
+          python3 -m json.tool ops/yns-direct/commands/live.json >/dev/null
+
+      - name: Request short-lived GitHub OIDC token
+        id: oidc
+        shell: bash
+        run: |
+          set -euo pipefail
+          RESPONSE="$(curl -fsS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https%3A%2F%2Fwww.yoganostress.it%2Fyns-direct")"
+          TOKEN="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])' <<<"$RESPONSE")"
+          echo "::add-mask::$TOKEN"
+          echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
+
+      - name: Execute command directly on Yoganostress
+        shell: bash
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          set -euo pipefail
+          curl -fsS \
+            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data-binary @ops/yns-direct/commands/live.json \
+            https://www.yoganostress.it/wp-json/yns-direct/v1/command | tee /tmp/yns-direct-result.json
+          python3 -m json.tool /tmp/yns-direct-result.json
