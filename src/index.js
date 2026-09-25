@@ -151,7 +151,7 @@ async function publicStatus(db) {
 async function maybeForegroundTick(env) {
   try {
     const gate=await env.DB.prepare(
-      "INSERT INTO la_settings(key,value,updated_at) VALUES('foreground_tick_v4',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE updated_at < datetime('now','-10 minutes')"
+      "INSERT INTO la_settings(key,value,updated_at) VALUES('foreground_tick_v5',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE updated_at < datetime('now','-10 minutes')"
     ).run();
     if(Number(gate.meta?.changes||0)>0) await tick(env);
   } catch (e) {
