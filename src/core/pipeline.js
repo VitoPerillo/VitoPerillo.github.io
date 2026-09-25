@@ -71,8 +71,6 @@ export function normalizeSourceDate(value){
 export async function ingestItem(db,source,item){
   const contentHash=await sha256(`${item.title}|${item.text}|${item.source_url}`);
   const ext=item.external_id||null;
-  const duplicate=await db.prepare('SELECT id FROM la_ingest WHERE source_url=? OR (source_id=? AND content_hash=?) LIMIT 1').bind(item.source_url,source.id,contentHash).first();
-  if(duplicate)return null;
   let detectedArea=source.area_id||null, detectedCategory=source.category_id||null;
   if(item.area_slug){
     const a=await db.prepare("SELECT id FROM la_areas WHERE slug=? AND active=1 LIMIT 1").bind(String(item.area_slug)).first();
@@ -81,6 +79,14 @@ export async function ingestItem(db,source,item){
   if(item.category_slug){
     const k=await db.prepare("SELECT id FROM la_categories WHERE slug=? AND active=1 LIMIT 1").bind(String(item.category_slug)).first();
     if(k?.id)detectedCategory=Number(k.id);
+  }
+  const duplicate=await db.prepare('SELECT id,status,content_id,source_id FROM la_ingest WHERE source_url=? OR (source_id=? AND content_hash=?) ORDER BY id DESC LIMIT 1').bind(item.source_url,source.id,contentHash).first();
+  if(duplicate){
+    const reclaim=source.source_type==='official_bridge' && !duplicate.content_id && !['published','updated'].includes(String(duplicate.status||''));
+    if(!reclaim)return null;
+    await db.prepare("UPDATE la_ingest SET source_id=?,external_id=?,original_title=?,original_text=?,original_date=?,content_hash=?,status='new',detected_area=?,detected_category=?,raw_payload=?,updated_at=CURRENT_TIMESTAMP WHERE id=?")
+      .bind(source.id,ext,item.title,item.text,normalizeSourceDate(item.date),contentHash,detectedArea,detectedCategory,item.raw?JSON.stringify(item.raw).slice(0,200000):null,duplicate.id).run();
+    return Number(duplicate.id);
   }
   try{
     const res=await db.prepare('INSERT INTO la_ingest(source_id,external_id,source_url,original_title,original_text,original_date,content_hash,status,detected_area,detected_category,raw_payload) VALUES(?,?,?,?,?,?,?,\'new\',?,?,?)').bind(source.id,ext,item.source_url,item.title,item.text,normalizeSourceDate(item.date),contentHash,detectedArea,detectedCategory,item.raw?JSON.stringify(item.raw).slice(0,200000):null).run();
