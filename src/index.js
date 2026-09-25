@@ -69,6 +69,8 @@ export default {
         return listSimple(env.DB, "la_areas");
       if (request.method === "GET" && p === "/api/categories")
         return listSimple(env.DB, "la_categories");
+      if (request.method === "GET" && p === "/api/status")
+        return publicStatus(env.DB);
       if (request.method === "GET" && p.startsWith("/media/"))
         return mediaGet(env, decodeURIComponent(p.slice(7)));
       if (request.method === "POST" && p === "/api/submission")
@@ -109,6 +111,27 @@ export default {
     else ctx.waitUntil(tick(env));
   },
 };
+
+async function publicStatus(db) {
+  const [content, newest, heartbeat, sources, stale, jobs] = await Promise.all([
+    db.prepare("SELECT count(*) n FROM la_content WHERE status IN ('published','updated')").first(),
+    db.prepare("SELECT max(updated_at) ts FROM la_content WHERE status IN ('published','updated')").first(),
+    db.prepare("SELECT value FROM la_settings WHERE key='queue_heartbeat'").first(),
+    db.prepare("SELECT count(*) n FROM la_sources WHERE active=1 AND usage_policy!='blocked'").first(),
+    db.prepare("SELECT count(*) n FROM la_sources WHERE active=1 AND usage_policy!='blocked' AND (last_success_at IS NULL OR last_success_at < datetime('now','-'||(interval_minutes*3)||' minutes'))").first(),
+    db.prepare("SELECT count(*) n FROM la_jobs WHERE status IN ('pending','processing','retry')").first(),
+  ]);
+  return responseJson({
+    ok: true,
+    brand: "AHÓ ROMA",
+    content_published: Number(content?.n || 0),
+    newest_content_at: newest?.ts || null,
+    queue_heartbeat_at: heartbeat?.value || null,
+    active_sources: Number(sources?.n || 0),
+    stale_sources: Number(stale?.n || 0),
+    pending_jobs: Number(jobs?.n || 0),
+  }, 200, { "cache-control": "no-store" });
+}
 
 async function listSimple(db, table) {
   const allowed = new Set(["la_areas", "la_categories"]);
