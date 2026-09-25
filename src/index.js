@@ -139,7 +139,7 @@ async function publicStatus(db) {
 async function maybeForegroundTick(env) {
   try {
     const gate=await env.DB.prepare(
-      "INSERT INTO la_settings(key,value,updated_at) VALUES('foreground_tick',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE updated_at < datetime('now','-10 minutes')"
+      "INSERT INTO la_settings(key,value,updated_at) VALUES('foreground_tick_v2',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE updated_at < datetime('now','-10 minutes')"
     ).run();
     if(Number(gate.meta?.changes||0)>0) await tick(env);
   } catch (e) {
@@ -187,11 +187,11 @@ async function ensureOfficialBridgeSource(env) {
   const url=root+"/feeds/roma-capitale.json";
   const existing=await env.DB.prepare("SELECT id FROM la_sources WHERE url=? LIMIT 1").bind(url).first();
   if(existing?.id){
-    await env.DB.prepare("UPDATE la_sources SET name='Roma Capitale · bridge AHÓ ROMA',source_type='official_bridge',parser_type='json',trust_level=95,usage_policy='auto',interval_minutes=30,active=1,config_json='{}',updated_at=CURRENT_TIMESTAMP WHERE id=?").bind(existing.id).run();
+    await env.DB.prepare("UPDATE la_sources SET name='Roma Capitale · bridge AHÓ ROMA',source_type='official_bridge',parser_type='json',trust_level=95,usage_policy='auto',interval_minutes=5,active=1,config_json='{}',last_checked_at=CASE WHEN last_success_at IS NULL THEN NULL ELSE last_checked_at END,updated_at=CURRENT_TIMESTAMP WHERE id=?").bind(existing.id).run();
     return;
   }
   await env.DB.prepare("INSERT INTO la_sources(name,url,source_type,parser_type,trust_level,usage_policy,interval_minutes,active,config_json) VALUES(?,?,?,?,?,?,?,?,?)")
-    .bind("Roma Capitale · bridge AHÓ ROMA",url,"official_bridge","json",95,"auto",30,1,"{}").run();
+    .bind("Roma Capitale · bridge AHÓ ROMA",url,"official_bridge","json",95,"auto",5,1,"{}").run();
 }
 
 async function sourceTick(env) {
