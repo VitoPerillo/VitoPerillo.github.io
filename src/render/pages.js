@@ -35,10 +35,7 @@ async function houseAd(db) {
     return null;
   }
 }
-const renderAd = (a) =>
-  a
-    ? `<aside class="promo"><span>${html(a.label || "In evidenza")}</span><div><strong>${html(a.title)}</strong><p>${html(a.body || "")}</p></div>${a.target_url ? `<a rel="sponsored noopener" href="${html(a.target_url)}">Scopri →</a>` : ""}</aside>`
-    : "";
+const renderAd = () => "";
 const card = (x) =>
   `<article class="card"><div class="eyebrow">${html(x.area || x.category || "Roma Ovest")}</div><h3><a href="${html(routeFor(x))}">${html(x.title)}</a></h3><p>${html(x.summary || "")}</p><small>Aggiornato ${html(fmtDate(x.updated_at))}</small></article>`;
 const articleBody = (value) =>
