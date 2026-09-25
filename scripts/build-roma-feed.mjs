@@ -35,8 +35,11 @@ function strip(s="") {
   return decode(s.replace(/<script\b[\s\S]*?<\/script>/gi," ").replace(/<style\b[\s\S]*?<\/style>/gi," ").replace(/<[^>]+>/g," "));
 }
 function attr(tag,name) {
-  const m=tag.match(new RegExp(name+"=[\\"\\']([^\\"\\']*)[\\"\\']","i"));
-  return decode(m?.[1] || "");
+  for (const m of tag.matchAll(/([A-Za-z:-]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g)) {
+    if (String(m[1]).toLowerCase() === String(name).toLowerCase())
+      return decode(m[2] ?? m[3] ?? "");
+  }
+  return "";
 }
 function meta(html,key) {
   for (const m of html.matchAll(/<meta\b[^>]*>/gi)) {
