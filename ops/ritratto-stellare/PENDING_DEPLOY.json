@@ -1,10 +1,10 @@
 {
   "project": "RITRATTO STELLARE",
-  "state": "PENDING_DEPLOY",
+  "state": "PENDING_DEPLOY_V2_0_1_TESTS_PASS",
   "created_at": "2026-09-25T23:35:00+02:00",
   "source_branch": "ritratto-stellare-v2-final",
-  "candidate": "Ritratto_Stellare_V2.0.0_FINAL_CANDIDATE_2026-09-25.zip",
-  "sha256": "c199df173ddaf75c2fa55754b4ba36abde9faecc3141e1ae7f23e853eba9ce50",
+  "candidate": "Ritratto_Stellare_V2.0.1_FINAL_CANDIDATE_2026-09-25.zip",
+  "sha256": "ccd73a76983ee35712f0a183fb8c52398cb5f2e0444f61ff955f432040fc009e",
   "commercial_model": "PROVA ANDROMEDA 30 giorni -> PEGASO -> FENICE -> ANDROMEDA",
   "prices": {
     "pegaso_monthly": "6.90 EUR",
@@ -18,6 +18,20 @@
     "php_lint": "PASS 20/20",
     "javascript": "PASS",
     "semantic_model": "PASS",
+    "plan_names_and_star": "PASS",
+    "trial_quota_150_fixed_period": "PASS",
+    "trial_rate_limits_4h_10day": "PASS",
+    "areas_4_8_12": "PASS",
+    "depth_progression": "PASS",
+    "premium_modules_fenice_andromeda": "PASS",
+    "paypal_new_fenice_labels": "PASS",
+    "paypal_legacy_ids_preserved": "PASS",
+    "paypal_catalog_price_change_compatibility": "PASS",
+    "frontend_no_legacy_trial_copy": "PASS",
+    "frontend_no_yoganostress": "PASS",
+    "ephemeris_manifest": "PASS 10/10 bodies/files",
+    "security_static": "PASS",
+    "sha256_manifest": "PASS",
     "zip_integrity": "PASS"
   },
   "router_attempts": [
@@ -86,5 +100,13 @@
     "Run plan mapping PEGASO/FENICE/ANDROMEDA and STAR tests.",
     "Run PayPal sandbox subscribe/webhook/activation/receipt tests.",
     "Only after backend PASS, merge/publish V2 landing to main and verify public live."
+  ],
+  "last_tested_at": "2026-09-25T23:40:00+02:00",
+  "corrections_v2_0_1": [
+    "Fixed legacy first-access CTA from FENICE trial to ANDROMEDA trial.",
+    "Fixed legacy Back Office trial wording.",
+    "Preserve PayPal legacy plan IDs and catalog schema when settings are saved.",
+    "Archive current PayPal plan IDs before catalog regeneration on price changes.",
+    "Resolve legacy PayPal plan IDs independently of current price configuration."
   ]
 }
