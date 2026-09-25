@@ -1,0 +1,51 @@
+name: Ritratto Stellare Preflight
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/ritratto-preflight.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe WordPress REST and Bridge
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="https://www.yoganostress.it/staging-gestionale"
+          echo "=== ROOT STATUS ==="
+          curl -sS -o /tmp/root.json -w "HTTP %{http_code}\n" "$BASE/wp-json/"
+          python - <<'PY'
+          import json
+          p='/tmp/root.json'
+          try:
+              d=json.load(open(p))
+          except Exception as e:
+              print("REST JSON parse failed:", e)
+              print(open(p,errors='ignore').read()[:2000])
+              raise SystemExit(0)
+          print("name:", d.get("name"))
+          print("namespaces:")
+          for ns in d.get("namespaces",[]):
+              if any(k in ns.lower() for k in ["bridge","promotion","ritratto","wpvibe","ability"]):
+                  print(" -",ns)
+          print("candidate routes:")
+          for route,meta in d.get("routes",{}).items():
+              if any(k in route.lower() for k in ["bridge","promotion","ritratto","ability"]):
+                  methods=sorted({m for ep in meta.get("endpoints",[]) for m in ep.get("methods",[])})
+                  print(route, "methods=", ",".join(methods))
+          PY
+
+          echo "=== RITRATTO PUBLIC STATUS ==="
+          for path in             "/wp-json/ritratto-stellare/v1/start"             "/wp-json/ritratto-stellare/v1/me"             "/wp-json/ritratto-stellare/v1/membership"; do
+            code=$(curl -sS -o /tmp/resp -w "%{http_code}" "$BASE$path" || true)
+            echo "$path -> $code"
+            head -c 500 /tmp/resp || true
+            echo
+          done
