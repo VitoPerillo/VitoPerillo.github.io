@@ -145,6 +145,7 @@ async function listSimple(db, table) {
 }
 async function tick(env) {
   await recoverStale(env.DB);
+  await ensureOfficialBridgeSource(env);
   await sourceTick(env);
   await prepareDiscoveryReview(env.DB);
   const max = Math.max(1, Math.min(10, Number(env.MAX_QUEUE_BATCH || 8)));
@@ -166,6 +167,19 @@ async function tick(env) {
     "INSERT INTO la_settings(key,value) VALUES('queue_heartbeat',CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP",
   ).run();
 }
+async function ensureOfficialBridgeSource(env) {
+  const root=String(env.PUBLIC_BASE_URL||"").replace(/\/$/,"");
+  if(!root)return;
+  const url=root+"/feeds/roma-capitale.json";
+  const existing=await env.DB.prepare("SELECT id FROM la_sources WHERE url=? LIMIT 1").bind(url).first();
+  if(existing?.id){
+    await env.DB.prepare("UPDATE la_sources SET name='Roma Capitale · bridge AHÓ ROMA',source_type='official_bridge',parser_type='json',trust_level=95,usage_policy='auto',interval_minutes=30,active=1,config_json='{}',updated_at=CURRENT_TIMESTAMP WHERE id=?").bind(existing.id).run();
+    return;
+  }
+  await env.DB.prepare("INSERT INTO la_sources(name,url,source_type,parser_type,trust_level,usage_policy,interval_minutes,active,config_json) VALUES(?,?,?,?,?,?,?,?,?)")
+    .bind("Roma Capitale · bridge AHÓ ROMA",url,"official_bridge","json",95,"auto",30,1,"{}").run();
+}
+
 async function sourceTick(env) {
   const q = await env.DB.prepare(
     "SELECT * FROM la_sources WHERE active=1 AND usage_policy!='blocked' AND (last_checked_at IS NULL OR datetime(last_checked_at, '+'||interval_minutes||' minutes') <= CURRENT_TIMESTAMP) ORDER BY COALESCE(last_checked_at,'1970-01-01') LIMIT 5",
