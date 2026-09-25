@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ritratto-stellare-v1",
+  "account_id": "b72d4037bafea30b480d3545812ab253",
+  "main": "ritratto-worker/index.js",
+  "compatibility_date": "2026-09-25",
+  "workers_dev": true,
+  "keep_vars": true,
+  "assets": {
+    "directory": "./ritratto-public",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "vars": {
+    "ORIGIN_BASE": "https://www.yoganostress.it/staging-gestionale"
+  }
+}
