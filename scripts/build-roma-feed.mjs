@@ -34,6 +34,15 @@ function decode(s="") {
 function strip(s="") {
   return decode(s.replace(/<script\b[\s\S]*?<\/script>/gi," ").replace(/<style\b[\s\S]*?<\/style>/gi," ").replace(/<[^>]+>/g," "));
 }
+function leadParagraphs(html) {
+  const h=html.search(/<h[12]\b/i);
+  const src=h>=0?html.slice(h):html;
+  const bad=/vai al contenuto|navigazione del sito|cookie|google to translate|area riservata|seguici su|t torna all'inizio|ciao, sono julia/i;
+  const ps=[...src.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/gi)]
+    .map(m=>strip(m[1]))
+    .filter(x=>x.length>=55&&!bad.test(x));
+  return decode(ps.slice(0,2).join(" ")).slice(0,700);
+}
 function attr(tag,name) {
   for (const m of tag.matchAll(/([A-Za-z:-]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g)) {
     if (String(m[1]).toLowerCase() === String(name).toLowerCase())
@@ -107,7 +116,8 @@ for (let i=0;i<urls.length;i+=5) {
       const plain=strip(html);
       const h1=html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i);
       const title=meta(html,"og:title") || strip(h1?.[1] || "");
-      const description=meta(html,"og:description") || meta(html,"description");
+      let description=meta(html,"og:description") || meta(html,"description");
+      if(description.length<55) description=leadParagraphs(html);
       if (!title || title.length < 12) return null;
       const c=candidates.get(url);
       if (!c?.areas?.length) return null;
@@ -117,12 +127,9 @@ for (let i=0;i<urls.length;i+=5) {
       if (!area) return null;
       const label=c.areas.find(x=>x.areaSlugValue===uniqueAreas[0])?.label || "Roma";
       let text=decode(description);
-      if (text.length < 80) {
-        const body=plain.replace(title,"").trim();
-        text=body.slice(0,420);
-      }
+      if (/vai al contenuto|cookie|google to translate|area riservata|seguici su/i.test(text)) text=leadParagraphs(html);
       text=decode(label+". "+text).slice(0,700);
-      if (text.length < 80) return null;
+      if (text.length < 80 || /vai al contenuto|google to translate|area riservata/i.test(text)) return null;
       return {
         id: url,
         url,
