@@ -8,9 +8,9 @@ export async function recoverStale(db){
 }
 export async function claimOne(db){
   const token=randomToken(16);
-  const pick=await db.prepare("SELECT id FROM la_jobs WHERE status IN ('pending','retry') AND available_at<=CURRENT_TIMESTAMP ORDER BY priority ASC,id ASC LIMIT 1").first();
+  const pick=await db.prepare("SELECT id FROM la_jobs WHERE status IN ('pending','retry') AND datetime(available_at)<=CURRENT_TIMESTAMP ORDER BY priority ASC,id ASC LIMIT 1").first();
   if(!pick) return null;
-  const res=await db.prepare("UPDATE la_jobs SET status='processing',locked_at=CURRENT_TIMESTAMP,lock_token=?,attempts=attempts+1,updated_at=CURRENT_TIMESTAMP WHERE id=? AND status IN ('pending','retry') AND available_at<=CURRENT_TIMESTAMP").bind(token,pick.id).run();
+  const res=await db.prepare("UPDATE la_jobs SET status='processing',locked_at=CURRENT_TIMESTAMP,lock_token=?,attempts=attempts+1,updated_at=CURRENT_TIMESTAMP WHERE id=? AND status IN ('pending','retry') AND datetime(available_at)<=CURRENT_TIMESTAMP").bind(token,pick.id).run();
   if((res.meta?.changes||0)!==1) return null;
   const row=await db.prepare('SELECT * FROM la_jobs WHERE id=? AND lock_token=?').bind(pick.id,token).first();
   return row ? {...row,payload:safeJson(row.payload_json,{})} : null;
