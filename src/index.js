@@ -42,7 +42,10 @@ export default {
     const url = new URL(request.url),
       p = url.pathname;
     try {
-      if (request.method === "GET" && p === "/") return home(env.DB);
+      if (request.method === "GET" && p === "/") {
+        ctx?.waitUntil?.(maybeForegroundTick(env));
+        return home(env.DB);
+      }
       if (request.method === "GET" && p.startsWith("/notizie/"))
         return contentPage(env.DB, decodeURIComponent(p.slice(9)), request.url);
       if (request.method === "GET" && p.startsWith("/eventi/"))
@@ -131,6 +134,17 @@ async function publicStatus(db) {
     stale_sources: Number(stale?.n || 0),
     pending_jobs: Number(jobs?.n || 0),
   }, 200, { "cache-control": "no-store" });
+}
+
+async function maybeForegroundTick(env) {
+  try {
+    const gate=await env.DB.prepare(
+      "INSERT INTO la_settings(key,value,updated_at) VALUES('foreground_tick',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE updated_at < datetime('now','-10 minutes')"
+    ).run();
+    if(Number(gate.meta?.changes||0)>0) await tick(env);
+  } catch (e) {
+    await log(env.DB,"warning","foreground_tick",String(e).slice(0,300)).catch(()=>{});
+  }
 }
 
 async function listSimple(db, table) {
