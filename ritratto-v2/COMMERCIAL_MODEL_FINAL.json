@@ -1,0 +1,66 @@
+{
+  "version": "2.0-final",
+  "status": "approved-for-live-after-backend-enforcement",
+  "trial": {
+    "public_name": "PROVA ANDROMEDA GRATIS",
+    "duration_days": 30,
+    "experience": "andromeda_full",
+    "areas": 12,
+    "depth": "maximum",
+    "questions_total": 150,
+    "questions_daily_limit": 10,
+    "questions_hourly_limit": 4,
+    "payment_method_required": false
+  },
+  "plans": {
+    "pegaso": {
+      "public_name": "PEGASO",
+      "monthly_price_eur": 6.90,
+      "annual_public_name": "PEGASO STAR",
+      "annual_price_eur": 69,
+      "areas": 4,
+      "depth": "complete",
+      "questions_monthly": 20
+    },
+    "fenice": {
+      "public_name": "FENICE",
+      "internal_migration_from": "orione",
+      "monthly_price_eur": 9.90,
+      "annual_public_name": "FENICE STAR",
+      "annual_price_eur": 99,
+      "areas": 8,
+      "depth": "deep_and_connected",
+      "questions_monthly": 60,
+      "modules": ["bussola_periodo","tre_priorita","momenti_chiave","natal_transit_link","cross_area_synthesis"]
+    },
+    "andromeda": {
+      "public_name": "ANDROMEDA",
+      "monthly_price_eur": 14.90,
+      "annual_public_name": "ANDROMEDA STAR",
+      "annual_price_eur": 149,
+      "areas": 12,
+      "depth": "maximum_systemic",
+      "questions_monthly": 150,
+      "modules": ["radar_90_giorni","cross_transit_connections","filo_del_cielo","recurring_themes","priorita_snodi"]
+    }
+  },
+  "areas": {
+    "pegaso": ["amore","lavoro","famiglia","energia"],
+    "fenice_adds": ["denaro","relazioni","casa","crescita_personale"],
+    "andromeda_adds": ["progetti_vocazione","comunicazione","creativita","mondo_interiore"]
+  },
+  "positioning": {
+    "trial": "Prova il massimo",
+    "pegaso": "Capisci le aree fondamentali",
+    "fenice": "Orientati e collega più aspetti della tua vita",
+    "andromeda": "Vedi il quadro completo e la sua evoluzione"
+  },
+  "rules": [
+    "La profondità cresce realmente tra PEGASO, FENICE e ANDROMEDA.",
+    "La qualità non viene descritta come scarsa nei piani inferiori.",
+    "Le aree crescono 4 -> 8 -> 12.",
+    "STAR è il nome della versione annuale del piano: PEGASO STAR, FENICE STAR, ANDROMEDA STAR.",
+    "La prova gratuita non è un quarto piano: è ANDROMEDA completa per 30 giorni.",
+    "I limiti orari/giornalieri proteggono da abuso senza penalizzare l'uso umano normale."
+  ]
+}
