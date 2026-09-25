@@ -29,17 +29,17 @@ const HEADERS = {
 function decode(s="") {
   return s.replace(/&nbsp;|&#160;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"')
     .replace(/&#39;|&apos;/gi,"\'").replace(/&lt;/gi,"<").replace(/&gt;/gi,">")
-    .replace(/&#(\\d+);/g,(_,n)=>String.fromCodePoint(Number(n))).replace(/\\s+/g," ").trim();
+    .replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(Number(n))).replace(/\s+/g," ").trim();
 }
 function strip(s="") {
-  return decode(s.replace(/<script\\b[\\s\\S]*?<\\/script>/gi," ").replace(/<style\\b[\\s\\S]*?<\\/style>/gi," ").replace(/<[^>]+>/g," "));
+  return decode(s.replace(/<script\b[\s\S]*?<\/script>/gi," ").replace(/<style\b[\s\S]*?<\/style>/gi," ").replace(/<[^>]+>/g," "));
 }
 function attr(tag,name) {
-  const m=tag.match(new RegExp(name+"=[\\\"\\\']([^\\\"\\\']*)[\\\"\\\']","i"));
+  const m=tag.match(new RegExp(name+"=[\\"\\']([^\\"\\']*)[\\"\\']","i"));
   return decode(m?.[1] || "");
 }
 function meta(html,key) {
-  for (const m of html.matchAll(/<meta\\b[^>]*>/gi)) {
+  for (const m of html.matchAll(/<meta\b[^>]*>/gi)) {
     const tag=m[0];
     if (attr(tag,"property")===key || attr(tag,"name")===key) return attr(tag,"content");
   }
@@ -52,7 +52,7 @@ async function fetchHtml(url) {
 }
 function articleLinks(html) {
   const out = new Set();
-  for (const m of html.matchAll(/href=[\"\']([^\"\']*\\/web\\/it\\/notizia(?:\\/|\\.|\\?)[^\"\']*)[\"\']/gi)) {
+  for (const m of html.matchAll(/href=[\"\']([^\"\']*\/web\/it\/notizia(?:\/|\.|\?)[^\"\']*)[\"\']/gi)) {
     try {
       const u = new URL(decode(m[1]), BASE);
       if (u.hostname === "www.comune.roma.it") out.add(u.toString());
@@ -62,12 +62,12 @@ function articleLinks(html) {
 }
 function articleDate(html, plain) {
   const raw = meta(html,"search:data");
-  if (/^\\d{12}$/.test(raw)) {
+  if (/^\d{12}$/.test(raw)) {
     const y=raw.slice(0,4),m=raw.slice(4,6),d=raw.slice(6,8),hh=raw.slice(8,10),mm=raw.slice(10,12);
     return y+"-"+m+"-"+d+"T"+hh+":"+mm+":00+02:00";
   }
   const months={gennaio:"01",febbraio:"02",marzo:"03",aprile:"04",maggio:"05",giugno:"06",luglio:"07",agosto:"08",settembre:"09",ottobre:"10",novembre:"11",dicembre:"12"};
-  const x=plain.toLowerCase().match(/\\b(\\d{1,2})\\s+(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)\\s+(20\\d{2})\\b/);
+  const x=plain.toLowerCase().match(/\b(\d{1,2})\s+(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)\s+(20\d{2})\b/);
   return x ? x[3]+"-"+months[x[2]]+"-"+String(x[1]).padStart(2,"0")+"T12:00:00+02:00" : null;
 }
 function areaSlug(text, fallback) {
@@ -79,7 +79,7 @@ function categorySlug(text) {
   const s=text.toLowerCase();
   if (/mobilit|trasport|traffico|strad|bus|metro|parchegg|viabilit/.test(s)) return "viabilita-trasporti";
   if (/scuol|student|nido|educativ|libro|famigli/.test(s)) return "scuola-famiglie";
-  if (/rifiut|ambiente|parco|verde|ama\\b|raccolta/.test(s)) return "ambiente-quartiere";
+  if (/rifiut|ambiente|parco|verde|ama\b|raccolta/.test(s)) return "ambiente-quartiere";
   if (/avvis|scadenz|apert|chius|prenot|bonus|servizio/.test(s)) return "avvisi-utili";
   return "servizi-municipio";
 }
@@ -102,7 +102,7 @@ for (let i=0;i<urls.length;i+=5) {
     try {
       const html=await fetchHtml(url);
       const plain=strip(html);
-      const h1=html.match(/<h1\\b[^>]*>([\\s\\S]*?)<\\/h1>/i);
+      const h1=html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i);
       const title=meta(html,"og:title") || strip(h1?.[1] || "");
       const description=meta(html,"og:description") || meta(html,"description");
       if (!title || title.length < 12) return null;
@@ -123,7 +123,7 @@ for (let i=0;i<urls.length;i+=5) {
       return {
         id: url,
         url,
-        title: decode(title).replace(/^Roma Capitale\\s*\\|\\s*/i,""),
+        title: decode(title).replace(/^Roma Capitale\s*\|\s*/i,""),
         text,
         date: articleDate(html,plain),
         area_slug: area,
@@ -141,5 +141,5 @@ items.sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")));
 const fresh=items.filter(x=>!x.date || Date.now()-Date.parse(x.date) < 14*86400000).slice(0,30);
 if (fresh.length < 3) throw new Error("Feed safety gate failed: only "+fresh.length+" valid items");
 await fs.mkdir(new URL("../public/feeds/",import.meta.url),{recursive:true});
-await fs.writeFile(OUT, JSON.stringify(fresh,null,2)+"\\n","utf8");
+await fs.writeFile(OUT, JSON.stringify(fresh,null,2)+"\n","utf8");
 console.log("Wrote "+fresh.length+" official Roma Capitale items");
