@@ -658,7 +658,7 @@ async function mediaGet(env, key) {
           })[c],
       );
     const name = xml(area.name),
-      svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="t d"><title id="t">Notizia locale: ${name}</title><desc id="d">Illustrazione originale LOCAL AUTOPILOT</desc><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#073b4c"/><stop offset="1" stop-color="#0b5cff"/></linearGradient><pattern id="p" width="44" height="44" patternUnits="userSpaceOnUse"><path d="M0 44L44 0M22 66L66 22M-22 22L22-22" stroke="#fff" stroke-opacity=".07" stroke-width="8"/></pattern></defs><rect width="1200" height="675" rx="32" fill="url(#g)"/><rect width="1200" height="675" fill="url(#p)"/><circle cx="1030" cy="150" r="190" fill="#ffcc33" opacity=".92"/><path d="M0 555C205 465 330 590 530 515S870 430 1200 535V675H0Z" fill="#fff" opacity=".14"/><text x="76" y="130" fill="#ffcc33" font-family="Arial,sans-serif" font-size="30" font-weight="700" letter-spacing="5">LOCAL AUTOPILOT</text><text x="76" y="314" fill="#fff" font-family="Arial,sans-serif" font-size="70" font-weight="800">NOTIZIA LOCALE</text><text x="76" y="405" fill="#fff" font-family="Arial,sans-serif" font-size="54" font-weight="600">${name}</text><text x="76" y="602" fill="#fff" opacity=".85" font-family="Arial,sans-serif" font-size="25">Informazione verificata da fonte ufficiale</text></svg>`;
+      svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="t d"><title id="t">Notizia locale: ${name}</title><desc id="d">Illustrazione originale AHÓ ROMA</desc><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#073b4c"/><stop offset="1" stop-color="#0b5cff"/></linearGradient><pattern id="p" width="44" height="44" patternUnits="userSpaceOnUse"><path d="M0 44L44 0M22 66L66 22M-22 22L22-22" stroke="#fff" stroke-opacity=".07" stroke-width="8"/></pattern></defs><rect width="1200" height="675" rx="32" fill="url(#g)"/><rect width="1200" height="675" fill="url(#p)"/><circle cx="1030" cy="150" r="190" fill="#ffcc33" opacity=".92"/><path d="M0 555C205 465 330 590 530 515S870 430 1200 535V675H0Z" fill="#fff" opacity=".14"/><text x="76" y="130" fill="#ffcc33" font-family="Arial,sans-serif" font-size="30" font-weight="700" letter-spacing="5">AHÓ ROMA</text><text x="76" y="314" fill="#fff" font-family="Arial,sans-serif" font-size="70" font-weight="800">NOTIZIA LOCALE</text><text x="76" y="405" fill="#fff" font-family="Arial,sans-serif" font-size="54" font-weight="600">${name}</text><text x="76" y="602" fill="#fff" opacity=".85" font-family="Arial,sans-serif" font-size="25">Informazione verificata da fonte ufficiale</text></svg>`;
     return new Response(svg, {
       headers: {
         "content-type": "image/svg+xml;charset=utf-8",
@@ -847,7 +847,7 @@ async function adminRoute(request, env, p) {
           body: "140-700 parole",
           original_text: true,
           verified_facts_only: true,
-          image_license: "Illustrazione originale LOCAL AUTOPILOT · CC BY 4.0",
+          image_license: "Illustrazione originale AHÓ ROMA · CC BY 4.0",
         },
       });
     } catch (e) {
