@@ -36,7 +36,7 @@ jobs:
       - name: Commit feed only when changed
         shell: bash
         run: |
-          if git diff --quiet -- public/feeds/roma-capitale.json; then
+          if [ -z "$(git status --porcelain -- public/feeds/roma-capitale.json)" ]; then
             echo "Official feed unchanged."
             exit 0
           fi
