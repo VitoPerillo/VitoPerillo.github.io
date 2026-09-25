@@ -14,21 +14,15 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Probe Bridge authentication gates
+      - name: Probe YNS Direct on staging
         shell: bash
         run: |
           set -euo pipefail
           BASE="https://www.yoganostress.it/staging-gestionale"
-          for spec in             "GET|/wp-json/ph-plugin-bridge/v1/status|"             "GET|/wp-json/ph-plugin-bridge/v1/plugins|"             "POST|/wp-json/ph-plugin-bridge/v1/session|{}"             "POST|/wp-json/ph-plugin-bridge/v1/plugins/verify|{\"slug\":\"ritratto-stellare\"}"             "POST|/wp-json/ph-plugin-bridge/v1/upload/status|{\"upload_id\":\"probe\"}"; do
-            IFS='|' read -r method path body <<< "$spec"
-            echo "=== $method $path ==="
-            if [ "$method" = "GET" ]; then
-              code=$(curl -sS -D /tmp/h -o /tmp/b -w "%{http_code}" "$BASE$path" || true)
-            else
-              code=$(curl -sS -D /tmp/h -o /tmp/b -w "%{http_code}" -X POST -H "Content-Type: application/json" --data "$body" "$BASE$path" || true)
-            fi
+          for path in             "/wp-json/yns-direct/v1/health"             "/wp-json/ph-plugin-bridge/v1/status"; do
+            echo "=== GET $path ==="
+            code=$(curl -sS -o /tmp/b -w "%{http_code}" "$BASE$path" || true)
             echo "HTTP $code"
-            grep -Ei '^(allow|www-authenticate|x-|set-cookie|content-type):' /tmp/h || true
-            head -c 1200 /tmp/b || true
+            head -c 1500 /tmp/b || true
             echo
           done
