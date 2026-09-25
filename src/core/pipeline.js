@@ -80,9 +80,10 @@ export async function ingestItem(db,source,item){
     const k=await db.prepare("SELECT id FROM la_categories WHERE slug=? AND active=1 LIMIT 1").bind(String(item.category_slug)).first();
     if(k?.id)detectedCategory=Number(k.id);
   }
-  const duplicate=await db.prepare('SELECT id,status,content_id,source_id FROM la_ingest WHERE source_url=? OR (source_id=? AND content_hash=?) ORDER BY id DESC LIMIT 1').bind(item.source_url,source.id,contentHash).first();
+  const duplicate=await db.prepare('SELECT id FROM la_ingest WHERE source_url=? OR (source_id=? AND content_hash=?) ORDER BY id DESC LIMIT 1').bind(item.source_url,source.id,contentHash).first();
   if(duplicate){
-    const reclaim=source.source_type==='official_bridge' && !duplicate.content_id && !['published','updated'].includes(String(duplicate.status||''));
+    const state=await db.prepare('SELECT status,content_id,source_id FROM la_ingest WHERE id=?').bind(duplicate.id).first();
+    const reclaim=source.source_type==='official_bridge' && !state?.content_id && !['published','updated'].includes(String(state?.status||''));
     if(!reclaim)return null;
     await db.prepare("UPDATE la_ingest SET source_id=?,external_id=?,original_title=?,original_text=?,original_date=?,content_hash=?,status='new',detected_area=?,detected_category=?,raw_payload=?,updated_at=CURRENT_TIMESTAMP WHERE id=?")
       .bind(source.id,ext,item.title,item.text,normalizeSourceDate(item.date),contentHash,detectedArea,detectedCategory,item.raw?JSON.stringify(item.raw).slice(0,200000):null,duplicate.id).run();
