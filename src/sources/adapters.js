@@ -23,7 +23,7 @@ export async function fetchSource(source){
 }
 export function parseJson(text,source){
   const cfg=safeJson(source.config_json,{}); const data=JSON.parse(text); const items=cfg.path?cfg.path.split('.').reduce((x,k)=>x?.[k],data):data; if(!Array.isArray(items)) throw new Error('json_items_not_array');
-  return items.slice(0,50).map((x,i)=>({external_id:String(x[cfg.id||'id']??'' )||null,source_url:abs(String(x[cfg.url||'url']||source.url),source.url),title:String(x[cfg.title||'title']||''),text:String(x[cfg.text||'text']||x[cfg.description||'description']||''),date:x[cfg.date||'date']||null,raw:x})).filter(x=>x.title&&x.text);
+  return items.slice(0,50).map((x,i)=>({external_id:String(x[cfg.id||'id']??'' )||null,source_url:abs(String(x[cfg.url||'url']||source.url),source.url),title:String(x[cfg.title||'title']||''),text:String(x[cfg.text||'text']||x[cfg.description||'description']||''),date:x[cfg.date||'date']||null,area_slug:x[cfg.area_slug||'area_slug']||null,category_slug:x[cfg.category_slug||'category_slug']||null,raw:x})).filter(x=>x.title&&x.text);
 }
 export function parseRss(text,source){
   const blocks=[...text.matchAll(/<(?:item|entry)\b[\s\S]*?<\/(?:item|entry)>/gi)].map(m=>m[0]);
