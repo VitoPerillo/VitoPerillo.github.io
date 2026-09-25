@@ -116,14 +116,18 @@ export default {
 };
 
 async function publicStatus(db) {
-  const [content, newest, heartbeat, sources, stale, jobs] = await Promise.all([
+  const [content, newest, heartbeat, sources, stale, jobs, bridge, bridgeIngest, bridgeLog] = await Promise.all([
     db.prepare("SELECT count(*) n FROM la_content WHERE status IN ('published','updated')").first(),
     db.prepare("SELECT max(updated_at) ts FROM la_content WHERE status IN ('published','updated')").first(),
     db.prepare("SELECT value FROM la_settings WHERE key='queue_heartbeat'").first(),
     db.prepare("SELECT count(*) n FROM la_sources WHERE active=1 AND usage_policy!='blocked'").first(),
     db.prepare("SELECT count(*) n FROM la_sources WHERE active=1 AND usage_policy!='blocked' AND (last_success_at IS NULL OR last_success_at < datetime('now','-'||(interval_minutes*3)||' minutes'))").first(),
     db.prepare("SELECT count(*) n FROM la_jobs WHERE status IN ('pending','processing','retry')").first(),
+    db.prepare("SELECT id,last_checked_at,last_success_at,interval_minutes FROM la_sources WHERE source_type='official_bridge' ORDER BY id DESC LIMIT 1").first(),
+    db.prepare("SELECT status,count(*) n FROM la_ingest WHERE source_id=(SELECT id FROM la_sources WHERE source_type='official_bridge' ORDER BY id DESC LIMIT 1) GROUP BY status ORDER BY status").all(),
+    db.prepare("SELECT message,created_at FROM la_logs WHERE component='source' AND context_json LIKE '%source_id%' ORDER BY id DESC LIMIT 1").first(),
   ]);
+  const sourceError=String(bridgeLog?.message||"");
   return responseJson({
     ok: true,
     brand: "AHÓ ROMA",
@@ -133,6 +137,14 @@ async function publicStatus(db) {
     active_sources: Number(sources?.n || 0),
     stale_sources: Number(stale?.n || 0),
     pending_jobs: Number(jobs?.n || 0),
+    bridge: bridge ? {
+      last_checked_at: bridge.last_checked_at || null,
+      last_success_at: bridge.last_success_at || null,
+      interval_minutes: Number(bridge.interval_minutes || 0),
+      ingest_statuses: Object.fromEntries((bridgeIngest.results||[]).map(x=>[String(x.status),Number(x.n||0)])),
+      last_source_error: /^Error:\s*source_[a-z0-9_]+$/i.test(sourceError) ? sourceError : null,
+      last_source_error_at: bridgeLog?.created_at || null,
+    } : null,
   }, 200, { "cache-control": "no-store" });
 }
 
