@@ -13,16 +13,25 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
+    env:
+      WP_USERNAME: ${{ secrets.WP_USERNAME }}
+      WP_USER: ${{ secrets.WP_USER }}
+      WORDPRESS_USER: ${{ secrets.WORDPRESS_USER }}
+      YNS_WP_USER: ${{ secrets.YNS_WP_USER }}
+      WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+      WORDPRESS_APP_PASSWORD: ${{ secrets.WORDPRESS_APP_PASSWORD }}
+      YNS_WP_APP_PASSWORD: ${{ secrets.YNS_WP_APP_PASSWORD }}
+      WP_APPLICATION_PASSWORD: ${{ secrets.WP_APPLICATION_PASSWORD }}
+      YNS_APPLICATION_PASSWORD: ${{ secrets.YNS_APPLICATION_PASSWORD }}
     steps:
-      - name: Probe YNS Direct on staging
+      - name: Check only presence of WordPress credentials
         shell: bash
         run: |
           set -euo pipefail
-          BASE="https://www.yoganostress.it/staging-gestionale"
-          for path in             "/wp-json/yns-direct/v1/health"             "/wp-json/ph-plugin-bridge/v1/status"; do
-            echo "=== GET $path ==="
-            code=$(curl -sS -o /tmp/b -w "%{http_code}" "$BASE$path" || true)
-            echo "HTTP $code"
-            head -c 1500 /tmp/b || true
-            echo
+          for n in WP_USERNAME WP_USER WORDPRESS_USER YNS_WP_USER WP_APP_PASSWORD WORDPRESS_APP_PASSWORD YNS_WP_APP_PASSWORD WP_APPLICATION_PASSWORD YNS_APPLICATION_PASSWORD; do
+            if [ -n "${!n:-}" ]; then
+              echo "$n=PRESENT"
+            else
+              echo "$n=missing"
+            fi
           done
