@@ -22,7 +22,7 @@ const empty = (title, text) =>
   `<div class="empty"><strong>${html(title)}</strong><p>${html(text)}</p></div>`;
 
 const shell = (title, body, meta = "") =>
-  `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b5cff"><title>${html(title)}</title>${meta}<link rel="stylesheet" href="/app.css"></head><body><header class="site-header"><div class="wrap header-inner"><a class="brand" href="/"><span class="brand-mark">LA</span><span><b>LOCAL AUTOPILOT</b><small>Roma Ovest / Sud-Ovest</small></span></a><nav><a href="/quartieri">Quartieri</a><a href="/eventi">Eventi</a><a href="/attivita">Attività locali</a><a href="/pubblicita">Pubblicità</a><a class="nav-cta" href="/segnala">Segnala</a></nav></div></header><main>${body}</main><footer><div class="wrap footer-grid"><div><b>LOCAL AUTOPILOT</b><p>Notizie di quartiere utili, selezionate per Roma Ovest / Sud-Ovest.</p></div><div><a href="/quartieri">Quartieri</a> · <a href="/eventi">Eventi</a> · <a href="/attivita">Attività</a> · <a href="/segnala">Invia un contenuto</a> · <a href="/pubblicita">Pubblicità locale</a></div></div></footer></body></html>`;
+  `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b5cff"><title>${html(title)}</title>${meta}<link rel="stylesheet" href="/app.css"></head><body><header class="site-header"><div class="wrap header-inner"><a class="brand" href="/"><span class="brand-mark">AHÓ</span><span><b>AHÓ ROMA</b><small>Che succede a Roma?</small></span></a><nav><a href="/quartieri">Quartieri</a><a href="/eventi">Eventi</a><a href="/attivita">Attività locali</a><a href="/pubblicita">Pubblicità</a><a class="nav-cta" href="/segnala">Segnala</a></nav></div></header><main>${body}</main><footer><div class="wrap footer-grid"><div><b>AHÓ ROMA</b><p>Notizie di quartiere utili, selezionate per Roma Ovest / Sud-Ovest.</p></div><div><a href="/quartieri">Quartieri</a> · <a href="/eventi">Eventi</a> · <a href="/attivita">Attività</a> · <a href="/segnala">Invia un contenuto</a> · <a href="/pubblicita">Pubblicità locale</a></div></div></footer></body></html>`;
 
 async function houseAd(db) {
   try {
@@ -88,7 +88,7 @@ export async function home(db) {
     .join("");
   return new Response(
     shell(
-      "LOCAL AUTOPILOT — Roma Ovest / Sud-Ovest",
+      "AHÓ ROMA — Che succede a Roma?",
       `
     <section class="hero"><div class="wrap hero-grid"><div><span class="kicker">ROMA OVEST / SUD-OVEST</span><h1>Notizie di quartiere.<br><em>Più vicine a te.</em></h1><p>Viabilità, servizi, eventi e attività locali: solo ciò che può essere utile davvero nel tuo territorio.</p><div class="hero-actions"><a class="btn primary" href="#oggi">Cosa succede oggi</a><a class="btn" href="/quartieri">Scegli il quartiere</a></div></div><div class="hero-panel"><strong>Copertura editoriale</strong><p>Municipi XI, XII, XIII + Trastevere, con quartieri e micro-zone della fascia Ovest / Sud-Ovest.</p><div class="mini-stats"><span><b>${(areas.results || []).length}+</b> quartieri</span><span><b>24/7</b> aggiornamenti</span></div></div></div></section>
     <div class="wrap">${renderAd(ad)}</div>
@@ -164,7 +164,7 @@ export async function contentPage(db, slug, baseUrl) {
       dateModified: x.updated_at,
       description: x.summary,
       image: imageUrl || undefined,
-      author: { "@type": "Organization", name: "LOCAL AUTOPILOT" },
+      author: { "@type": "Organization", name: "AHÓ ROMA" },
       mainEntityOfPage: canonicalUrl,
     };
   const crumbs = `<nav class="breadcrumbs" aria-label="breadcrumb"><a href="/">Home</a>${x.area_slug ? ` › <a href="/zona/${html(x.area_slug)}">${html(x.area)}</a>` : ""} › ${html(x.title)}</nav>`;
@@ -181,7 +181,7 @@ export async function contentPage(db, slug, baseUrl) {
   return new Response(
     shell(
       x.title,
-      `<div class="wrap article-wrap">${crumbs}<article class="article"><div class="eyebrow">${html(x.area || "Roma Ovest / Sud-Ovest")}</div><h1>${html(x.title)}</h1><div class="facts">${facts}</div><div class="impact"><span>COSA CAMBIA PER TE</span><p>${html(x.summary)}</p></div>${x.image_key ? `<figure><img class="article-image" src="/media/${html(x.image_key)}" alt="Illustrazione della notizia locale per ${html(x.area || "Roma Ovest")}" loading="lazy"><figcaption>Illustrazione originale LOCAL AUTOPILOT · <a href="https://creativecommons.org/licenses/by/4.0/deed.it" rel="license noopener">CC BY 4.0</a></figcaption></figure>` : ""}<div class="article-body">${articleBody(x.body)}</div><p class="source">Sintesi originale revisionata a partire da una fonte ufficiale.${x.source_url ? ` <a rel="nofollow noopener" href="${html(x.source_url)}">Consulta la pagina integrale ↗</a>` : ""} · Aggiornato ${html(fmtDate(x.updated_at))}</p><details class="report-box"><summary>Segnala un problema con questo contenuto</summary><form onsubmit="return reportContent(event,${Number(x.id)})"><label>Motivo<select name="reason"><option value="false_info">Informazione errata</option><option value="privacy">Privacy o dati personali</option><option value="copyright">Diritti d'autore</option><option value="offensive">Contenuto offensivo</option><option value="illegal">Possibile illecito</option><option value="spam">Spam</option><option value="other">Altro</option></select></label><label>Dettagli<textarea name="details" maxlength="2000" required></textarea></label><label>Email facoltativa<input name="email" type="email"></label><button>Invia segnalazione</button><output></output></form></details><script>async function reportContent(e,id){e.preventDefault();const f=e.target,r=await fetch('/api/report',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...Object.fromEntries(new FormData(f)),content_id:id})});f.querySelector('output').textContent=r.ok?'Segnalazione ricevuta. Grazie.':'Invio non riuscito.';if(r.ok)f.reset();return false}</script><script type="application/ld+json">${JSON.stringify(schema).replace(/</g, "\\u003c")}</script></article>${renderAd(ad)}${rel ? `<section class="section"><div class="section-head"><h2>Contenuti correlati</h2></div><div class="grid cards">${rel}</div></section>` : ""}</div>`,
+      `<div class="wrap article-wrap">${crumbs}<article class="article"><div class="eyebrow">${html(x.area || "Roma Ovest / Sud-Ovest")}</div><h1>${html(x.title)}</h1><div class="facts">${facts}</div><div class="impact"><span>COSA CAMBIA PER TE</span><p>${html(x.summary)}</p></div>${x.image_key ? `<figure><img class="article-image" src="/media/${html(x.image_key)}" alt="Illustrazione della notizia locale per ${html(x.area || "Roma Ovest")}" loading="lazy"><figcaption>Illustrazione originale AHÓ ROMA · <a href="https://creativecommons.org/licenses/by/4.0/deed.it" rel="license noopener">CC BY 4.0</a></figcaption></figure>` : ""}<div class="article-body">${articleBody(x.body)}</div><p class="source">Sintesi originale revisionata a partire da una fonte ufficiale.${x.source_url ? ` <a rel="nofollow noopener" href="${html(x.source_url)}">Consulta la pagina integrale ↗</a>` : ""} · Aggiornato ${html(fmtDate(x.updated_at))}</p><details class="report-box"><summary>Segnala un problema con questo contenuto</summary><form onsubmit="return reportContent(event,${Number(x.id)})"><label>Motivo<select name="reason"><option value="false_info">Informazione errata</option><option value="privacy">Privacy o dati personali</option><option value="copyright">Diritti d'autore</option><option value="offensive">Contenuto offensivo</option><option value="illegal">Possibile illecito</option><option value="spam">Spam</option><option value="other">Altro</option></select></label><label>Dettagli<textarea name="details" maxlength="2000" required></textarea></label><label>Email facoltativa<input name="email" type="email"></label><button>Invia segnalazione</button><output></output></form></details><script>async function reportContent(e,id){e.preventDefault();const f=e.target,r=await fetch('/api/report',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...Object.fromEntries(new FormData(f)),content_id:id})});f.querySelector('output').textContent=r.ok?'Segnalazione ricevuta. Grazie.':'Invio non riuscito.';if(r.ok)f.reset();return false}</script><script type="application/ld+json">${JSON.stringify(schema).replace(/</g, "\\u003c")}</script></article>${renderAd(ad)}${rel ? `<section class="section"><div class="section-head"><h2>Contenuti correlati</h2></div><div class="grid cards">${rel}</div></section>` : ""}</div>`,
       meta,
     ),
     {
@@ -208,7 +208,7 @@ export async function areaPage(db, slug) {
   const list = (q.results || []).map(card).join("");
   return new Response(
     shell(
-      `${area.name} — LOCAL AUTOPILOT`,
+      `${area.name} — AHÓ ROMA`,
       `<section class="area-hero"><div class="wrap"><nav class="breadcrumbs"><a href="/">Home</a> › <a href="/quartieri">Quartieri</a> › ${html(area.name)}</nav><span class="kicker">NOTIZIE DI QUARTIERE</span><h1>${html(area.name)}</h1><p>Tutto ciò che può essere utile oggi in questa zona: viabilità, servizi, eventi e attività locali.</p></div></section><section class="section wrap"><div class="grid cards">${list || empty("Nessun aggiornamento pubblicato", "Le fonti vengono controllate automaticamente. Torna presto o invia una segnalazione utile.")}</div></section>`,
     ),
     {
@@ -235,7 +235,7 @@ export async function listPage(db, type) {
       .join("");
     return new Response(
       shell(
-        "Quartieri — LOCAL AUTOPILOT",
+        "Quartieri — AHÓ ROMA",
         `<section class="area-hero"><div class="wrap"><span class="kicker">ROMA OVEST / SUD-OVEST</span><h1>Scegli il tuo quartiere</h1><p>La copertura segue le zone reali della città, non un semplice raggio.</p></div></section><section class="section wrap"><div class="area-grid">${items}</div></section>`,
       ),
       { headers: { "content-type": "text/html;charset=utf-8" } },
@@ -253,7 +253,7 @@ export async function listPage(db, type) {
   const items = (q.results || []).map(card).join("");
   return new Response(
     shell(
-      `${title} — LOCAL AUTOPILOT`,
+      `${title} — AHÓ ROMA`,
       `<section class="area-hero"><div class="wrap"><span class="kicker">ROMA OVEST / SUD-OVEST</span><h1>${html(title)}</h1><p>${contentType === "event" ? "Cosa fare oggi, domani e nel weekend." : "Scopri servizi e attività del territorio."}</p></div></section><section class="section wrap"><div class="grid cards">${items || empty("Ancora nessun contenuto", "La sezione è online e pronta a ricevere contenuti verificati.")}</div></section>`,
     ),
     { headers: { "content-type": "text/html;charset=utf-8" } },
