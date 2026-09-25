@@ -68,4 +68,22 @@ export function normalizeSourceDate(value){
   if(date.getUTCFullYear()!==year||date.getUTCMonth()!==month-1||date.getUTCDate()!==day)return null;
   return date.toISOString();
 }
-export async function ingestItem(db,source,item){ const contentHash=await sha256(`${item.title}|${item.text}|${item.source_url}`); const ext=item.external_id||null; const duplicate=await db.prepare('SELECT id FROM la_ingest WHERE source_url=? OR (source_id=? AND content_hash=?) LIMIT 1').bind(item.source_url,source.id,contentHash).first(); if(duplicate)return null; try{const res=await db.prepare('INSERT INTO la_ingest(source_id,external_id,source_url,original_title,original_text,original_date,content_hash,status,detected_area,detected_category,raw_payload) VALUES(?,?,?,?,?,?,?,\'new\',?,?,?)').bind(source.id,ext,item.source_url,item.title,item.text,normalizeSourceDate(item.date),contentHash,source.area_id||null,source.category_id||null,item.raw?JSON.stringify(item.raw).slice(0,200000):null).run(); return Number(res.meta.last_row_id);}catch(e){if(String(e).includes('UNIQUE'))return null; throw e;}}
+export async function ingestItem(db,source,item){
+  const contentHash=await sha256(`${item.title}|${item.text}|${item.source_url}`);
+  const ext=item.external_id||null;
+  const duplicate=await db.prepare('SELECT id FROM la_ingest WHERE source_url=? OR (source_id=? AND content_hash=?) LIMIT 1').bind(item.source_url,source.id,contentHash).first();
+  if(duplicate)return null;
+  let detectedArea=source.area_id||null, detectedCategory=source.category_id||null;
+  if(item.area_slug){
+    const a=await db.prepare("SELECT id FROM la_areas WHERE slug=? AND active=1 LIMIT 1").bind(String(item.area_slug)).first();
+    if(a?.id)detectedArea=Number(a.id);
+  }
+  if(item.category_slug){
+    const k=await db.prepare("SELECT id FROM la_categories WHERE slug=? AND active=1 LIMIT 1").bind(String(item.category_slug)).first();
+    if(k?.id)detectedCategory=Number(k.id);
+  }
+  try{
+    const res=await db.prepare('INSERT INTO la_ingest(source_id,external_id,source_url,original_title,original_text,original_date,content_hash,status,detected_area,detected_category,raw_payload) VALUES(?,?,?,?,?,?,?,\'new\',?,?,?)').bind(source.id,ext,item.source_url,item.title,item.text,normalizeSourceDate(item.date),contentHash,detectedArea,detectedCategory,item.raw?JSON.stringify(item.raw).slice(0,200000):null).run();
+    return Number(res.meta.last_row_id);
+  }catch(e){if(String(e).includes('UNIQUE'))return null; throw e;}
+}
