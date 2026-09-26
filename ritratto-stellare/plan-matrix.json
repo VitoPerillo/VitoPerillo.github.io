@@ -1,0 +1,97 @@
+{
+  "version": "2026-09-26-master",
+  "frozen": true,
+  "currency": "EUR",
+  "plans": {
+    "fenice": {
+      "price_monthly": 0,
+      "price_annual": null,
+      "annual_name": null,
+      "trial_days": 30,
+      "questions": {
+        "scope": "trial",
+        "count": 1
+      },
+      "positioning": "Scoprire",
+      "features": [
+        "ritratto_essenziale",
+        "oggi",
+        "settimana",
+        "mese",
+        "anno",
+        "aree_4"
+      ]
+    },
+    "pegaso": {
+      "price_monthly": 6.9,
+      "price_annual": 69,
+      "annual_name": "PEGASO STAR",
+      "questions": {
+        "scope": "month",
+        "count": 1
+      },
+      "positioning": "Capire",
+      "features": [
+        "ritratto_completo",
+        "oggi",
+        "settimana",
+        "mese",
+        "anno",
+        "aree_4",
+        "pdf_ritratto",
+        "consigli_pratici",
+        "storico_30_giorni",
+        "notifiche_essenziali"
+      ]
+    },
+    "orione": {
+      "price_monthly": 9.9,
+      "price_annual": 99,
+      "annual_name": "ORIONE STAR",
+      "questions": {
+        "scope": "month",
+        "count": 4
+      },
+      "positioning": "Orientarsi",
+      "features": [
+        "all_pegaso",
+        "letture_approfondite",
+        "bussola_del_mese",
+        "momenti_chiave_30_giorni",
+        "storico_6_mesi",
+        "pdf_mese_esteso",
+        "notifiche_momenti_chiave"
+      ]
+    },
+    "andromeda": {
+      "price_monthly": 14.9,
+      "price_annual": 149,
+      "annual_name": "ANDROMEDA STAR",
+      "questions": {
+        "scope": "month",
+        "count": 12
+      },
+      "positioning": "Collegare",
+      "features": [
+        "all_orione",
+        "radar_90_giorni",
+        "filo_del_cielo",
+        "mappa_annuale",
+        "storico_12_mesi",
+        "pdf_anno",
+        "notifiche_evolute"
+      ]
+    }
+  },
+  "excluded": [
+    "14_90_una_tantum_as_primary_model",
+    "star_as_fifth_plan",
+    "20_60_150_question_quota_experiment",
+    "plan_name_reordering"
+  ],
+  "safety": {
+    "astrology": "interpretive_reflective_not_certain_prediction",
+    "live_paypal": "disabled_until_explicit_gate",
+    "high_stakes": "no_medical_legal_financial_psychological_decision_substitution"
+  }
+}
