@@ -7,7 +7,7 @@ import { classifyGeo } from './geo.js';
 import { fetchArticleDetails, editorialDraftGate } from './article.js';
 
 export async function processIngest(env,id,{editorApproved=false,editorDraft=null,rebuild=false,verifiedSource=null}={}){
-  const row=await env.DB.prepare('SELECT i.*,s.trust_level,s.usage_policy FROM la_ingest i JOIN la_sources s ON s.id=i.source_id WHERE i.id=?').bind(id).first();
+  const row=await env.DB.prepare('SELECT i.*,s.trust_level,s.usage_policy,s.source_type FROM la_ingest i JOIN la_sources s ON s.id=i.source_id WHERE i.id=?').bind(id).first();
   if(!row) throw new Error('ingest_not_found');
   if(['published','updated','rejected'].includes(row.status)&&!rebuild) return row.status;
   if(row.usage_policy==='blocked'){await setStatus(env.DB,id,'rejected'); return 'rejected';}
@@ -32,7 +32,8 @@ export async function processIngest(env,id,{editorApproved=false,editorDraft=nul
   }
   const value=valueGate(record);
   const approvedMinimum=record.title.length>=12&&record.text.length>=20&&Number(record.area_id||0)>0;
-  if(!value.pass&&!(editorApproved&&approvedMinimum)){await setStatus(env.DB,id,'rejected',fp); return 'rejected';}
+  const officialMinimum=row.source_type==='official_bridge'&&Number(row.trust_level||0)>=90&&record.title.length>=12&&record.text.length>=70&&Number(record.area_id||0)>0&&Boolean(record.original_date);
+  if(!value.pass&&!(editorApproved&&approvedMinimum)&&!officialMinimum){await setStatus(env.DB,id,'rejected',fp); return 'rejected';}
   let generated;
   if(editorApproved){
     if(!editorDraft)throw new Error('editor_draft_required');
