@@ -36,8 +36,11 @@ async function houseAd(db) {
   }
 }
 const renderAd = () => "";
-const card = (x) =>
-  `<article class="card"><div class="eyebrow">${html(x.area || x.category || "Roma Ovest")}</div><h3><a href="${html(routeFor(x))}">${html(x.title)}</a></h3><p>${html(x.summary || "")}</p><small>Aggiornato ${html(fmtDate(x.updated_at))}</small></article>`;
+const card = (x) => {
+  const d=x.content_type==="news"&&x.valid_from?x.valid_from:x.updated_at;
+  const label=x.content_type==="news"&&x.valid_from?"Fonte":"Aggiornato";
+  return `<article class="card"><div class="eyebrow">${html(x.area || x.category || "Roma Ovest")}</div><h3><a href="${html(routeFor(x))}">${html(x.title)}</a></h3><p>${html(x.summary || "")}</p><small>${label} ${html(fmtDate(d))}</small></article>`;
+};
 const articleBody = (value) =>
   String(value || "")
     .split(/\n{2,}/)
@@ -59,12 +62,12 @@ export async function home(db) {
   const [latest, events, areas] = await Promise.all([
     db
       .prepare(
-        "SELECT c.id,c.content_type,c.slug,c.title,c.summary,c.updated_at,a.name area,a.slug area_slug,k.name category FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id LEFT JOIN la_categories k ON k.id=c.category_id WHERE c.content_type='news' AND c.status IN ('published','updated') ORDER BY c.featured DESC,c.updated_at DESC LIMIT 12",
+        "SELECT c.id,c.content_type,c.slug,c.title,c.summary,c.updated_at,c.valid_from,a.name area,a.slug area_slug,k.name category FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id LEFT JOIN la_categories k ON k.id=c.category_id WHERE c.content_type='news' AND c.status IN ('published','updated') AND NOT (a.slug='municipio-i-trastevere' AND lower(COALESCE(c.title,'')||' '||COALESCE(c.summary,'')||' '||COALESCE(c.body,'')) NOT LIKE '%trastevere%' AND lower(COALESCE(c.title,'')||' '||COALESCE(c.summary,'')||' '||COALESCE(c.body,'')) NOT LIKE '%porta portese%') ORDER BY c.featured DESC,COALESCE(c.valid_from,c.published_at,c.updated_at) DESC LIMIT 12",
       )
       .all(),
     db
       .prepare(
-        "SELECT c.id,c.content_type,c.slug,c.title,c.summary,c.updated_at,a.name area FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE c.content_type='event' AND c.status IN ('published','updated') AND (c.event_end IS NULL OR c.event_end>=CURRENT_TIMESTAMP) ORDER BY COALESCE(c.event_start,c.published_at) ASC LIMIT 4",
+        "SELECT c.id,c.content_type,c.slug,c.title,c.summary,c.updated_at,c.valid_from,a.name area FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE c.content_type='event' AND c.status IN ('published','updated') AND (c.event_end IS NULL OR c.event_end>=CURRENT_TIMESTAMP) ORDER BY COALESCE(c.event_start,c.published_at) ASC LIMIT 4",
       )
       .all(),
     db
@@ -83,11 +86,11 @@ export async function home(db) {
     .join("");
 
   const leadMarkup = lead
-    ? `<article class="lead-story"><div class="eyebrow">${html(lead.area || lead.category || "Roma")}</div><h1><a href="${html(routeFor(lead))}">${html(lead.title)}</a></h1><p>${html(lead.summary || "")}</p><small>Aggiornato ${html(fmtDate(lead.updated_at))}</small></article>`
+    ? `<article class="lead-story"><div class="eyebrow">${html(lead.area || lead.category || "Roma")}</div><h1><a href="${html(routeFor(lead))}">${html(lead.title)}</a></h1><p>${html(lead.summary || "")}</p><small>Fonte ${html(fmtDate(lead.valid_from || lead.updated_at))}</small></article>`
     : empty("AHÓ ROMA è online", "Le notizie verificate compariranno qui appena disponibili.");
 
   const sideMarkup = side.length
-    ? side.map((x)=>`<article class="headline-row"><div class="eyebrow">${html(x.area || x.category || "Roma")}</div><h2><a href="${html(routeFor(x))}">${html(x.title)}</a></h2><small>${html(fmtDate(x.updated_at))}</small></article>`).join("")
+    ? side.map((x)=>`<article class="headline-row"><div class="eyebrow">${html(x.area || x.category || "Roma")}</div><h2><a href="${html(routeFor(x))}">${html(x.title)}</a></h2><small>${html(fmtDate(x.valid_from || x.updated_at))}</small></article>`).join("")
     : "";
 
   const geoData = JSON.stringify([
@@ -220,12 +223,17 @@ export async function contentPage(db, slug, baseUrl) {
     .bind(slug)
     .first();
   if (!x) return new Response("Not found", { status: 404 });
+  if (x.area_slug === "municipio-i-trastevere") {
+    const localText=`${x.title||""} ${x.summary||""} ${x.body||""}`.toLocaleLowerCase("it-IT");
+    if (!localText.includes("trastevere") && !localText.includes("porta portese"))
+      return new Response("Not found", { status: 404 });
+  }
   const root = new URL(baseUrl).origin,
     canonicalUrl = root + routeFor(x);
   const [related, ad] = await Promise.all([
     db
       .prepare(
-        "SELECT c.content_type,c.slug,c.title,c.summary,c.updated_at,a.name area FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE c.id<>? AND c.status IN ('published','updated') AND (c.area_id=? OR c.category_id=?) ORDER BY c.updated_at DESC LIMIT 4",
+        "SELECT c.content_type,c.slug,c.title,c.summary,c.updated_at,c.valid_from,a.name area FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE c.id<>? AND c.status IN ('published','updated') AND (c.area_id=? OR c.category_id=?) ORDER BY c.updated_at DESC LIMIT 4",
       )
       .bind(x.id, x.area_id, x.category_id)
       .all(),
@@ -306,7 +314,7 @@ export async function areaPage(db, slug) {
   if (!area) return new Response("Not found", { status: 404 });
   const q = await db
     .prepare(
-      "SELECT c.content_type,c.slug,c.title,c.summary,c.updated_at,a.name area FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE c.area_id=? AND c.status IN ('published','updated') ORDER BY c.updated_at DESC LIMIT 50",
+      "SELECT c.content_type,c.slug,c.title,c.summary,c.updated_at,c.valid_from,a.name area FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE c.area_id=? AND c.status IN ('published','updated') ORDER BY c.updated_at DESC LIMIT 50",
     )
     .bind(area.id)
     .all();
@@ -351,7 +359,7 @@ export async function listPage(db, type) {
     contentType === "event" ? "Eventi vicino a te" : "Attività locali";
   const q = await db
     .prepare(
-      "SELECT c.id,c.content_type,c.slug,c.title,c.summary,c.updated_at,a.name area FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE c.content_type=? AND c.status IN ('published','updated') ORDER BY c.featured DESC,c.updated_at DESC LIMIT 100",
+      "SELECT c.id,c.content_type,c.slug,c.title,c.summary,c.updated_at,c.valid_from,a.name area FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE c.content_type=? AND c.status IN ('published','updated') ORDER BY c.featured DESC,c.updated_at DESC LIMIT 100",
     )
     .bind(contentType)
     .all();
