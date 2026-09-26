@@ -116,7 +116,7 @@ export default {
 };
 
 async function publicStatus(db) {
-  const [content, newest, heartbeat, sources, stale, jobs, bridge, bridgeIngest, bridgeLog] = await Promise.all([
+  const [content, newest, heartbeat, sources, stale, jobs, bridge, bridgeIngest, bridgeLog, bridgeFailed] = await Promise.all([
     db.prepare("SELECT count(*) n FROM la_content WHERE status IN ('published','updated')").first(),
     db.prepare("SELECT max(updated_at) ts FROM la_content WHERE status IN ('published','updated')").first(),
     db.prepare("SELECT value FROM la_settings WHERE key='queue_heartbeat'").first(),
@@ -126,6 +126,7 @@ async function publicStatus(db) {
     db.prepare("SELECT id,last_checked_at,last_success_at,interval_minutes FROM la_sources WHERE source_type='official_bridge' ORDER BY id DESC LIMIT 1").first(),
     db.prepare("SELECT status,count(*) n FROM la_ingest WHERE source_id=(SELECT id FROM la_sources WHERE source_type='official_bridge' ORDER BY id DESC LIMIT 1) GROUP BY status ORDER BY status").all(),
     db.prepare("SELECT message,created_at FROM la_logs WHERE component='source' AND context_json LIKE '%source_id%' ORDER BY id DESC LIMIT 1").first(),
+    db.prepare("SELECT last_error,count(*) n FROM la_jobs WHERE job_type='process_ingest' AND status='failed' AND entity_id IN (SELECT id FROM la_ingest WHERE source_id=(SELECT id FROM la_sources WHERE source_type='official_bridge' ORDER BY id DESC LIMIT 1)) GROUP BY last_error ORDER BY max(updated_at) DESC LIMIT 5").all(),
   ]);
   const sourceError=String(bridgeLog?.message||"");
   return responseJson({
@@ -144,6 +145,10 @@ async function publicStatus(db) {
       ingest_statuses: Object.fromEntries((bridgeIngest.results||[]).map(x=>[String(x.status),Number(x.n||0)])),
       last_source_error: /^Error:\s*source_[a-z0-9_]+$/i.test(sourceError) ? sourceError : null,
       last_source_error_at: bridgeLog?.created_at || null,
+      failed_jobs: (bridgeFailed.results||[]).map(x=>({
+        code: String(x.last_error||"").replace(/^Error:\s*/,"").slice(0,120),
+        count: Number(x.n||0)
+      })),
     } : null,
   }, 200, { "cache-control": "no-store" });
 }
