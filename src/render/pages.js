@@ -22,7 +22,7 @@ const empty = (title, text) =>
   `<div class="empty"><strong>${html(title)}</strong><p>${html(text)}</p></div>`;
 
 const shell = (title, body, meta = "") =>
-  `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b5cff"><title>${html(title)}</title>${meta}<link rel="stylesheet" href="/app.css"></head><body><header class="site-header"><div class="wrap header-inner"><a class="brand" href="/"><span class="brand-mark">AHÓ</span><span><b>AHÓ ROMA</b><small>Che succede a Roma?</small></span></a><nav><a href="/quartieri">Quartieri</a><a href="/eventi">Eventi</a><a href="/attivita">Attività locali</a><a href="/pubblicita">Pubblicità</a><a class="nav-cta" href="/segnala">Segnala</a></nav></div></header><main>${body}</main><footer><div class="wrap footer-grid"><div><b>AHÓ ROMA</b><p>Notizie di quartiere utili, selezionate per Roma Ovest / Sud-Ovest.</p></div><div><a href="/quartieri">Quartieri</a> · <a href="/eventi">Eventi</a> · <a href="/attivita">Attività</a> · <a href="/segnala">Invia un contenuto</a> · <a href="/pubblicita">Pubblicità locale</a></div></div></footer></body></html>`;
+  `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b5cff"><title>${html(title)}</title>${meta}<link rel="stylesheet" href="/app.css"></head><body><header class="site-header"><div class="wrap header-inner"><a class="brand" href="/"><span class="brand-mark">AHÓ</span><span><b>AHÓ ROMA</b><small>Che succede nel tuo quartiere?</small></span></a><nav><a href="/#ultime">Ultime</a><a href="/quartieri">Quartieri</a><a href="/eventi">Eventi</a><a class="nav-cta" href="/segnala">Segnala una notizia</a></nav></div></header><main>${body}</main><footer><div class="wrap footer-grid"><div><b>AHÓ ROMA</b><p>Notizie, eventi e informazioni utili vicino a te.</p></div><div><a href="/#ultime">Ultime</a> · <a href="/quartieri">Quartieri</a> · <a href="/eventi">Eventi</a> · <a href="/segnala">Segnala una notizia</a> · <a href="/pubblicita">Per le attività</a></div></div></footer></body></html>`;
 
 async function houseAd(db) {
   try {
@@ -56,10 +56,10 @@ const articleBody = (value) =>
     .join("");
 
 export async function home(db) {
-  const [latest, events, businesses, areas, ad] = await Promise.all([
+  const [latest, events, areas] = await Promise.all([
     db
       .prepare(
-        "SELECT c.id,c.content_type,c.slug,c.title,c.summary,c.updated_at,a.name area,k.name category FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id LEFT JOIN la_categories k ON k.id=c.category_id WHERE c.status IN ('published','updated') ORDER BY c.featured DESC,c.updated_at DESC LIMIT 8",
+        "SELECT c.id,c.content_type,c.slug,c.title,c.summary,c.updated_at,a.name area,a.slug area_slug,k.name category FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id LEFT JOIN la_categories k ON k.id=c.category_id WHERE c.content_type='news' AND c.status IN ('published','updated') ORDER BY c.featured DESC,c.updated_at DESC LIMIT 12",
       )
       .all(),
     db
@@ -69,34 +69,139 @@ export async function home(db) {
       .all(),
     db
       .prepare(
-        "SELECT c.id,c.content_type,c.slug,c.title,c.summary,c.updated_at,a.name area FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE c.content_type='business' AND c.status IN ('published','updated') ORDER BY c.featured DESC,c.updated_at DESC LIMIT 4",
+        "SELECT name,slug FROM la_areas WHERE active=1 AND kind='neighborhood' ORDER BY name LIMIT 40",
       )
       .all(),
-    db
-      .prepare(
-        "SELECT name,slug FROM la_areas WHERE active=1 AND kind='neighborhood' ORDER BY name LIMIT 18",
-      )
-      .all(),
-    houseAd(db),
   ]);
-  const news = (latest.results || []).filter((x) => x.content_type === "news");
-  const all = latest.results || [];
+
+  const news = latest.results || [];
+  const lead = news[0] || null;
+  const side = news.slice(1,4);
+  const more = news.slice(4,10);
   const areaLinks = (areas.results || [])
-    .map(
-      (a) => `<a class="chip" href="/zona/${html(a.slug)}">${html(a.name)}</a>`,
-    )
+    .map((a) => `<a class="chip" href="/zona/${html(a.slug)}">${html(a.name)}</a>`)
     .join("");
+
+  const leadMarkup = lead
+    ? `<article class="lead-story"><div class="eyebrow">${html(lead.area || lead.category || "Roma")}</div><h1><a href="${html(routeFor(lead))}">${html(lead.title)}</a></h1><p>${html(lead.summary || "")}</p><small>Aggiornato ${html(fmtDate(lead.updated_at))}</small></article>`
+    : empty("AHÓ ROMA è online", "Le notizie verificate compariranno qui appena disponibili.");
+
+  const sideMarkup = side.length
+    ? side.map((x)=>`<article class="headline-row"><div class="eyebrow">${html(x.area || x.category || "Roma")}</div><h2><a href="${html(routeFor(x))}">${html(x.title)}</a></h2><small>${html(fmtDate(x.updated_at))}</small></article>`).join("")
+    : "";
+
+  const geoData = JSON.stringify([
+    ["monteverde-vecchio","Monteverde Vecchio",41.8794,12.4527],
+    ["monteverde-nuovo","Monteverde Nuovo",41.8728,12.4435],
+    ["gianicolense","Gianicolense",41.8720,12.4490],
+    ["colli-portuensi","Colli Portuensi",41.8508,12.4446],
+    ["casaletto","Casaletto",41.8690,12.4380],
+    ["bravetta","Bravetta",41.8725,12.4210],
+    ["villa-pamphilj","Villa Pamphilj",41.8870,12.4450],
+    ["pisana","Pisana",41.8590,12.4100],
+    ["massimina","Massimina",41.8670,12.3560],
+    ["casal-lumbroso","Casal Lumbroso",41.8730,12.3690],
+    ["portuense","Portuense",41.8530,12.4570],
+    ["marconi","Marconi",41.8530,12.4700],
+    ["trullo","Trullo",41.8370,12.4360],
+    ["corviale","Corviale",41.8290,12.4030],
+    ["casetta-mattei","Casetta Mattei",41.8380,12.4150],
+    ["ponte-galeria","Ponte Galeria",41.8220,12.3490],
+    ["piana-del-sole","Piana del Sole",41.8170,12.3260],
+    ["villa-bonelli","Villa Bonelli",41.8470,12.4560],
+    ["aurelio","Aurelio",41.8990,12.4300],
+    ["aurelia-antica","Aurelia Antica",41.8850,12.4350],
+    ["gregorio-vii","Gregorio VII",41.8950,12.4490],
+    ["villa-carpegna","Villa Carpegna",41.8990,12.4320],
+    ["boccea","Boccea",41.9060,12.4080],
+    ["casalotti","Casalotti",41.9190,12.3660],
+    ["val-cannuta","Val Cannuta",41.8980,12.3990],
+    ["valle-aurelia","Valle Aurelia",41.9030,12.4440],
+    ["montespaccato","Montespaccato",41.9230,12.4020],
+    ["trastevere","Trastevere",41.8890,12.4695],
+    ["porta-portese","Porta Portese",41.8755,12.4725]
+  ]);
+
   return new Response(
     shell(
-      "AHÓ ROMA — Che succede a Roma?",
+      "AHÓ ROMA — Che succede nel tuo quartiere?",
       `
-    <section class="hero"><div class="wrap hero-grid"><div><span class="kicker">ROMA OVEST / SUD-OVEST</span><h1>Notizie di quartiere.<br><em>Più vicine a te.</em></h1><p>Viabilità, servizi, eventi e attività locali: solo ciò che può essere utile davvero nel tuo territorio.</p><div class="hero-actions"><a class="btn primary" href="#oggi">Cosa succede oggi</a><a class="btn" href="/quartieri">Scegli il quartiere</a></div></div><div class="hero-panel"><strong>Copertura editoriale</strong><p>Municipi XI, XII, XIII + Trastevere, con quartieri e micro-zone della fascia Ovest / Sud-Ovest.</p><div class="mini-stats"><span><b>${(areas.results || []).length}+</b> quartieri</span><span><b>24/7</b> aggiornamenti</span></div></div></div></section>
-    <div class="wrap">${renderAd(ad)}</div>
-    <section class="section wrap" id="oggi"><div class="section-head"><div><span class="kicker">OGGI NEL TUO QUARTIERE</span><h2>Cosa cambia per te</h2></div><a href="/quartieri">Tutti i quartieri →</a></div><div class="grid cards">${all.length ? all.slice(0, 6).map(card).join("") : empty("Il portale è online", "Stiamo collegando le fonti locali. Le prime informazioni verificate compariranno qui automaticamente.")}</div></section>
-    <section class="section muted"><div class="wrap"><div class="section-head"><div><span class="kicker">QUARTIERI</span><h2>Roma Ovest, zona per zona</h2></div><a href="/quartieri">Vedi tutti →</a></div><div class="chips">${areaLinks}</div></div></section>
-    <section class="section wrap two-col"><div><div class="section-head"><div><span class="kicker">EVENTI</span><h2>Oggi, domani, weekend</h2></div><a href="/eventi">Tutti →</a></div><div class="stack">${(events.results || []).length ? (events.results || []).map(card).join("") : empty("Nessun evento ancora pubblicato", "Puoi inserire gratuitamente un evento locale: verrà verificato prima della pubblicazione.")}</div></div><div><div class="section-head"><div><span class="kicker">ATTIVITÀ LOCALI</span><h2>Servizi vicino a te</h2></div><a href="/attivita">Tutte →</a></div><div class="stack">${(businesses.results || []).length ? (businesses.results || []).map(card).join("") : empty("Directory in apertura", "Le attività locali possono inviare gratuitamente la propria scheda.")}</div></div></section>
-    <section class="section action-band"><div class="wrap action-grid"><div><h2>Il quartiere lo costruiscono anche i residenti.</h2><p>Segnala un'informazione utile, un evento o un'attività locale. Niente account e niente password.</p></div><a class="btn light" href="/segnala">Invia una segnalazione →</a></div></section>
-  `,
+      <section class="news-intro">
+        <div class="wrap news-intro-inner">
+          <div>
+            <span class="kicker">AHÓ ROMA</span>
+            <h2>Che succede nel tuo quartiere?</h2>
+            <p>Notizie, eventi e informazioni utili vicino a te.</p>
+          </div>
+          <div class="location-tools">
+            <button class="location-btn" id="geoBtn" type="button">📍 Trova il mio quartiere</button>
+            <a class="location-manual" href="/quartieri">Scegli manualmente</a>
+            <span class="location-status" id="geoStatus" aria-live="polite"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="breaking wrap" id="ultime">
+        <div class="section-head compact-head">
+          <div><span class="kicker">ULTIME</span><h2>Le notizie adesso</h2></div>
+          <a href="/quartieri">Cambia zona →</a>
+        </div>
+        <div class="news-front">
+          ${leadMarkup}
+          <div class="headline-list">${sideMarkup}</div>
+        </div>
+      </section>
+
+      ${more.length ? `<section class="section wrap latest-grid"><div class="section-head"><div><span class="kicker">ALTRE NOTIZIE</span><h2>Dal territorio</h2></div></div><div class="grid cards">${more.map(card).join("")}</div></section>` : ""}
+
+      <section class="section muted"><div class="wrap"><div class="section-head"><div><span class="kicker">QUARTIERI</span><h2>Vai direttamente nella tua zona</h2></div><a href="/quartieri">Tutti →</a></div><div class="chips">${areaLinks}</div></div></section>
+
+      <section class="section wrap"><div class="section-head"><div><span class="kicker">EVENTI</span><h2>Cosa fare vicino a te</h2></div><a href="/eventi">Tutti gli eventi →</a></div><div class="grid cards">${(events.results || []).length ? (events.results || []).map(card).join("") : empty("Nessun evento ancora pubblicato", "Gli eventi verificati compariranno qui automaticamente.")}</div></section>
+
+      <section class="section action-band"><div class="wrap action-grid"><div><h2>È successo qualcosa nel tuo quartiere?</h2><p>Segnala una notizia, un evento o un'informazione utile. La verifichiamo prima della pubblicazione.</p></div><a class="btn light" href="/segnala">Segnala una notizia →</a></div></section>
+
+      <script>
+      (() => {
+        const areas = ${geoData};
+        const btn = document.getElementById('geoBtn');
+        const status = document.getElementById('geoStatus');
+        const dist = (lat1,lon1,lat2,lon2) => {
+          const r=6371, dLat=(lat2-lat1)*Math.PI/180, dLon=(lon2-lon1)*Math.PI/180;
+          const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+          return 2*r*Math.asin(Math.sqrt(a));
+        };
+        const saved = (()=>{try{return JSON.parse(localStorage.getItem('ahoRomaArea')||'null')}catch{return null}})();
+        if(saved?.slug && saved?.name){
+          btn.textContent='📍 '+saved.name;
+          btn.onclick=()=>location.href='/zona/'+encodeURIComponent(saved.slug);
+          status.innerHTML='<a href="/quartieri">Cambia quartiere</a>';
+          return;
+        }
+        btn?.addEventListener('click', () => {
+          if(!navigator.geolocation){
+            status.textContent='Posizione non disponibile. Scegli il quartiere.';
+            return;
+          }
+          btn.disabled=true; btn.textContent='📍 Sto cercando…';
+          navigator.geolocation.getCurrentPosition(pos => {
+            const lat=pos.coords.latitude, lon=pos.coords.longitude;
+            const nearest=areas.map(a=>({slug:a[0],name:a[1],km:dist(lat,lon,a[2],a[3])})).sort((a,b)=>a.km-b.km)[0];
+            btn.disabled=false;
+            if(!nearest || nearest.km>18){
+              btn.textContent='📍 Fuori area';
+              status.innerHTML='Per ora copriamo Roma Ovest / Sud-Ovest. <a href="/quartieri">Scegli un quartiere</a>.';
+              return;
+            }
+            localStorage.setItem('ahoRomaArea',JSON.stringify({slug:nearest.slug,name:nearest.name}));
+            location.href='/zona/'+encodeURIComponent(nearest.slug);
+          }, () => {
+            btn.disabled=false; btn.textContent='📍 Trova il mio quartiere';
+            status.innerHTML='Posizione non concessa. <a href="/quartieri">Scegli manualmente</a>.';
+          }, {enableHighAccuracy:false,timeout:7000,maximumAge:900000});
+        });
+      })();
+      </script>
+    `,
     ),
     {
       headers: {
