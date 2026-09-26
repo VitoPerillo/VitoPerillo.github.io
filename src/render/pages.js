@@ -8,12 +8,16 @@ const routeFor = (x) =>
       : `/notizie/${x.slug}`;
 const fmtDate = (x) => {
   try {
+    const raw=String(x||"");
+    const iso=/[TZ]|[+-]\d\d:\d\d$/.test(raw) ? raw : raw.replace(" ", "T") + "Z";
+    const d=new Date(iso);
+    if(Number.isNaN(d.getTime())) return raw;
     return new Intl.DateTimeFormat("it-IT", {
       day: "2-digit",
       month: "short",
       hour: "2-digit",
       minute: "2-digit",
-    }).format(new Date(String(x).replace(" ", "T") + "Z"));
+    }).format(d);
   } catch {
     return String(x || "");
   }
