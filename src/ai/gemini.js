@@ -1,5 +1,20 @@
 export class NullProvider {
-  async generateArticle(record){ return {headline:record.title, summary:String(record.text||'').slice(0,220), body:record.text||'', area_id:record.area_id||null, category_id:record.category_id||null, facts:[], what_changes:'', valid_from:record.valid_from||record.original_date||null, valid_until:record.valid_until||null, confidence:50, social_text:record.title}; }
+  async generateArticle(record){
+    const text=String(record.text||'').trim();
+    return {
+      headline:record.title,
+      summary:text.slice(0,220),
+      body:text,
+      area_id:record.area_id||null,
+      category_id:record.category_id||null,
+      facts:[],
+      what_changes:'',
+      valid_from:record.valid_from||record.original_date||null,
+      valid_until:record.valid_until||null,
+      confidence:90,
+      social_text:record.title
+    };
+  }
   async classifyRisk(){ return {level:'YELLOW'}; }
 }
 
@@ -33,4 +48,7 @@ export class GeminiProvider {
   }
 }
 
-export function aiProvider(env){ return env.AI_PROVIDER==='gemini' ? new GeminiProvider(env) : new NullProvider(); }
+export function aiProvider(env){
+  if(env.AI_PROVIDER==='gemini' && env.GEMINI_API_KEY) return new GeminiProvider(env);
+  return new NullProvider();
+}
