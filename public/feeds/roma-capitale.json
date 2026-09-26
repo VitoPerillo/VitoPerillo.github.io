@@ -1,14 +1,5 @@
 [
   {
-    "id": "https://www.comune.roma.it/web/it/notizia.page?contentId=NWS1640939",
-    "url": "https://www.comune.roma.it/web/it/notizia.page?contentId=NWS1640939",
-    "title": "Storie di strade: viaggio nella toponomastica della capitale",
-    "text": "Municipio I. Tantissime le vie con nomi curiosi e bizzarri, tra leggende, dicerie e racconti popolari.",
-    "date": "2026-09-25T17:03:00+02:00",
-    "area_slug": "municipio-i-trastevere",
-    "category_slug": "viabilita-trasporti"
-  },
-  {
     "id": "https://www.comune.roma.it/web/it/notizia/gep-2026-arvalia-in-cammino-da-marconi-a-corviale.page",
     "url": "https://www.comune.roma.it/web/it/notizia/gep-2026-arvalia-in-cammino-da-marconi-a-corviale.page",
     "title": "GEP 2026. \"Arvalia in cammino\" da Marconi a Corviale",
@@ -27,24 +18,6 @@
     "category_slug": "avvisi-utili"
   },
   {
-    "id": "https://www.comune.roma.it/web/it/notizia/multi-2026-piazza-vittorio-culture-e-cotture.page",
-    "url": "https://www.comune.roma.it/web/it/notizia/multi-2026-piazza-vittorio-culture-e-cotture.page",
-    "title": "Multi 2026 a Piazza Vittorio, culture e cotture che uniscono",
-    "text": "Municipio I. Quattro giorni di eventi in uno spazio aperto di incontro, confronto e partecipazione.",
-    "date": "2026-09-24T10:10:00+02:00",
-    "area_slug": "municipio-i-trastevere",
-    "category_slug": "avvisi-utili"
-  },
-  {
-    "id": "https://www.comune.roma.it/web/it/notizia/festival-cinque-colori-piazza-del-popolo-mun01.page",
-    "url": "https://www.comune.roma.it/web/it/notizia/festival-cinque-colori-piazza-del-popolo-mun01.page",
-    "title": "Il Festival dei Cinque Colori a Piazza del Popolo",
-    "text": "Municipio I. Tematica: Iniziative ed Eventi - Eventi per bambini e ragazzi - Sport - Prevenzione - Salute Dal 24 al 26 settembre 2026, Piazza del Popolo si trasformer&agrave; nel cuore del Festival dei Cinque Colori, la manifestazione nata dall&rsquo;omonimo progetto per promuovere salute, prevenzione e corretti stili di vita attraverso sport, danza per tutti, una mostra immersiva e divertimento.",
-    "date": "2026-09-23T15:35:00+02:00",
-    "area_slug": "municipio-i-trastevere",
-    "category_slug": "servizi-municipio"
-  },
-  {
     "id": "https://www.comune.roma.it/web/it/notizia/mun12-autismo-open-day-natura-inclusione.page",
     "url": "https://www.comune.roma.it/web/it/notizia/mun12-autismo-open-day-natura-inclusione.page",
     "title": "Municipio XII, una giornata nella natura dedicata all'inclusione",
@@ -52,15 +25,6 @@
     "date": "2026-09-23T15:34:00+02:00",
     "area_slug": "municipio-xii",
     "category_slug": "scuola-famiglie"
-  },
-  {
-    "id": "https://www.comune.roma.it/web/it/notizia/mun01-inaugurata-strada-scolastica.page",
-    "url": "https://www.comune.roma.it/web/it/notizia/mun01-inaugurata-strada-scolastica.page",
-    "title": "Municipio I. Via della Rondinella, inaugurata strada scolastica",
-    "text": "Municipio I. Tematica: Scuola - Sicurezza Urbana - Mobilità e Territorio Inaugurata questa mattina la strada scolastica pedonalizzata davanti alla Scuola Primaria Alberto Cadlolo , in via della Rondinella .",
-    "date": "2026-09-22T12:37:00+02:00",
-    "area_slug": "municipio-i-trastevere",
-    "category_slug": "viabilita-trasporti"
   },
   {
     "id": "https://www.comune.roma.it/web/it/notizia/mun12-al-via-the-green-loop-2026.page",
