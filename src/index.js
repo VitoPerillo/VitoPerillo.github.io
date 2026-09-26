@@ -156,7 +156,7 @@ async function publicStatus(db) {
 async function maybeForegroundTick(env) {
   try {
     const gate=await env.DB.prepare(
-      "INSERT INTO la_settings(key,value,updated_at) VALUES('foreground_tick_v5',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE updated_at < datetime('now','-10 minutes')"
+      "INSERT INTO la_settings(key,value,updated_at) VALUES('foreground_tick_v6',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE updated_at < datetime('now','-10 minutes')"
     ).run();
     if(Number(gate.meta?.changes||0)>0) await tick(env);
   } catch (e) {
@@ -177,7 +177,9 @@ async function listSimple(db, table) {
 async function tick(env) {
   await recoverStale(env.DB);
   await ensureOfficialBridgeSource(env);
+  await recoverOfficialBridgeGateOnce(env.DB);
   await sourceTick(env);
+  await ensureOfficialBridgeJobs(env.DB);
   await prepareDiscoveryReview(env.DB);
   const max = Math.max(1, Math.min(10, Number(env.MAX_QUEUE_BATCH || 8)));
   for (let i = 0; i < max; i++) {
@@ -207,6 +209,25 @@ async function ensureOfficialBridgeSource(env) {
   }
   await env.DB.prepare("INSERT INTO la_sources(name,url,source_type,parser_type,trust_level,usage_policy,interval_minutes,active,config_json) VALUES(?,?,?,?,?,?,?,?,?)")
     .bind("Roma Capitale · bridge AHÓ ROMA",url,"official_bridge","json",95,"auto",5,1,"{}").run();
+}
+
+async function recoverOfficialBridgeGateOnce(db) {
+  const done=await db.prepare("SELECT value FROM la_settings WHERE key='official_bridge_gate_recovery_v1'").first();
+  if(done?.value)return;
+  const bridge=await db.prepare("SELECT id FROM la_sources WHERE source_type='official_bridge' ORDER BY id DESC LIMIT 1").first();
+  if(bridge?.id){
+    await db.prepare(
+      "UPDATE la_ingest SET status='new',updated_at=CURRENT_TIMESTAMP WHERE source_id=? AND status='rejected' AND content_id IS NULL AND original_date>=datetime('now','-7 days') AND COALESCE(detected_area,0)<>(SELECT COALESCE(id,0) FROM la_areas WHERE slug='municipio-i-trastevere' LIMIT 1)"
+    ).bind(bridge.id).run();
+  }
+  await db.prepare("INSERT INTO la_settings(key,value) VALUES('official_bridge_gate_recovery_v1',CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=CURRENT_TIMESTAMP").run();
+}
+
+async function ensureOfficialBridgeJobs(db) {
+  const q=await db.prepare(
+    "SELECT i.id FROM la_ingest i JOIN la_sources s ON s.id=i.source_id WHERE s.source_type='official_bridge' AND i.status='new' AND NOT EXISTS (SELECT 1 FROM la_jobs j WHERE j.job_type='process_ingest' AND j.entity_id=i.id AND j.status IN ('pending','processing','retry')) ORDER BY i.original_date DESC,i.id DESC LIMIT 12"
+  ).all();
+  for(const row of q.results||[]) await enqueue(db,"process_ingest",Number(row.id),{},90);
 }
 
 async function sourceTick(env) {
