@@ -85,7 +85,13 @@ function articleDate(html, plain) {
 function areaSlug(text, fallback) {
   const low = text.toLocaleLowerCase("it-IT");
   const hits = NEIGHBORHOODS.filter(([,name])=>low.includes(name.toLocaleLowerCase("it-IT")));
-  return hits.length === 1 ? hits[0][0] : fallback;
+  if (hits.length === 1) return hits[0][0];
+  if (fallback === "municipio-i-trastevere") {
+    if (low.includes("trastevere")) return "trastevere";
+    if (low.includes("porta portese")) return "porta-portese";
+    return null;
+  }
+  return fallback;
 }
 function categorySlug(text) {
   const s=text.toLowerCase();
