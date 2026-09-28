@@ -1,16 +1,17 @@
 (()=>{"use strict";
 const KEY="rs_buy_intent_v2";
-const PLANS=["pegaso","orione","andromeda"];
+const PLANS=["pegaso","fenice","andromeda"];
 const CADS=["monthly","annual"];
 const LABELS={
   pegaso:{name:"PEGASO",monthly:"€6,90/mese",annual:"€69/anno"},
-  orione:{name:"ORIONE",monthly:"€9,90/mese",annual:"€99/anno"},
+  fenice:{name:"FENICE",monthly:"€9,90/mese",annual:"€99/anno"},
   andromeda:{name:"ANDROMEDA",monthly:"€14,90/mese",annual:"€149/anno"}
 };
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 function goodPlan(v){return PLANS.includes(v)}
 function goodCad(v){return CADS.includes(v)}
+function backendPlan(v){return v==="fenice"?"orione":v}
 function putIntent(plan,cadence){
   if(!goodPlan(plan)||!goodCad(cadence))return null;
   const i={plan,cadence,ts:Date.now()};
@@ -133,7 +134,7 @@ async function startCheckout(plan,cadence,btn){
   let payWin=null;
   try{payWin=window.open("about:blank","rs_paypal_checkout")}catch(e){}
   try{
-    const j=await api("subscribe",{method:"POST",body:JSON.stringify({plan,cadence})});
+    const j=await api("subscribe",{method:"POST",body:JSON.stringify({plan:backendPlan(plan),cadence})});
     const dest=j.approve||j.redirect;
     if(!dest)throw new Error("Link PayPal non disponibile");
     if(payWin){
@@ -159,7 +160,7 @@ function pollActivation(i,btn,old){
     n++;
     try{
       const me=await api("me");
-      if(me&&me.plan===i.plan&&(i.cadence!=="annual"||me.cadence==="annual")){
+      if(me&&(me.plan===i.plan||(i.plan==="fenice"&&me.plan==="orione"))&&(i.cadence!=="annual"||me.cadence==="annual")){
         clearInterval(t);
         localStorage.removeItem(KEY);
         btn.disabled=false;btn.textContent="ACQUISTO ATTIVO";
