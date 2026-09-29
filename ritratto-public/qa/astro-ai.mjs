@@ -1,0 +1,25 @@
+import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+const src=await fs.readFile("ritratto-public/js/rs-astro-engine.js","utf8");
+await fs.writeFile("/tmp/rs-astro-engine.mjs",src.replace("https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/+esm","astronomy-engine"));
+const E=await import("file:///tmp/rs-astro-engine.mjs");
+const near=(a,b,t,msg)=>assert.ok(Math.abs(a-b)<=t,`${msg}: ${a} vs ${b}`);
+const base={utcDate:new Date("1990-05-15T14:30:00Z"),lat:40.7128,lon:-74.006,timeKnown:true};
+const a=E.calculateChart(base), a2=E.calculateChart(base);
+assert.deepEqual(a,a2,"A deterministic");
+const b=E.calculateChart({...base,utcDate:new Date("1990-05-16T14:30:00Z")});
+assert.notEqual(a.planets.Moon,b.planets.Moon,"B date changes Moon");
+const c=E.calculateChart({...base,utcDate:new Date("1990-05-15T16:30:00Z")});
+assert.ok(E.aspectDelta(a.angles.ascendant,c.angles.ascendant)>10,"C time changes Asc");
+assert.ok(E.aspectDelta(a.planets.Pluto,c.planets.Pluto)<0.1,"C slow planet stable");
+const d=E.calculateChart({...base,lat:41.9028,lon:12.4964});
+assert.ok(E.aspectDelta(a.angles.ascendant,d.angles.ascendant)>1,"D place changes Asc");
+near(a.planets.Sun,d.planets.Sun,1e-10,"D same UTC keeps geocentric Sun");
+const u=E.calculateChart({...base,timeKnown:false});
+assert.equal(u.angles,null); assert.equal(u.houses,null);
+const t1=E.transitsAt(new Date("2026-09-29T12:00:00Z")),t2=E.transitsAt(new Date("2026-10-06T12:00:00Z"));
+assert.ok(E.aspectDelta(t1.Moon,t2.Moon)>1,"F transits change");
+for(const days of [1,7,30,365]){const p=E.periodSamples(new Date("2026-01-01T00:00:00Z"),new Date(2026,0,1+days));assert.ok(p.length>=2,"G period samples");}
+const plans=["pegaso","fenice","andromeda"].map(()=>E.calculateChart(base)); assert.deepEqual(plans[0],plans[1]);assert.deepEqual(plans[1],plans[2]);
+near(a.planets.Sun,54.50,0.15,"I Swiss Ephemeris published example Sun 24.50 Taurus");
+console.log("A-I CORE QA PASS",JSON.stringify({sun:a.planets.Sun,moon:a.planets.Moon,asc:a.angles.ascendant,mc:a.angles.mc}));
