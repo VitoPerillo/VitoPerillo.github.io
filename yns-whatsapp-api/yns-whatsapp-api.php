@@ -9,6 +9,7 @@
 if (!defined('ABSPATH')) { exit; }
 require_once __DIR__ . '/yns-whatsapp-lists.php';
 require_once __DIR__ . '/yns-whatsapp-datasource.php';
+require_once __DIR__ . '/yns-whatsapp-consent.php';
 
 final class YNS_WhatsApp_API {
     const VERSION = '0.2.1';
@@ -69,6 +70,7 @@ final class YNS_WhatsApp_API {
         dbDelta($sql1);
         dbDelta($sql2);
         if (class_exists('YNS_WhatsApp_Lists')) { YNS_WhatsApp_Lists::activate(); }
+        if (class_exists('YNS_WhatsApp_Consent')) { YNS_WhatsApp_Consent::activate(); }
 
         if (!get_option(self::OPT_API_KEY)) {
             add_option(self::OPT_API_KEY, wp_generate_password(64, false, false), '', false);
@@ -147,7 +149,7 @@ final class YNS_WhatsApp_API {
             'dry_run' => $this->dry_run(),
             'storage' => ($msg_exists && $evt_exists) ? 'persistent-db' : 'missing',
             'meta_configured' => (bool) ($this->cfg('access_token') && $this->cfg('phone_id')),
-            'features' => ['auth','idempotency','log','retry','webhook','status-tracking','dynamic-lists','consent','preview-gate','bulk-idempotency','campaign-status','datasource-probe'],
+            'features' => ['auth','idempotency','log','retry','webhook','status-tracking','dynamic-lists','consent','preview-gate','bulk-idempotency','campaign-status','datasource-probe','explicit-consent','consent-audit','consent-revoke','customer-crm-link'],
         ], ($msg_exists && $evt_exists) ? 200 : 503);
     }
 
