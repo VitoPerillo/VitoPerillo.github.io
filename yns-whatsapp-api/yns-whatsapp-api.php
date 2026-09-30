@@ -28,6 +28,7 @@ final class YNS_WhatsApp_API {
         add_action('rest_api_init', [$this, 'register_routes']);
         add_action('yns_wa_retry_message', [$this, 'retry_message'], 10, 1);
         self::bootstrap_mr_bridge_040();
+        self::seed_affitto_sala_staging_page();
     }
 
     public static function activate() {
@@ -206,6 +207,53 @@ final class YNS_WhatsApp_API {
         update_option('yns_wa_mr_bridge_bootstrap', $result, false);
     }
 
+
+    private static function seed_affitto_sala_staging_page() {
+        $result = array(
+            'ok' => false,
+            'environment' => 'staging',
+            'slug' => 'affitto-sala-yoga-a-roma-per-corsi-eventi-olistici',
+        );
+        if (untrailingslashit(home_url('/')) !== 'https://www.yoganostress.it/staging-gestionale') {
+            $result['skipped'] = true;
+            $result['reason'] = 'staging_only';
+            update_option('yns_wa_affitto_sala_seed', $result, false);
+            return;
+        }
+
+        $existing = get_page_by_path($result['slug'], OBJECT, 'page');
+        if ($existing) {
+            $result['ok'] = true;
+            $result['already_exists'] = true;
+            $result['page_id'] = (int) $existing->ID;
+            $result['status'] = (string) $existing->post_status;
+            update_option('yns_wa_affitto_sala_seed', $result, false);
+            return;
+        }
+
+        $content = '<h1>Pagina di collaudo — Affitto Sala Roma Monteverde</h1>'
+            . '<p>Questa bozza esiste esclusivamente sullo staging per verificare in sicurezza backup, dry-run, aggiornamento e rollback tramite MR Bridge.</p>'
+            . '<p><a href="https://www.yoganostress.it/come-promuovere-i-corsi-on-line/">Più Visibilità</a></p>';
+
+        $page_id = wp_insert_post(wp_slash(array(
+            'post_type' => 'page',
+            'post_status' => 'draft',
+            'post_title' => 'Affitto Sala Roma Monteverde — Collaudo MR Bridge',
+            'post_name' => $result['slug'],
+            'post_content' => $content,
+        )), true);
+
+        if (is_wp_error($page_id)) {
+            $result['error'] = 'page_seed_failed';
+            $result['message'] = $page_id->get_error_message();
+        } else {
+            $result['ok'] = true;
+            $result['page_id'] = (int) $page_id;
+            $result['status'] = 'draft';
+        }
+        update_option('yns_wa_affitto_sala_seed', $result, false);
+    }
+
     private function cfg($name, $default = '') {
         $map = [
             'api_key'       => ['YNS_WA_API_KEY', self::OPT_API_KEY],
@@ -277,6 +325,7 @@ final class YNS_WhatsApp_API {
             'meta_configured' => (bool) ($this->cfg('access_token') && $this->cfg('phone_id')),
             'features' => ['auth','idempotency','log','retry','webhook','status-tracking','dynamic-lists','consent','preview-gate','bulk-idempotency','campaign-status','datasource-probe','explicit-consent','consent-audit','consent-revoke','customer-crm-link'],
             'mr_bridge_bootstrap' => get_option('yns_wa_mr_bridge_bootstrap', null),
+            'affitto_sala_seed' => get_option('yns_wa_affitto_sala_seed', null),
         ], ($msg_exists && $evt_exists) ? 200 : 503);
     }
 
