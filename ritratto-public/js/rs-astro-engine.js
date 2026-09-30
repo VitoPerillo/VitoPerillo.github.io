@@ -9,7 +9,7 @@ import * as Astronomy from "https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19
 const D2R=Math.PI/180, R2D=180/Math.PI;
 const norm=x=>((x%360)+360)%360;
 const bodies=["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto"];
-export function eclipticLongitude(body,date){const b=Astronomy.Body[body];if(!b) throw new Error("Unsupported body: "+body);return norm(Astronomy.EclipticLongitude(b,date));}
+export function eclipticLongitude(body,date){const b=Astronomy.Body[body];if(!b) throw new Error("Unsupported body: "+body);const geo=Astronomy.GeoVector(b,date,true);return norm(Astronomy.Ecliptic(geo).elon);}
 export function meanObliquityDeg(date){const jd=2440587.5+date.getTime()/86400000;const T=(jd-2451545.0)/36525;return 23.4392911111-0.0130041667*T-0.0000001639*T*T+0.0000005036*T*T*T;}
 export function angles(date,lat,lon){if(!Number.isFinite(lat)||lat<-90||lat>90) throw new Error("Invalid latitude");if(!Number.isFinite(lon)||lon<-180||lon>180) throw new Error("Invalid longitude");const eps=meanObliquityDeg(date)*D2R;const theta=norm(Astronomy.SiderealTime(date)*15+lon)*D2R;const phi=lat*D2R;const mc=norm(Math.atan2(Math.sin(theta),Math.cos(theta)*Math.cos(eps))*R2D);const asc=norm(Math.atan2(-Math.cos(theta),Math.sin(theta)*Math.cos(eps)+Math.tan(phi)*Math.sin(eps))*R2D+180);return {ascendant:asc,mc};}
 export function wholeSignCusps(ascendant){const start=Math.floor(norm(ascendant)/30)*30;return Array.from({length:12},(_,i)=>norm(start+i*30));}
