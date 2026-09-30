@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 const src=await fs.readFile("ritratto-public/js/rs-astro-engine.js","utf8");
-await fs.writeFile("/tmp/rs-astro-engine.mjs",src.replace("https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/+esm","astronomy-engine"));
-const E=await import("file:///tmp/rs-astro-engine.mjs");
+const tmpUrl=new URL("./.rs-astro-engine.tmp.mjs",import.meta.url);
+await fs.writeFile(tmpUrl,src.replace("https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/+esm","astronomy-engine"));
+const E=await import(tmpUrl.href);
 const near=(a,b,t,msg)=>assert.ok(Math.abs(a-b)<=t,`${msg}: ${a} vs ${b}`);
 const base={utcDate:new Date("1990-05-15T14:30:00Z"),lat:40.7128,lon:-74.006,timeKnown:true};
 const results={};
