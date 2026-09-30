@@ -1,0 +1,49 @@
+name: Build YNS WhatsApp Deploy Artifact
+
+on:
+  push:
+    branches: [yns-whatsapp-api-deploy]
+    paths:
+      - 'yns-whatsapp-api/**'
+      - '.github/workflows/build-yns-whatsapp-deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-yns-whatsapp-deploy
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate source
+        run: |
+          set -euo pipefail
+          php -l yns-whatsapp-api/yns-whatsapp-api.php
+          php -l yns-whatsapp-api/yns-whatsapp-lists.php
+          php -l yns-whatsapp-api/yns-whatsapp-datasource.php
+          grep -q 'Version: 0.2.1' yns-whatsapp-api/yns-whatsapp-api.php
+      - name: Build deterministic ZIP
+        run: |
+          set -euo pipefail
+          rm -f yns-whatsapp-api.zip
+          find yns-whatsapp-api -type f -exec touch -t 202609300000 {} +
+          zip -X -q -r yns-whatsapp-api.zip yns-whatsapp-api
+          unzip -t yns-whatsapp-api.zip
+          sha256sum yns-whatsapp-api.zip | tee yns-whatsapp-api.zip.sha256
+      - name: Commit artifact
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add yns-whatsapp-api.zip yns-whatsapp-api.zip.sha256
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "build: YNS WhatsApp API 0.2.1 deploy artifact"
+          git push
