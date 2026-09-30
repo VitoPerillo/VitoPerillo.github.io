@@ -1,0 +1,18 @@
+{
+  "project":"Ritratto Stellare",
+  "branch":"ritratto-collaudo",
+  "gate":"A-I",
+  "status":"9/9 PASS",
+  "validated_at":"2026-09-30T14:19:14Z",
+  "github_actions_run_id":36728176046,
+  "engine_commit":"ad12b6c7f5e377723dd99379d378983d42bd7b6d",
+  "freeze_workflow_commit":"327cbf0065581b9038742107c81783893c3accfa",
+  "sha256":{
+    "ritratto-public/js/rs-astro-engine.js":"5403476cb5cbff94340ba063bd06e07cfcbb9350af1760ac6abe21bd074d6cce",
+    "ritratto-public/qa/astro-ai.mjs":"733cebeafc7287ae2b82897c8a7a7523704618e9e8961d479aba7fa3ccfd29a6",
+    "ritratto-public/qa/independent-reference-audit.json":"daa047111bc4507addac1d3751a739d47a15dfc34aa1dd6d83335c0efb0ca8cc"
+  },
+  "tests":{"A":"PASS","B":"PASS","C":"PASS","D":"PASS","E":"PASS","F":"PASS","G":"PASS","H":"PASS","I":"PASS"},
+  "critical_fix":"Replaced incorrect heliocentric EclipticLongitude use with geocentric apparent GeoVector + Ecliptic longitude.",
+  "production_modified":false
+}
