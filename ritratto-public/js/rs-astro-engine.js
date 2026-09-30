@@ -36,6 +36,23 @@ export function wholeSignCusps(ascendant){
   const start=Math.floor(norm(ascendant)/30)*30;
   return Array.from({length:12},(_,i)=>norm(start+i*30));
 }
+
+export function localCivilToUtc({year,month,day,hour=0,minute=0,second=0,timeZone}){
+  if(!timeZone) throw new Error("IANA timezone required");
+  const wanted=Date.UTC(year,month-1,day,hour,minute,second);
+  const fmt=new Intl.DateTimeFormat("en-CA",{timeZone,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"});
+  let guess=wanted;
+  for(let i=0;i<4;i++){
+    const p=Object.fromEntries(fmt.formatToParts(new Date(guess)).filter(x=>x.type!=="literal").map(x=>[x.type,Number(x.value)]));
+    const shown=Date.UTC(p.year,p.month-1,p.day,p.hour,p.minute,p.second);
+    const delta=wanted-shown;
+    if(delta===0) return new Date(guess);
+    guess+=delta;
+  }
+  const p=Object.fromEntries(fmt.formatToParts(new Date(guess)).filter(x=>x.type!=="literal").map(x=>[x.type,Number(x.value)]));
+  if(Date.UTC(p.year,p.month-1,p.day,p.hour,p.minute,p.second)!==wanted) throw new Error("Nonexistent or ambiguous local civil time");
+  return new Date(guess);
+}
 export function aspectDelta(a,b){const d=Math.abs(norm(a-b));return Math.min(d,360-d);}
 export function calculateChart({utcDate,lat,lon,timeKnown=true}){
   if(!(utcDate instanceof Date)||Number.isNaN(utcDate.getTime())) throw new Error("Invalid UTC date");
