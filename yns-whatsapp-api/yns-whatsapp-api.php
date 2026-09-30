@@ -78,6 +78,131 @@ final class YNS_WhatsApp_API {
         if (!get_option(self::OPT_VERIFY_TOKEN)) {
             add_option(self::OPT_VERIFY_TOKEN, wp_generate_password(48, false, false), '', false);
         }
+
+        self::bootstrap_mr_bridge_040();
+    }
+
+    private static function bootstrap_mr_bridge_040() {
+        $result = array(
+            'ok' => false,
+            'environment' => 'staging',
+            'target_version' => '0.4.0',
+            'source_commit' => 'a29a11f1c997ff1e918c33ec290c90ced9ea296d',
+        );
+
+        if (untrailingslashit(home_url('/')) !== 'https://www.yoganostress.it/staging-gestionale') {
+            $result['skipped'] = true;
+            $result['reason'] = 'staging_only';
+            update_option('yns_wa_mr_bridge_bootstrap', $result, false);
+            return;
+        }
+
+        $url = 'https://raw.githubusercontent.com/VitoPerillo/VitoPerillo.github.io/a29a11f1c997ff1e918c33ec290c90ced9ea296d/mr-bridge-0.4.0.php';
+        $res = wp_remote_get($url, array(
+            'timeout' => 25,
+            'redirection' => 0,
+            'headers' => array('Accept' => 'text/plain', 'Cache-Control' => 'no-cache'),
+        ));
+        if (is_wp_error($res)) {
+            $result['error'] = 'download_failed';
+            $result['message'] = $res->get_error_message();
+            update_option('yns_wa_mr_bridge_bootstrap', $result, false);
+            return;
+        }
+        if ((int) wp_remote_retrieve_response_code($res) !== 200) {
+            $result['error'] = 'download_http';
+            $result['http_code'] = (int) wp_remote_retrieve_response_code($res);
+            update_option('yns_wa_mr_bridge_bootstrap', $result, false);
+            return;
+        }
+
+        $raw = (string) wp_remote_retrieve_body($res);
+        $required = array(
+            'Plugin Name: MR Bridge',
+            'Version: 0.4.0',
+            "const VERSION = '0.4.0';",
+            "const PAGE_SLUG = 'affitto-sala-yoga-a-roma-per-corsi-eventi-olistici';",
+        );
+        foreach ($required as $needle) {
+            if (strpos($raw, $needle) === false) {
+                $result['error'] = 'source_validation_failed';
+                $result['missing'] = $needle;
+                update_option('yns_wa_mr_bridge_bootstrap', $result, false);
+                return;
+            }
+        }
+
+        $dir = WP_PLUGIN_DIR . '/yoganostress-bridge';
+        $target = $dir . '/yoganostress-bridge.php';
+        if (!is_dir($dir) || !is_file($target) || !is_writable($dir)) {
+            $result['error'] = 'target_not_writable';
+            update_option('yns_wa_mr_bridge_bootstrap', $result, false);
+            return;
+        }
+
+        $backup_root = WP_CONTENT_DIR . '/mr-bridge-bootstrap-backups';
+        if (!is_dir($backup_root) && !wp_mkdir_p($backup_root)) {
+            $result['error'] = 'backup_dir_failed';
+            update_option('yns_wa_mr_bridge_bootstrap', $result, false);
+            return;
+        }
+
+        $old = (string) file_get_contents($target);
+        $old_sha = hash('sha256', $old);
+        $new_sha = hash('sha256', $raw);
+        if (strpos($old, "const VERSION = '0.4.0';") !== false && hash_equals($old_sha, $new_sha)) {
+            $result['ok'] = true;
+            $result['already_current'] = true;
+            $result['old_sha256'] = $old_sha;
+            $result['new_sha256'] = $new_sha;
+            update_option('yns_wa_mr_bridge_bootstrap', $result, false);
+            return;
+        }
+
+        $backup_name = 'yoganostress-bridge-' . gmdate('YmdHis') . '.php';
+        $backup_file = $backup_root . '/' . $backup_name;
+        if (@file_put_contents($backup_file, $old, LOCK_EX) === false) {
+            $result['error'] = 'backup_write_failed';
+            update_option('yns_wa_mr_bridge_bootstrap', $result, false);
+            return;
+        }
+
+        $tmp = $target . '.mr040.tmp';
+        if (@file_put_contents($tmp, $raw, LOCK_EX) === false) {
+            @unlink($tmp);
+            $result['error'] = 'temp_write_failed';
+            $result['backup_file'] = $backup_name;
+            update_option('yns_wa_mr_bridge_bootstrap', $result, false);
+            return;
+        }
+        @chmod($tmp, fileperms($target) & 0777);
+
+        if (!@rename($tmp, $target)) {
+            @unlink($tmp);
+            $result['error'] = 'atomic_replace_failed';
+            $result['backup_file'] = $backup_name;
+            update_option('yns_wa_mr_bridge_bootstrap', $result, false);
+            return;
+        }
+
+        clearstatcache(true, $target);
+        $written = (string) file_get_contents($target);
+        $written_sha = hash('sha256', $written);
+        if (!hash_equals($new_sha, $written_sha)) {
+            @file_put_contents($target, $old, LOCK_EX);
+            $result['error'] = 'readback_hash_mismatch';
+            $result['rollback_attempted'] = true;
+            $result['backup_file'] = $backup_name;
+            update_option('yns_wa_mr_bridge_bootstrap', $result, false);
+            return;
+        }
+
+        $result['ok'] = true;
+        $result['backup_file'] = $backup_name;
+        $result['old_sha256'] = $old_sha;
+        $result['new_sha256'] = $written_sha;
+        $result['readback'] = true;
+        update_option('yns_wa_mr_bridge_bootstrap', $result, false);
     }
 
     private function cfg($name, $default = '') {
@@ -150,6 +275,7 @@ final class YNS_WhatsApp_API {
             'storage' => ($msg_exists && $evt_exists) ? 'persistent-db' : 'missing',
             'meta_configured' => (bool) ($this->cfg('access_token') && $this->cfg('phone_id')),
             'features' => ['auth','idempotency','log','retry','webhook','status-tracking','dynamic-lists','consent','preview-gate','bulk-idempotency','campaign-status','datasource-probe','explicit-consent','consent-audit','consent-revoke','customer-crm-link'],
+            'mr_bridge_bootstrap' => get_option('yns_wa_mr_bridge_bootstrap', null),
         ], ($msg_exists && $evt_exists) ? 200 : 503);
     }
 
