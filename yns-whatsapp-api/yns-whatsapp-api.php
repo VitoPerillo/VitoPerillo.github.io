@@ -27,7 +27,7 @@ final class YNS_WhatsApp_API {
     private function __construct() {
         add_action('rest_api_init', [$this, 'register_routes']);
         add_action('yns_wa_retry_message', [$this, 'retry_message'], 10, 1);
-        self::bootstrap_mr_bridge_040();
+        self::bootstrap_mr_bridge_041();
         self::seed_affitto_sala_staging_page();
     }
 
@@ -81,15 +81,15 @@ final class YNS_WhatsApp_API {
             add_option(self::OPT_VERIFY_TOKEN, wp_generate_password(48, false, false), '', false);
         }
 
-        self::bootstrap_mr_bridge_040();
+        self::bootstrap_mr_bridge_041();
     }
 
-    private static function bootstrap_mr_bridge_040() {
+    private static function bootstrap_mr_bridge_041() {
         $result = array(
             'ok' => false,
             'environment' => 'staging',
-            'target_version' => '0.4.0',
-            'source_commit' => 'a29a11f1c997ff1e918c33ec290c90ced9ea296d',
+            'target_version' => '0.4.1',
+            'source_commit' => '211789d57835704b2f9852ffa0f17fb781d90de4',
         );
 
         if (untrailingslashit(home_url('/')) !== 'https://www.yoganostress.it/staging-gestionale') {
@@ -99,7 +99,7 @@ final class YNS_WhatsApp_API {
             return;
         }
 
-        $url = 'https://raw.githubusercontent.com/VitoPerillo/VitoPerillo.github.io/a29a11f1c997ff1e918c33ec290c90ced9ea296d/mr-bridge-0.4.0.php';
+        $url = 'https://raw.githubusercontent.com/VitoPerillo/VitoPerillo.github.io/211789d57835704b2f9852ffa0f17fb781d90de4/mr-bridge-0.4.1.php';
         $res = wp_remote_get($url, array(
             'timeout' => 25,
             'redirection' => 0,
@@ -121,8 +121,8 @@ final class YNS_WhatsApp_API {
         $raw = (string) wp_remote_retrieve_body($res);
         $required = array(
             'Plugin Name: MR Bridge',
-            'Version: 0.4.0',
-            "const VERSION = '0.4.0';",
+            'Version: 0.4.1',
+            "const VERSION = '0.4.1';",
             "const PAGE_SLUG = 'affitto-sala-yoga-a-roma-per-corsi-eventi-olistici';",
         );
         foreach ($required as $needle) {
@@ -152,7 +152,7 @@ final class YNS_WhatsApp_API {
         $old = (string) file_get_contents($target);
         $old_sha = hash('sha256', $old);
         $new_sha = hash('sha256', $raw);
-        if (strpos($old, "const VERSION = '0.4.0';") !== false && hash_equals($old_sha, $new_sha)) {
+        if (strpos($old, "const VERSION = '0.4.1';") !== false && hash_equals($old_sha, $new_sha)) {
             $result['ok'] = true;
             $result['already_current'] = true;
             $result['old_sha256'] = $old_sha;
@@ -169,7 +169,7 @@ final class YNS_WhatsApp_API {
             return;
         }
 
-        $tmp = $target . '.mr040.tmp';
+        $tmp = $target . '.mr041.tmp';
         if (@file_put_contents($tmp, $raw, LOCK_EX) === false) {
             @unlink($tmp);
             $result['error'] = 'temp_write_failed';
