@@ -144,25 +144,32 @@ final class YNS_WhatsApp_Datasource {
     private static function customers() {
         global $wpdb;
         $table = $wpdb->prefix . 'yns_customers';
+        $links = $wpdb->prefix . 'yns_wa_customer_links';
         if (!self::table_exists($table)) return [];
-        $consents = self::consent_map();
+        $join = self::table_exists($links)
+            ? "LEFT JOIN $links l ON l.customer_id=c.id"
+            : "LEFT JOIN (SELECT NULL AS customer_id,NULL AS phone_norm,NULL AS consent_status,NULL AS consent_contact_id) l ON 1=0";
         $rows = $wpdb->get_results(
-            "SELECT id, first_name, last_name, phone, active FROM $table WHERE active=1 AND phone IS NOT NULL AND phone<>''",
+            "SELECT c.id,c.first_name,c.last_name,c.phone,c.active,
+                    l.phone_norm AS linked_phone,l.consent_status,l.consent_contact_id
+             FROM $table c
+             $join
+             WHERE c.active=1 AND c.phone IS NOT NULL AND c.phone<>''",
             ARRAY_A
         );
         $out = [];
         foreach ((array)$rows as $row) {
-            $match = null;
-            foreach (self::phone_keys($row['phone'] ?? '') as $key) {
-                if (isset($consents[$key])) { $match = $consents[$key]; break; }
-            }
-            $phone = $match ? $match['phone'] : self::digits($row['phone'] ?? '');
+            $linked = self::digits($row['linked_phone'] ?? '');
+            $phone = $linked !== '' ? $linked : self::digits($row['phone'] ?? '');
+            $granted = (($row['consent_status'] ?? '') === 'granted')
+                && !empty($row['consent_contact_id'])
+                && $linked !== '';
             $out[(int)$row['id']] = [
                 'contact_id' => 'customer:' . (int)$row['id'],
                 'name' => trim((string)($row['first_name'] ?? '') . ' ' . (string)($row['last_name'] ?? '')),
                 'phone' => $phone,
-                'consent_whatsapp' => (bool)$match,
-                'crm_contact_id' => $match ? $match['contact_id'] : null,
+                'consent_whatsapp' => $granted,
+                'crm_contact_id' => $granted ? (string)$row['consent_contact_id'] : null,
             ];
         }
         return $out;
