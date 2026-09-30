@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><title>RS A-I Gate</title><pre id="out">RUNNING</pre><script type="module">
+import * as E from "../js/rs-astro-engine.js";
+const out=document.querySelector("#out"), R={}; const ok=(k,fn)=>{try{fn();R[k]="PASS"}catch(e){R[k]="FAIL: "+e.message}};
+const assert=(x,m)=>{if(!x)throw Error(m||"assert")}; const near=(a,b,t,m)=>assert(Math.abs(a-b)<=t,m+": "+a+" vs "+b);
+const base={utcDate:new Date("1990-05-15T14:30:00Z"),lat:40.7128,lon:-74.006,timeKnown:true}; const a=E.calculateChart(base);
+ok("A",()=>assert(JSON.stringify(a)===JSON.stringify(E.calculateChart(base)),"determinism"));
+ok("B",()=>assert(a.planets.Moon!==E.calculateChart({...base,utcDate:new Date("1990-05-16T14:30:00Z")}).planets.Moon,"date"));
+ok("C",()=>{const c=E.calculateChart({...base,utcDate:new Date("1990-05-15T16:30:00Z")});assert(E.aspectDelta(a.angles.ascendant,c.angles.ascendant)>10,"Asc time");assert(E.aspectDelta(a.planets.Pluto,c.planets.Pluto)<.1,"Pluto")});
+ok("D",()=>{const d=E.calculateChart({...base,lat:41.9028,lon:12.4964});assert(E.aspectDelta(a.angles.ascendant,d.angles.ascendant)>1,"place Asc");near(a.planets.Sun,d.planets.Sun,1e-10,"Sun invariant")});
+ok("E",()=>{const u=E.calculateChart({...base,timeKnown:false});assert(u.angles===null&&u.houses===null,"unknown time")});
+ok("F",()=>assert(E.aspectDelta(E.transitsAt(new Date("2026-09-29T12:00:00Z")).Moon,E.transitsAt(new Date("2026-10-06T12:00:00Z")).Moon)>1,"transits"));
+ok("G",()=>{for(const days of [1,7,30,365])assert(E.periodSamples(new Date("2026-01-01T00:00:00Z"),new Date(Date.UTC(2026,0,1+days))).length>=2,"period "+days)});
+ok("H",()=>{const p=["pegaso","fenice","andromeda"].map(()=>E.calculateChart(base));assert(JSON.stringify(p[0])===JSON.stringify(p[1])&&JSON.stringify(p[1])===JSON.stringify(p[2]),"plans")});
+ok("I",()=>{const refs=[
+{name:"NY",local:{year:1990,month:5,day:15,hour:10,minute:30,timeZone:"America/New_York"},lat:40.7128,lon:-74.006,utc:"1990-05-15T14:30:00.000Z",p:[54.496555506,298.450071589,38.000338678,12.937142407,348.411218279,99.561406572,295.247674922,279.181350068,284.351369934,226.164555074],asc:122.203664553,mc:17.950040994},
+{name:"Rome",local:{year:2026,month:7,day:1,hour:12,minute:0,timeZone:"Europe/Rome"},lat:41.9028,lon:12.4964,utc:"2026-07-01T10:00:00.000Z",p:[99.600031894,295.214557075,116.148821186,140.665325027,61.854755107,120.250942806,14.204525721,63.728332168,4.407975048,304.867314532],asc:173.702269772,mc:82.626979360},
+{name:"Sydney",local:{year:2000,month:12,day:1,hour:23,minute:45,timeZone:"Australia/Sydney"},lat:-33.8688,lon:151.2093,utc:"2000-12-01T12:45:00.000Z",p:[249.636623768,310.946747505,236.432551704,291.966528285,196.778185376,65.681944301,56.524304770,317.437782651,304.395410995,252.617410703],asc:127.905901895,mc:55.475344733}];
+const names=["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto"];
+for(const r of refs){const utc=E.localCivilToUtc(r.local);assert(utc.toISOString()===r.utc,r.name+" timezone");const ch=E.calculateChart({utcDate:utc,lat:r.lat,lon:r.lon,timeKnown:true});names.forEach((n,i)=>near(E.aspectDelta(ch.planets[n],r.p[i]),0,.05,r.name+" "+n));near(E.aspectDelta(ch.angles.ascendant,r.asc),0,.02,r.name+" Asc");near(E.aspectDelta(ch.angles.mc,r.mc),0,.02,r.name+" MC")}
+assert(E.localCivilToUtc({year:1970,month:1,day:15,hour:8,minute:20,timeZone:"Europe/Rome"}).toISOString()==="1970-01-15T07:20:00.000Z","historical TZ")});
+out.textContent=Object.entries(R).map(([k,v])=>k+" "+v).join("\n")+"\nRESULT "+(Object.values(R).every(x=>x==="PASS")?"9/9 PASS":"FAIL");
+</script>
