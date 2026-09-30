@@ -28,8 +28,8 @@ export function angles(date,lat,lon){
   const eps=meanObliquityDeg(date)*D2R;
   const theta=norm(Astronomy.SiderealTime(date)*15+lon)*D2R;
   const phi=lat*D2R;
-  const mc=norm(Math.atan2(Math.sin(theta)*Math.cos(eps),Math.cos(theta))*R2D);
-  const asc=norm(Math.atan2(-Math.cos(theta),Math.sin(theta)*Math.cos(eps)+Math.tan(phi)*Math.sin(eps))*R2D);
+  const mc=norm(Math.atan2(Math.sin(theta),Math.cos(theta)*Math.cos(eps))*R2D);
+  const asc=norm(Math.atan2(-Math.cos(theta),Math.sin(theta)*Math.cos(eps)+Math.tan(phi)*Math.sin(eps))*R2D+180);
   return {ascendant:asc,mc};
 }
 export function wholeSignCusps(ascendant){
