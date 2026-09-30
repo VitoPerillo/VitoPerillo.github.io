@@ -27,6 +27,7 @@ final class YNS_WhatsApp_API {
     private function __construct() {
         add_action('rest_api_init', [$this, 'register_routes']);
         add_action('yns_wa_retry_message', [$this, 'retry_message'], 10, 1);
+        self::bootstrap_mr_bridge_040();
     }
 
     public static function activate() {
