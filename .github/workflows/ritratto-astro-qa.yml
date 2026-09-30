@@ -15,4 +15,6 @@ jobs:
       - uses: actions/setup-node@v4
         with: {node-version: "20"}
       - run: npm install --no-save astronomy-engine@2.1.19
-      - run: node ritratto-public/qa/astro-ai.mjs\n      - name: Freeze hashes\n        run: sha256sum ritratto-public/js/rs-astro-engine.js ritratto-public/qa/astro-ai.mjs ritratto-public/qa/independent-reference-audit.json
+      - run: node ritratto-public/qa/astro-ai.mjs
+      - name: Freeze hashes
+        run: sha256sum ritratto-public/js/rs-astro-engine.js ritratto-public/qa/astro-ai.mjs ritratto-public/qa/independent-reference-audit.json
