@@ -78,6 +78,12 @@ final class YNS_WhatsApp_Consent {
         register_rest_route(self::NS, '/consent/summary', [
             'methods'=>'GET','callback'=>[__CLASS__,'summary_route'],'permission_callback'=>[__CLASS__,'admin_only']
         ]);
+        register_rest_route(self::NS, '/consent/customer/(?P<id>\d+)', [
+            'methods'=>'GET','callback'=>[__CLASS__,'customer_status_route'],'permission_callback'=>[__CLASS__,'admin_only']
+        ]);
+        register_rest_route(self::NS, '/consent/admin/revoke', [
+            'methods'=>'POST','callback'=>[__CLASS__,'admin_revoke_route'],'permission_callback'=>[__CLASS__,'admin_only']
+        ]);
         register_rest_route(self::NS, '/consent/self-test', [
             'methods'=>'POST','callback'=>[__CLASS__,'self_test_route'],'permission_callback'=>[__CLASS__,'admin_only']
         ]);
@@ -450,6 +456,102 @@ final class YNS_WhatsApp_Consent {
             'links_by_consent'=>$by_status,'optin_requests_by_status'=>$req_status,
             'consent_version'=>self::CONSENT_VERSION,
         ], 200);
+    }
+
+
+    public static function customer_status_route(WP_REST_Request $request) {
+        global $wpdb;
+        self::activate();
+        $customer_id=(int)$request->get_param('id');
+        if (!$customer_id) return new WP_Error('yns_wa_customer_required','Cliente non valido.',['status'=>400]);
+        $link=self::link_row($customer_id);
+        if (!$link) {
+            return new WP_REST_Response([
+                'ok'=>true,'customer_id'=>$customer_id,'linked'=>false,
+                'consent_status'=>'not_linked','link_status'=>'not_linked',
+                'consent_version'=>null,'consent_verified_at'=>null,'revoked_at'=>null,
+                'latest_request'=>null,
+            ],200);
+        }
+        $requests=$wpdb->prefix.'yns_wa_optin_requests';
+        $latest=$wpdb->get_row($wpdb->prepare(
+            "SELECT status,expires_at,confirmed_at,revoked_at,created_at,consent_version
+             FROM $requests WHERE customer_id=%d ORDER BY id DESC LIMIT 1",
+            $customer_id
+        ),ARRAY_A);
+        if ($latest && $latest['status']==='pending' && strtotime((string)$latest['expires_at']) < time()) {
+            $latest['status']='expired';
+        }
+        return new WP_REST_Response([
+            'ok'=>true,
+            'customer_id'=>$customer_id,
+            'linked'=>true,
+            'link_status'=>(string)$link['link_status'],
+            'consent_status'=>(string)$link['consent_status'],
+            'consent_version'=>$link['consent_version'] ?: null,
+            'consent_verified_at'=>$link['consent_verified_at'] ?: null,
+            'revoked_at'=>$link['revoked_at'] ?: null,
+            'latest_request'=>$latest ?: null,
+        ],200);
+    }
+
+    private static function admin_revoke_internal($customer_id) {
+        global $wpdb;
+        if (!self::staging_only()) return new WP_Error('yns_wa_staging_only','Revoca amministrativa disponibile solo sullo staging.',['status'=>403]);
+        self::activate();
+        $link=self::link_row((int)$customer_id);
+        if (!$link) return new WP_Error('yns_wa_link_missing','Cliente non collegato al CRM.',['status'=>404]);
+        if (($link['consent_status']??'')!=='granted') {
+            return ['ok'=>true,'customer_id'=>(int)$customer_id,'consent_status'=>(string)($link['consent_status']??'unverified'),'idempotent'=>true];
+        }
+
+        $links=$wpdb->prefix.'yns_wa_customer_links';
+        $requests=$wpdb->prefix.'yns_wa_optin_requests';
+        $contacts=$wpdb->prefix.'ysu_contacts';
+        $events=$wpdb->prefix.'ysu_consent_events';
+        $now=current_time('mysql',true);
+        $phone_norm=(string)$link['phone_norm'];
+
+        $wpdb->query('START TRANSACTION');
+        try {
+            $wpdb->update($links,[
+                'consent_status'=>'revoked','revoked_at'=>$now,'link_status'=>'revoked','updated_at'=>$now,
+            ],['customer_id'=>(int)$customer_id]);
+            $wpdb->query($wpdb->prepare(
+                "UPDATE $requests SET status='revoked',revoked_at=%s,updated_at=%s
+                 WHERE customer_id=%d AND status='granted'",
+                $now,$now,(int)$customer_id
+            ));
+            $ok=$wpdb->insert($events,[
+                'phone_norm'=>$phone_norm,'event_type'=>'consent_revoked',
+                'consent_version'=>self::CONSENT_VERSION,'consent_text'=>self::CONSENT_TEXT,
+                'interests'=>wp_json_encode(['service_notifications']),
+                'source'=>'yns_gestionale_admin_revoke','created_at'=>$now,
+            ]);
+            if ($ok===false) throw new Exception('event insert');
+            $other=(int)$wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM $links WHERE phone_norm=%s AND consent_status='granted' AND customer_id<>%d",
+                $phone_norm,(int)$customer_id
+            ));
+            if ($other===0) {
+                $wpdb->update($contacts,['consent_status'=>'revoked','updated_at'=>$now],['phone_norm'=>$phone_norm]);
+            }
+            $wpdb->query('COMMIT');
+        } catch (Throwable $e) {
+            $wpdb->query('ROLLBACK');
+            return new WP_Error('yns_wa_admin_revoke_failed','Revoca consenso fallita.',['status'=>500]);
+        }
+        return ['ok'=>true,'customer_id'=>(int)$customer_id,'consent_status'=>'revoked','revoked_at'=>$now];
+    }
+
+    public static function admin_revoke_route(WP_REST_Request $request) {
+        $body=$request->get_json_params();
+        $customer_id=(int)($body['customer_id']??0);
+        $revoke=(($body['revoke']??false)===true);
+        if (!$customer_id) return new WP_Error('yns_wa_customer_required','customer_id richiesto.',['status'=>400]);
+        if (!$revoke) return new WP_Error('yns_wa_explicit_revoke_required','È richiesta una revoca esplicita.',['status'=>400]);
+        $result=self::admin_revoke_internal($customer_id);
+        return is_wp_error($result)?$result:new WP_REST_Response($result,200);
     }
 
     private static function cleanup_fixture($email, $phone_norm) {
