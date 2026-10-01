@@ -23,7 +23,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: yns-whatsapp-api-deploy
           fetch-depth: 0
+      - name: Pin to current remote tip
+        run: |
+          set -euo pipefail
+          git fetch origin yns-whatsapp-api-deploy
+          git reset --hard origin/yns-whatsapp-api-deploy
       - name: Validate source
         run: |
           set -euo pipefail
@@ -45,5 +51,4 @@ jobs:
           git add yns-whatsapp-api.zip yns-whatsapp-api.zip.sha256
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "build: YNS WhatsApp API 0.2.1 deploy artifact"
-          git pull --rebase origin yns-whatsapp-api-deploy
           git push origin HEAD:yns-whatsapp-api-deploy
