@@ -136,6 +136,7 @@ final class YNS_WhatsApp_Source_Export {
         $root=WP_PLUGIN_DIR.'/'.self::TARGET_SLUG;
         if (!is_dir($root)) return new WP_Error('yns_source_missing','Plugin staging non trovato.',['status'=>404]);
         if (!class_exists('ZipArchive')) return new WP_Error('yns_source_zip_missing','ZipArchive non disponibile.',['status'=>500]);
+        if (!function_exists('wp_tempnam')) require_once ABSPATH . 'wp-admin/includes/file.php';
 
         $tmp=wp_tempnam('yns-source-export.zip');
         if (!$tmp) return new WP_Error('yns_source_tmp','File temporaneo non disponibile.',['status'=>500]);
