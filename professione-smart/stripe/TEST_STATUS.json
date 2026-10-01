@@ -1,18 +1,45 @@
 {
-  "environment": "test",
+  "environment": "development",
   "live_untouched": true,
+  "mr_bridge": {
+    "priority": true,
+    "production_version": "1.0.0-rc10",
+    "verified_contract": true
+  },
+  "ci": {
+    "workflow": "Professione Smart CI",
+    "status": "green",
+    "latest_run_id": 36867337256
+  },
   "providers": {
     "mollie": {
       "state": "parallel_pending",
       "changed": false
     },
     "stripe": {
-      "state": "test_connected",
-      "connected_accounts_seen": 1,
-      "legacy_test_account_ignored": true
+      "state": "architecture_ready",
+      "accounts_api": "v2",
+      "charge_model": "direct_charges",
+      "general_sandbox_required": true,
+      "legacy_test_mode_not_used_for_v2_e2e": true
     }
   },
   "platform_fee_test_bps": 50,
-  "tap_to_pay": "planned",
-  "next_gate": "create_clean_test_connected_account"
+  "tap_to_pay": {
+    "country": "IT",
+    "currency": "EUR",
+    "target": "iPhone + Android",
+    "path": "Professione Smart mobile app + Stripe Terminal SDK",
+    "server_fee_authoritative": true
+  },
+  "completed": [
+    "provider-neutral onboarding state machine",
+    "server-side registration validation",
+    "Stripe Terminal server adapter",
+    "server-side application fee calculation",
+    "mobile/backend API contract",
+    "provider-neutral privacy copy",
+    "zero-cost CI gate"
+  ],
+  "next_gate": "connect_or_create_general_stripe_sandbox_then_create_clean_connected_professional"
 }
