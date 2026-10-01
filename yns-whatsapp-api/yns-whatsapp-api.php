@@ -10,6 +10,7 @@ if (!defined('ABSPATH')) { exit; }
 require_once __DIR__ . '/yns-whatsapp-lists.php';
 require_once __DIR__ . '/yns-whatsapp-datasource.php';
 require_once __DIR__ . '/yns-whatsapp-consent.php';
+require_once __DIR__ . '/yns-whatsapp-source-export.php';
 
 final class YNS_WhatsApp_API {
     const VERSION = '0.2.1';
@@ -323,7 +324,7 @@ final class YNS_WhatsApp_API {
             'dry_run' => $this->dry_run(),
             'storage' => ($msg_exists && $evt_exists) ? 'persistent-db' : 'missing',
             'meta_configured' => (bool) ($this->cfg('access_token') && $this->cfg('phone_id')),
-            'features' => ['auth','idempotency','log','retry','webhook','status-tracking','dynamic-lists','consent','preview-gate','bulk-idempotency','campaign-status','datasource-probe','explicit-consent','consent-audit','consent-revoke','customer-crm-link'],
+            'features' => ['auth','idempotency','log','retry','webhook','status-tracking','dynamic-lists','consent','preview-gate','bulk-idempotency','campaign-status','datasource-probe','explicit-consent','consent-audit','consent-revoke','customer-crm-link','staging-source-export'],
             'mr_bridge_bootstrap' => get_option('yns_wa_mr_bridge_bootstrap', null),
             'affitto_sala_seed' => get_option('yns_wa_affitto_sala_seed', null),
         ], ($msg_exists && $evt_exists) ? 200 : 503);
