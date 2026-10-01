@@ -1,0 +1,18 @@
+{
+  "environment": "test",
+  "live_untouched": true,
+  "providers": {
+    "mollie": {
+      "state": "parallel_pending",
+      "changed": false
+    },
+    "stripe": {
+      "state": "test_connected",
+      "connected_accounts_seen": 1,
+      "legacy_test_account_ignored": true
+    }
+  },
+  "platform_fee_test_bps": 50,
+  "tap_to_pay": "planned",
+  "next_gate": "create_clean_test_connected_account"
+}
