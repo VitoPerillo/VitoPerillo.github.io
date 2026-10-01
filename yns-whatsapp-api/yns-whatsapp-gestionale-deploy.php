@@ -306,6 +306,22 @@ final class YNS_WhatsApp_Gestionale_Deploy {
                 'main_file_present'=>is_file($main),
                 'whatsapp_profile_ui'=>$marker_ok,
             ];
+        }elseif($action==='consent-test'){
+            if(!class_exists('YNS_WhatsApp_API')||!class_exists('YNS_WhatsApp_Consent')){
+                return new WP_Error('yns_gest_consent_test_missing','Modulo consenso WhatsApp non disponibile.',['status'=>503]);
+            }
+            $health=YNS_WhatsApp_API::instance()->health();
+            $health_data=$health instanceof WP_REST_Response?$health->get_data():null;
+            if(!is_array($health_data)||empty($health_data['ok'])||empty($health_data['dry_run'])||!empty($health_data['meta_configured'])){
+                return new WP_Error('yns_gest_consent_test_not_dry','Self-test rifiutato: WhatsApp non è in dry-run sicuro.',['status'=>409]);
+            }
+            $test=YNS_WhatsApp_Consent::self_test_route();
+            if(is_wp_error($test))return $test;
+            $test_data=$test instanceof WP_REST_Response?$test->get_data():null;
+            if(!is_array($test_data)||empty($test_data['ok'])){
+                return new WP_Error('yns_gest_consent_test_failed','Self-test consenso non superato.',['status'=>500,'test'=>$test_data]);
+            }
+            $result=['ok'=>true,'environment'=>'staging','dry_run'=>true,'test'=>$test_data];
         }elseif($action==='deploy'){
             $result=self::deploy($body);
         }elseif($action==='rollback'){
