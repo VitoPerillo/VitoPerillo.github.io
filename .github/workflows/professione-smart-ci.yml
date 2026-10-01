@@ -1,0 +1,41 @@
+name: Professione Smart CI
+
+on:
+  push:
+    branches:
+      - professione-smart-stripe
+    paths:
+      - "professione-smart/**"
+      - ".github/workflows/professione-smart-ci.yml"
+  pull_request:
+    paths:
+      - "professione-smart/**"
+      - ".github/workflows/professione-smart-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Syntax checks
+        run: |
+          node --check professione-smart/lib/fees.js
+          node --check professione-smart/lib/providers.js
+          node --check professione-smart/lib/onboarding.js
+          node --check professione-smart/server/onboarding/registration.js
+          node --check professione-smart/server/stripe/terminal-api.js
+          node --check professione-smart/server/stripe/terminal-service.js
+      - name: Unit tests
+        run: |
+          node --test \
+            professione-smart/stripe/fee.test.mjs \
+            professione-smart/stripe/v2/terminal-payment-contract.test.mjs \
+            professione-smart/server/stripe/contracts.test.mjs \
+            professione-smart/server/onboarding/onboarding.test.mjs
