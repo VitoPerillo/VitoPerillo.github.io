@@ -286,7 +286,26 @@ final class YNS_WhatsApp_Gestionale_Deploy {
         if(!is_array($body))return new WP_Error('yns_gest_json','Payload JSON non valido.',['status'=>400]);
         $action=sanitize_key($body['action']??'');
         if($action==='status'){
-            $result=['ok'=>true,'environment'=>'staging','allowlist'=>[self::TARGET_SLUG],'sha256_required'=>true,'backup'=>true,'rollback'=>true];
+            if(!function_exists('is_plugin_active'))require_once ABSPATH.'wp-admin/includes/plugin.php';
+            $main=WP_PLUGIN_DIR.'/'.self::TARGET_SLUG.'/yoganostress-prenotazioni.php';
+            $admin=WP_PLUGIN_DIR.'/'.self::TARGET_SLUG.'/admin/class-yns-admin.php';
+            $admin_raw=is_file($admin)?(string)file_get_contents($admin):'';
+            $markers=[
+                'Consenso comunicazioni',
+                'yns_whatsapp_request_optin',
+                'yns_whatsapp_revoke_consent',
+                '/yns-whatsapp/v1/consent/customer/',
+            ];
+            $marker_ok=true;
+            foreach($markers as $marker)if(strpos($admin_raw,$marker)===false){$marker_ok=false;break;}
+            $result=[
+                'ok'=>true,'environment'=>'staging','allowlist'=>[self::TARGET_SLUG],
+                'sha256_required'=>true,'backup'=>true,'rollback'=>true,
+                'plugin_active'=>is_plugin_active(self::TARGET_MAIN),
+                'runtime_version'=>defined('YNS_VERSION')?(string)YNS_VERSION:null,
+                'main_file_present'=>is_file($main),
+                'whatsapp_profile_ui'=>$marker_ok,
+            ];
         }elseif($action==='deploy'){
             $result=self::deploy($body);
         }elseif($action==='rollback'){
