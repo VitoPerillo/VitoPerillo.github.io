@@ -80,7 +80,6 @@ final class YNS_WhatsApp_API {
             add_option(self::OPT_VERIFY_TOKEN, wp_generate_password(48, false, false), '', false);
         }
 
-        self::bootstrap_mr_bridge_041();
     }
 
     private static function bootstrap_mr_bridge_041() {
