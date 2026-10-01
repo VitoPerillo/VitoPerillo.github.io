@@ -623,17 +623,39 @@ final class YNS_WhatsApp_Consent {
         if (is_wp_error($confirm)) { self::cleanup_fixture($email,$phone_norm); return $confirm; }
 
         $p1=YNS_WhatsApp_Lists::preview($preview_req)->get_data();
-        $revoke=self::revoke_internal($confirm['manage_token'],true);
+
+        $status_req=new WP_REST_Request('GET','/'.self::NS.'/consent/customer/'.$customer_id);
+        $status_req->set_param('id',$customer_id);
+        $granted_status=self::customer_status_route($status_req);
+        $granted_data=$granted_status instanceof WP_REST_Response?$granted_status->get_data():[];
+
+        $admin_revoke_req=new WP_REST_Request('POST','/'.self::NS.'/consent/admin/revoke');
+        $admin_revoke_req->set_header('content-type','application/json');
+        $admin_revoke_req->set_body(wp_json_encode(['customer_id'=>$customer_id,'revoke'=>true]));
+        $revoke=self::admin_revoke_route($admin_revoke_req);
         if (is_wp_error($revoke)) { self::cleanup_fixture($email,$phone_norm); return $revoke; }
+
+        $revoked_status=self::customer_status_route($status_req);
+        $revoked_data=$revoked_status instanceof WP_REST_Response?$revoked_status->get_data():[];
         $p2=YNS_WhatsApp_Lists::preview($preview_req)->get_data();
 
         $after_messages=(int)$wpdb->get_var("SELECT COUNT(*) FROM $messages");
+        $status_gate=
+            (($granted_data['consent_status']??'')==='granted')
+            && !empty($granted_data['consent_verified_at'])
+            && (($revoked_data['consent_status']??'')==='revoked')
+            && !empty($revoked_data['revoked_at']);
         $result=[
-            'ok'=>($p0['eligible_count']===0 && $p1['eligible_count']===1 && $p2['eligible_count']===0 && $before_messages===$after_messages),
+            'ok'=>($p0['eligible_count']===0 && $p1['eligible_count']===1 && $p2['eligible_count']===0 && $before_messages===$after_messages && $status_gate),
             'environment'=>'staging','session_id'=>$session_id,
             'before_consent_eligible'=>(int)$p0['eligible_count'],
             'after_grant_eligible'=>(int)$p1['eligible_count'],
             'after_revoke_eligible'=>(int)$p2['eligible_count'],
+            'granted_status_api'=>(string)($granted_data['consent_status']??''),
+            'granted_date_present'=>!empty($granted_data['consent_verified_at']),
+            'revoked_status_api'=>(string)($revoked_data['consent_status']??''),
+            'revoked_date_present'=>!empty($revoked_data['revoked_at']),
+            'admin_revoke_tested'=>true,
             'messages_created'=>$after_messages-$before_messages,
             'consent_event_sequence'=>['consent_granted','consent_revoked'],
             'fixture_cleanup'=>'completed',
