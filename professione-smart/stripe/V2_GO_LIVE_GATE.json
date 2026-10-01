@@ -1,0 +1,22 @@
+{
+  "stripe_architecture": "accounts_v2",
+  "charge_model": "direct_charges",
+  "merchant_of_record": "connected_professional",
+  "stripe_fees_collector": "stripe",
+  "stripe_losses_collector": "stripe",
+  "professionesmart_revenue": "application_fee_amount",
+  "test_platform_fee_bps": 50,
+  "required_test_environment": "general_sandbox",
+  "legacy_test_mode_for_new_v2_e2e": false,
+  "live_changes_allowed": false,
+  "go_live_gate": [
+    "general sandbox connected",
+    "clean connected professional onboarded",
+    "card_payments active",
+    "100 EUR test direct charge passes",
+    "0.50 EUR application fee verified",
+    "Tap to Pay test passes",
+    "refund/dispute responsibility verified",
+    "live identity/payout requirements completed"
+  ]
+}
