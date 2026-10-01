@@ -1,13 +1,6 @@
 name: Ritratto Stellare Deploy
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "ritratto-worker/**"
-      - "ritratto-public/**"
-      - "wrangler.ritratto.jsonc"
-      - ".github/workflows/ritratto-stellare-deploy.yml"
   workflow_dispatch:
 
 permissions:
