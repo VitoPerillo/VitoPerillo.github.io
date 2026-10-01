@@ -39,7 +39,7 @@ jobs:
         run: |
           set -euo pipefail
           rm -f yns-whatsapp-api.zip
-          find yns-whatsapp-api -type f -exec touch -t 202609300000 {} +
+          find yns-whatsapp-api -type f -exec touch -t 202610010130 {} +
           zip -X -q -r yns-whatsapp-api.zip yns-whatsapp-api
           unzip -t yns-whatsapp-api.zip
           sha256sum yns-whatsapp-api.zip | tee yns-whatsapp-api.zip.sha256
