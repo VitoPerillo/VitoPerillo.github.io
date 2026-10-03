@@ -1,0 +1,17 @@
+import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+const src=await fs.readFile("ritratto-public/js/rs-portrait-engine.js","utf8");
+const u=new URL("./.rs-portrait-engine.tmp.mjs",import.meta.url);await fs.writeFile(u,src);const P=await import(u.href);
+const chartA={timeKnown:true,planets:{Sun:54.49,Moon:298.45,Mercury:38.0,Venus:12.93,Mars:348.41,Jupiter:99.56,Saturn:295.24,Uranus:279.18,Neptune:284.35,Pluto:226.16},angles:{ascendant:122.2,mc:17.95}};
+const chartB={timeKnown:true,planets:{Sun:99.60,Moon:295.21,Mercury:116.14,Venus:140.66,Mars:61.85,Jupiter:120.25,Saturn:14.20,Uranus:63.72,Neptune:4.40,Pluto:304.86},angles:{ascendant:173.70,mc:82.62}};
+const chartUnknown={...chartA,timeKnown:false,angles:null,houses:null};
+const a=P.buildPortrait({chart:chartA,plan:"andromeda",profile:{name:"Caso A",birthPlace:"New York"},answers:{focus:"relazioni e cambiamento"}});
+const b=P.buildPortrait({chart:chartB,plan:"andromeda",profile:{name:"Caso B",birthPlace:"Roma"},answers:{focus:"lavoro e direzione"}});
+assert.notDeepEqual(a.astronomicalHighlights,b.astronomicalHighlights);assert.notEqual(JSON.stringify(a.sections),JSON.stringify(b.sections));
+const uo=P.buildPortrait({chart:chartUnknown,plan:"andromeda",profile:{name:"Ora sconosciuta",birthPlace:"New York"}});
+assert.match(uo.introduction,/non disponibile/);assert.doesNotMatch(JSON.stringify(uo),/Ascendente [0-9]/);
+const g=P.buildPortrait({chart:chartA,plan:"pegaso",profile:{name:"P"}}),f=P.buildPortrait({chart:chartA,plan:"fenice",profile:{name:"F"}}),m=P.buildPortrait({chart:chartA,plan:"andromeda",profile:{name:"A"}});
+assert.equal(g.sections.length,4);assert.equal(f.sections.length,8);assert.equal(m.sections.length,12);assert.deepEqual([g.limits.questionsPerMonth,f.limits.questionsPerMonth,m.limits.questionsPerMonth],[20,60,150]);assert.deepEqual([g.depth,f.depth,m.depth],["essential","deep","maximum"]);
+assert.ok(f.sections[0].text.length>g.sections[0].text.length);assert.ok(m.sections[0].text.length>f.sections[0].text.length);
+assert.ok(a.sections.some(s=>s.text.includes("relazioni e cambiamento")));assert.ok(b.sections.some(s=>s.text.includes("lavoro e direzione")));
+console.log("GATE 1 PORTRAIT QA PASS",JSON.stringify({differentBirthData:true,unknownTimeSafe:true,userAnswersAffectOutput:true,areas:[4,8,12],questions:[20,60,150],depth:["essential","deep","maximum"]}));
