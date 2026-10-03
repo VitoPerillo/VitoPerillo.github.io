@@ -1,0 +1,17 @@
+name: Ritratto Gate 1 QA
+on:
+  push:
+    branches: [ritratto-collaudo]
+    paths:
+      - 'ritratto-public/js/rs-portrait-engine.js'
+      - 'ritratto-public/qa/portrait-gate1.mjs'
+  workflow_dispatch:
+jobs:
+  gate1:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node ritratto-public/qa/portrait-gate1.mjs
