@@ -14,4 +14,4 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node ritratto-public/qa/portrait-gate1.mjs
+      - run: node ritratto-public/qa/portrait-gate1.mjs\n      - run: npm install astronomy-engine@2.1.19 --no-save && node ritratto-public/qa/personal-horoscope-gate.mjs
