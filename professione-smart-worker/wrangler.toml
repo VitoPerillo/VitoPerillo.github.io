@@ -1,0 +1,14 @@
+name = "professione-smart"
+main = "src/index.js"
+compatibility_date = "2026-09-26"
+workers_dev = true
+
+[vars]
+MOLLIE_CLIENT_ID = "app_Rq6yrYuhJDftUC5MNPWhnwWy"
+MOLLIE_REDIRECT_URI = "https://professione-smart.black-sea-41df.workers.dev/mollie/callback"
+MOLLIE_APP_FEE_ENABLED = "true"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "professione-smart"
+database_id = "2f83597d-8699-403e-b023-dc5d1663e060"
