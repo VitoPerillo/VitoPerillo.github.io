@@ -1,5 +1,14 @@
 [
   {
+    "id": "https://www.comune.roma.it/web/it/notizia/ali-della-citta-spettacolo-dal-vivo-corviale-mun11.page",
+    "url": "https://www.comune.roma.it/web/it/notizia/ali-della-citta-spettacolo-dal-vivo-corviale-mun11.page",
+    "title": "Le ali della citt&agrave;, a Corviale spettacolo dal vivo fino al 30 ottobre",
+    "text": "Municipio XI. I luoghi del quartiere diventano palcoscenici di festa e di socialit&agrave;.",
+    "date": "2026-10-05T12:11:00+02:00",
+    "area_slug": "corviale",
+    "category_slug": "servizi-municipio"
+  },
+  {
     "id": "https://www.comune.roma.it/web/it/notizia/il-canile-va-in-citta-dedicato-a-san-francesco-dassisi.page",
     "url": "https://www.comune.roma.it/web/it/notizia/il-canile-va-in-citta-dedicato-a-san-francesco-dassisi.page",
     "title": "\"Il Canile va in Citt&agrave;\" dedicato a San Francesco D'Assisi",
@@ -70,23 +79,5 @@
     "date": "2026-09-23T15:34:00+02:00",
     "area_slug": "municipio-xii",
     "category_slug": "scuola-famiglie"
-  },
-  {
-    "id": "https://www.comune.roma.it/web/it/notizia/mun12-al-via-the-green-loop-2026.page",
-    "url": "https://www.comune.roma.it/web/it/notizia/mun12-al-via-the-green-loop-2026.page",
-    "title": "Municipio XII, al via \"The Green Loop\"",
-    "text": "Municipio XII. Il progetto per riattivare i territori e creare occasioni di incontro.",
-    "date": "2026-09-21T15:46:00+02:00",
-    "area_slug": "municipio-xii",
-    "category_slug": "servizi-municipio"
-  },
-  {
-    "id": "https://www.comune.roma.it/web/it/notizia/presentazione-settimana-europea-mobilita-2026.page",
-    "url": "https://www.comune.roma.it/web/it/notizia/presentazione-settimana-europea-mobilita-2026.page",
-    "title": "Settimana Europea della Mobilit&agrave; dal 16 al 22 settembre",
-    "text": "Municipio XIII. Patan&egrave;: \"Oltre 100 eventi per una citt&agrave; inclusiva e sostenibile\".",
-    "date": "2026-09-21T15:37:00+02:00",
-    "area_slug": "municipio-xiii",
-    "category_slug": "viabilita-trasporti"
   }
 ]
