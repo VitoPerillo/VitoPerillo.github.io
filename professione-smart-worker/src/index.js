@@ -1,4 +1,5 @@
-import { PROVIDER_PHOTO_B64 } from "./provider-photo.js";\nimport { HOME_PHOTO_B64 } from "./home-photo.generated.js";
+import { PROVIDER_PHOTO_B64 } from "./provider-photo.js";
+import { HOME_PHOTO_B64 } from "./home-photo.generated.js";
 
 const BASE_URL = "https://professione-smart.black-sea-41df.workers.dev";
 const PLATFORM_FEE_RATE = 0.005;
