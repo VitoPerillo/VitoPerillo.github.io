@@ -1,4 +1,4 @@
-import { PROVIDER_PHOTO_B64 } from "./provider-photo.js";
+import { PROVIDER_PHOTO_B64 } from "./provider-photo.js";\nimport { HOME_PHOTO_B64 } from "./home-photo.generated.js";
 
 const BASE_URL = "https://professione-smart.black-sea-41df.workers.dev";
 const PLATFORM_FEE_RATE = 0.005;
@@ -42,7 +42,7 @@ function page(body, opts = {}) {
     '<style>' +
     '*{box-sizing:border-box}body{margin:0;background:#f6f8fb;color:#18202a;font-family:Inter,Arial,sans-serif;line-height:1.55}' +
     '.wrap{max-width:1050px;margin:auto;padding:26px 22px 56px}.brand{display:inline-block;color:#18202a;text-decoration:none;font-weight:900;font-size:21px;letter-spacing:-.4px;margin-bottom:34px}' +
-    '.hero{background:linear-gradient(135deg,#111827,#243247);color:#fff;border-radius:28px;padding:52px;box-shadow:0 18px 50px #10182822}.hero-link{display:block;text-decoration:none;color:#fff;cursor:pointer}' +
+    '.hero{display:grid;grid-template-columns:1.02fr .98fr;gap:24px;align-items:center;background:linear-gradient(135deg,#111827,#243247);color:#fff;border-radius:28px;padding:30px;box-shadow:0 18px 50px #10182822}.hero-link{color:#fff;text-decoration:none;cursor:pointer}.hero-copy{min-width:0}.hero-photo{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:24px;display:block;box-shadow:0 18px 46px #0006}' +
     '.eyebrow{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:1.4px;color:#b9d9ff}.hero h1{font-size:clamp(38px,7vw,72px);line-height:.98;letter-spacing:-2.5px;margin:12px 0 20px;max-width:820px}.hero p{font-size:20px;max-width:760px;color:#e6edf7}' +
     '.cta{display:inline-block;margin-top:14px;background:#fff;color:#111827;text-decoration:none;font-weight:900;padding:16px 22px;border-radius:12px}.cta.dark{background:#111827;color:#fff}.small{font-size:13px;color:#64748b}' +
     '.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:22px 0}.card{background:#fff;border:1px solid #e5eaf0;border-radius:20px;padding:25px}.card h2,.card h3{margin-top:0}.action-card{display:block;color:#18202a;text-decoration:none;cursor:pointer}.action-card:hover{box-shadow:0 10px 24px #10182812;transform:translateY(-1px)}.section{padding:34px 4px 8px}' +
@@ -51,7 +51,7 @@ function page(body, opts = {}) {
     '.trust{background:#eef4ff;border-radius:20px;padding:22px;margin-top:24px}.formbox{max-width:720px;margin:0 auto;background:#fff;border:1px solid #e5eaf0;border-radius:24px;padding:30px;box-shadow:0 14px 36px #10182812}.formbox h1{margin-top:0;font-size:clamp(32px,5vw,52px);line-height:1}' +
     '.field{margin:16px 0}.field label{display:block;font-weight:800;margin-bottom:7px}.field input,.field select{width:100%;padding:14px 15px;border:1px solid #cbd5e1;border-radius:11px;font:inherit;background:#fff}.check{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:#475569}.check input{margin-top:4px}' +
     '.submit{width:100%;border:0;background:#111827;color:#fff;padding:16px 20px;border-radius:12px;font-weight:900;font-size:16px;cursor:pointer;margin-top:18px}.notice{background:#fff7ed;border:1px solid #fed7aa;border-radius:14px;padding:14px 16px}.success{background:#ecfdf5;border:1px solid #a7f3d0;border-radius:14px;padding:14px 16px}.code{font-size:26px;font-weight:900;letter-spacing:2px;word-break:break-all}.qr{max-width:260px;width:100%;height:auto;border-radius:14px;border:1px solid #e5e7eb}' +
-    '.footer{margin-top:35px;padding-top:20px;border-top:1px solid #dde3ea;font-size:13px;color:#64748b}@media(max-width:760px){.wrap{padding:18px 15px 40px}.hero{padding:34px 24px;border-radius:22px}.hero p{font-size:18px}.grid{grid-template-columns:1fr}.hero h1{letter-spacing:-1.5px}.formbox{padding:22px}.provider-page{margin-top:0}.provider-head{margin-bottom:18px}.provider-head h1{font-size:40px;letter-spacing:-1.5px}.provider-head p{font-size:16px}.provider-stage{grid-template-columns:1fr}.provider-photo{min-height:0;aspect-ratio:4/3}.provider-choices{grid-template-columns:1fr 1fr;gap:10px}.provider-card{padding:18px 14px}.provider-card h3{font-size:23px}.provider-cta{font-size:12px;padding:11px 12px}}' +
+    '.footer{margin-top:35px;padding-top:20px;border-top:1px solid #dde3ea;font-size:13px;color:#64748b}@media(max-width:760px){.wrap{padding:18px 15px 40px}.hero{grid-template-columns:1fr;padding:18px;border-radius:22px}.hero-photo{order:-1;border-radius:18px}.hero p{font-size:18px}.grid{grid-template-columns:1fr}.hero h1{letter-spacing:-1.5px}.formbox{padding:22px}.provider-page{margin-top:0}.provider-head{margin-bottom:18px}.provider-head h1{font-size:40px;letter-spacing:-1.5px}.provider-head p{font-size:16px}.provider-stage{grid-template-columns:1fr}.provider-photo{min-height:0;aspect-ratio:4/3}.provider-choices{grid-template-columns:1fr 1fr;gap:10px}.provider-card{padding:18px 14px}.provider-card h3{font-size:23px}.provider-cta{font-size:12px;padding:11px 12px}}' +
     '</style></head><body><main class="wrap">' + brandHtml + body + '</main></body></html>';
   return new Response(doc, {
     status,
@@ -229,10 +229,13 @@ function home(url) {
   const qs = url.search || "";
   return page(
     '<a class="hero hero-link" href="/attiva' + esc(qs) + '" aria-label="Attiva il tuo smartphone come POS ora">' +
-      '<div class="eyebrow">Il POS semplice per professionisti e piccole attività</div>' +
-      '<h1>Il tuo POS è già nel tuo smartphone.</h1>' +
-      '<p><strong>0 € di canone mensile.</strong> Accetta pagamenti contactless direttamente dal tuo iPhone o Android compatibile, senza comprare un POS tradizionale.</p>' +
-      '<span class="cta">ATTIVA IL TUO SMARTPHONE COME POS ORA</span>' +
+      '<div class="hero-copy">' +
+        '<div class="eyebrow">Il POS semplice per professionisti e piccole attività</div>' +
+        '<h1>Il tuo POS è già nel tuo smartphone.</h1>' +
+        '<p><strong>0 € di canone mensile.</strong> Accetta pagamenti contactless direttamente dal tuo iPhone o Android compatibile, senza comprare un POS tradizionale.</p>' +
+        '<span class="cta">ATTIVA IL TUO SMARTPHONE COME POS ORA</span>' +
+      '</div>' +
+      '<img class="hero-photo" src="/home-photo.webp" alt="Pagamento contactless su smartphone in un salone di bellezza">' +
     '</a>' +
     '<section class="section"><h2>Perché può convenire</h2><div class="grid">' +
       '<div class="card"><h3>Niente hardware extra</h3><p>Usa uno smartphone compatibile come terminale contactless.</p></div>' +
@@ -262,6 +265,9 @@ export default {
     if (url.pathname === "/health") return new Response("ok", { headers: { "cache-control": "no-store" } });
     if (url.pathname === "/provider-photo.webp") {
       return new Response(b64ToBytes(PROVIDER_PHOTO_B64), { headers: { "content-type": "image/webp", "cache-control": "public, max-age=31536000, immutable" } });
+    }
+    if (url.pathname === "/home-photo.webp") {
+      return new Response(b64ToBytes(HOME_PHOTO_B64), { headers: { "content-type": "image/webp", "cache-control": "public, max-age=31536000, immutable" } });
     }
     if (url.pathname === "/robots.txt") {
       return new Response("User-agent: *\nAllow: /\nSitemap: " + BASE_URL + "/sitemap.xml\n", { headers: { "content-type": "text/plain; charset=UTF-8" } });

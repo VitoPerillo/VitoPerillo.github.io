@@ -114,7 +114,7 @@ jobs:
               repo_connection_uuid:$repo_connection_uuid,
               build_token_uuid:$build_token_uuid,
               trigger_name:"Professione Smart Preview",
-              build_command:"npm run check",
+              build_command:"npm install --no-audit --no-fund && npm run build",
               deploy_command:"npx wrangler versions upload",
               root_directory:$root,
               branch_includes:["professione-smart-staging"],

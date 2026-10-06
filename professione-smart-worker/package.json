@@ -3,10 +3,13 @@
   "private": true,
   "type": "module",
   "devDependencies": {
-    "wrangler": "^4.147.0"
+    "wrangler": "^4.147.0",
+    "sharp": "^0.34.4"
   },
   "scripts": {
-    "check": "node --check src/index.js && node --check scripts/mr-bridge-preflight.mjs",
+    "build:home-photo": "node scripts/build-home-photo.mjs",
+    "check": "node --check src/index.js && node --check scripts/mr-bridge-preflight.mjs && node --check scripts/build-home-photo.mjs",
+    "build": "npm run build:home-photo && npm run check",
     "mr:preflight": "node scripts/mr-bridge-preflight.mjs",
     "deploy": "wrangler deploy"
   }
