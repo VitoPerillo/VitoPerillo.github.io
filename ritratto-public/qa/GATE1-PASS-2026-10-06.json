@@ -1,0 +1,37 @@
+{
+  "project": "Ritratto Stellare",
+  "branch": "ritratto-collaudo",
+  "gate": "GATE 1 — QUALITÀ E PERSONALIZZAZIONE",
+  "status": "PASS",
+  "validated_at": "2026-10-06T10:03:59Z",
+  "github_actions_run_id": 37447245814,
+  "job_id": 112214937937,
+  "commit": "5af683acf84b2985c3b4662dd7e8a73dc4b44cee",
+  "verified": {
+    "portrait": true,
+    "periods": [
+      "today",
+      "week",
+      "month",
+      "year"
+    ],
+    "different_birth_data": true,
+    "different_people_same_period": true,
+    "different_dates_same_person": true,
+    "real_natal_transit_aspects": true,
+    "unknown_time_safe": true,
+    "unverified_place_hard_stop": true,
+    "birth_location_timezone": true,
+    "areas": [
+      4,
+      8,
+      12
+    ],
+    "questions": [
+      20,
+      60,
+      150
+    ]
+  },
+  "production_modified": false
+}
