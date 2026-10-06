@@ -1,4 +1,4 @@
-name: Professione Smart - Cloudflare Preview Bootstrap
+name: Professione Smart - MR Bridge / Cloudflare Preview
 
 on:
   push:
@@ -8,16 +8,22 @@ on:
       - "professione-smart-worker/**"
       - ".github/workflows/professione-smart-cloudflare-preview.yml"
   workflow_dispatch:
+    inputs:
+      create_preview:
+        description: "Avvia una Cloudflare Preview dopo il gate MR Bridge"
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 jobs:
-  configure-preview:
+  mr-bridge-gate:
     runs-on: ubuntu-latest
     env:
       CF_ACCOUNT_ID: b72d4037bafea30b480d3545812ab253
-      CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_API_TOKEN_RAW: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       GH_PROVIDER_ACCOUNT_ID: "317205417"
       GH_PROVIDER_ACCOUNT_NAME: VitoPerillo
       GH_REPO_ID: "1368437653"
@@ -25,16 +31,19 @@ jobs:
       WORKER_NAME: professione-smart
       ROOT_DIRECTORY: /professione-smart-worker
     steps:
-      - name: Guard Cloudflare API token
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ -z "${CF_API_TOKEN:-}" ]; then
-            echo "CLOUDFLARE_API_TOKEN is not configured."
-            exit 2
-          fi
+      - name: Checkout canonical staging source
+        uses: actions/checkout@v4
+
+      - name: MR Bridge preflight
+        working-directory: professione-smart-worker
+        run: node scripts/mr-bridge-preflight.mjs
+
+      - name: Source syntax gate
+        working-directory: professione-smart-worker
+        run: npm run check
 
       - name: Configure native Cloudflare Preview build
+        if: ${{ (github.event_name == 'workflow_dispatch' && inputs.create_preview == true) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[preview]')) }}
         shell: bash
         run: |
           set -euo pipefail
@@ -64,28 +73,6 @@ jobs:
             rm -f "$tmp"
           }
 
-          echo "Cloudflare token length: ${#CF_API_TOKEN}" >&2
-          if [[ "$CF_API_TOKEN" == cfut_* ]]; then
-            echo "Cloudflare token prefix: valid-user-token" >&2
-          else
-            echo "Cloudflare token prefix: unexpected" >&2
-          fi
-
-          verify="$(cf_call USER_TOKEN_VERIFY GET "https://api.cloudflare.com/client/v4/user/tokens/verify")"
-          token_status="$(jq -r '.result.status // empty' <<<"$verify")"
-          echo "Cloudflare user token status: $token_status" >&2
-          if [ "$token_status" != "active" ]; then
-            echo "Cloudflare API token is not active." >&2
-            exit 7
-          fi
-
-          accounts="$(cf_call LIST_ACCOUNTS GET "https://api.cloudflare.com/client/v4/accounts")"
-          account_match="$(jq -r --arg id "$CF_ACCOUNT_ID" '.result[] | select(.id==$id) | .id' <<<"$accounts" | head -n1)"
-          if [ "$account_match" != "$CF_ACCOUNT_ID" ]; then
-            echo "Target Cloudflare account is not visible to this token." >&2
-            exit 8
-          fi
-
           scripts="$(cf_call WORKERS_SCRIPTS GET "$api/workers/scripts")"
           worker_tag="$(jq -r --arg n "$WORKER_NAME" '.result[] | select(.id==$n) | .tag' <<<"$scripts" | head -n1)"
           if [ -z "$worker_tag" ] || [ "$worker_tag" = "null" ]; then
@@ -100,7 +87,12 @@ jobs:
             exit 4
           fi
 
-          repo_payload="$(jq -nc             --arg provider_account_id "$GH_PROVIDER_ACCOUNT_ID"             --arg provider_account_name "$GH_PROVIDER_ACCOUNT_NAME"             --arg repo_id "$GH_REPO_ID"             --arg repo_name "$GH_REPO_NAME"             '{provider_type:"github",provider_account_id:$provider_account_id,provider_account_name:$provider_account_name,repo_id:$repo_id,repo_name:$repo_name}')"
+          repo_payload="$(jq -nc \
+            --arg provider_account_id "$GH_PROVIDER_ACCOUNT_ID" \
+            --arg provider_account_name "$GH_PROVIDER_ACCOUNT_NAME" \
+            --arg repo_id "$GH_REPO_ID" \
+            --arg repo_name "$GH_REPO_NAME" \
+            '{provider_type:"github",provider_account_id:$provider_account_id,provider_account_name:$provider_account_name,repo_id:$repo_id,repo_name:$repo_name}')"
 
           repo_resp="$(cf_call REPO_CONNECTION PUT "$api/builds/repos/connections" "$repo_payload")"
           repo_connection_uuid="$(jq -r '.result.repo_connection_uuid // .result.uuid // empty' <<<"$repo_resp")"
@@ -112,7 +104,12 @@ jobs:
           triggers="$(cf_call LIST_TRIGGERS GET "$api/builds/workers/$worker_tag/triggers")"
           preview_uuid="$(jq -r '.result[] | select(.trigger_name=="Professione Smart Preview") | .trigger_uuid' <<<"$triggers" | head -n1)"
 
-          payload="$(jq -nc             --arg worker_tag "$worker_tag"             --arg repo_connection_uuid "$repo_connection_uuid"             --arg build_token_uuid "$build_token_uuid"             --arg root "$ROOT_DIRECTORY"             '{
+          payload="$(jq -nc \
+            --arg worker_tag "$worker_tag" \
+            --arg repo_connection_uuid "$repo_connection_uuid" \
+            --arg build_token_uuid "$build_token_uuid" \
+            --arg root "$ROOT_DIRECTORY" \
+            '{
               external_script_id:$worker_tag,
               repo_connection_uuid:$repo_connection_uuid,
               build_token_uuid:$build_token_uuid,
@@ -144,6 +141,7 @@ jobs:
           build_resp="$(cf_call START_PREVIEW_BUILD POST "$api/builds/triggers/$preview_uuid/builds" "$manual_payload")"
           build_uuid="$(jq -r '.result.build_uuid // empty' <<<"$build_resp")"
 
+          echo "MR_BRIDGE_PREVIEW_REQUESTED=true"
           echo "Worker: $WORKER_NAME"
           echo "Root directory: $ROOT_DIRECTORY"
           echo "Branch: professione-smart-staging"

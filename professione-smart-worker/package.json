@@ -6,7 +6,8 @@
     "wrangler": "^4.147.0"
   },
   "scripts": {
-    "check": "node --check src/index.js",
+    "check": "node --check src/index.js && node --check scripts/mr-bridge-preflight.mjs",
+    "mr:preflight": "node scripts/mr-bridge-preflight.mjs",
     "deploy": "wrangler deploy"
   }
 }

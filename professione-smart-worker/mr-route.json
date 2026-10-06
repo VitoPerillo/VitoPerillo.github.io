@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "project": "professione-smart",
+  "control_plane": "MR Bridge",
+  "source": {
+    "repository": "VitoPerillo/VitoPerillo.github.io",
+    "branch": "professione-smart-staging",
+    "production_branch": "main",
+    "root": "professione-smart-worker"
+  },
+  "runtime": {
+    "provider": "cloudflare",
+    "worker": "professione-smart",
+    "account_id": "b72d4037bafea30b480d3545812ab253"
+  },
+  "pipeline": [
+    "mr-bridge-preflight",
+    "git-staging",
+    "cloudflare-preview-on-demand",
+    "approval",
+    "git-main",
+    "cloudflare-live",
+    "live-verify"
+  ],
+  "fallbacks": [
+    "cloudflare-official-api",
+    "github-native-cloudflare"
+  ],
+  "break_glass": {
+    "desktop_commander": true,
+    "pc_required_for_normal_operation": false,
+    "browser_automation_only_if_provider_api_is_insufficient": true
+  },
+  "safety": {
+    "fail_closed": true,
+    "no_payment_execution": true,
+    "no_secret_in_repository": true,
+    "no_production_change_without_approval": true
+  }
+}
