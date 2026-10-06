@@ -1,0 +1,89 @@
+name: Professione Smart - Cloudflare Preview Bootstrap
+
+on:
+  push:
+    branches:
+      - professione-smart-staging
+    paths:
+      - "professione-smart-worker/**"
+      - ".github/workflows/professione-smart-cloudflare-preview.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  configure-preview:
+    runs-on: ubuntu-latest
+    env:
+      CF_ACCOUNT_ID: b72d4037bafea30b480d3545812ab253
+      CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      GH_PROVIDER_ACCOUNT_ID: "317205417"
+      GH_PROVIDER_ACCOUNT_NAME: VitoPerillo
+      GH_REPO_ID: "1368437653"
+      GH_REPO_NAME: VitoPerillo.github.io
+      WORKER_NAME: professione-smart
+      ROOT_DIRECTORY: /professione-smart-worker
+    steps:
+      - name: Guard Cloudflare API token
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${CF_API_TOKEN:-}" ]; then
+            echo "CLOUDFLARE_API_TOKEN is not configured."
+            exit 2
+          fi
+
+      - name: Configure native Cloudflare Preview build
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID"
+          auth=(-H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json")
+
+          scripts="$(curl -fsS "${auth[@]}" "$api/workers/scripts")"
+          worker_tag="$(jq -r --arg n "$WORKER_NAME" '.result[] | select(.id==$n) | .tag' <<<"$scripts" | head -n1)"
+          test -n "$worker_tag" && test "$worker_tag" != "null"
+
+          tokens="$(curl -fsS "${auth[@]}" "$api/builds/tokens")"
+          build_token_uuid="$(jq -r '.result[0].build_token_uuid // empty' <<<"$tokens")"
+          test -n "$build_token_uuid"
+
+          repo_payload="$(jq -nc             --arg provider_account_id "$GH_PROVIDER_ACCOUNT_ID"             --arg provider_account_name "$GH_PROVIDER_ACCOUNT_NAME"             --arg repo_id "$GH_REPO_ID"             --arg repo_name "$GH_REPO_NAME"             '{provider_type:"github",provider_account_id:$provider_account_id,provider_account_name:$provider_account_name,repo_id:$repo_id,repo_name:$repo_name}')"
+
+          repo_resp="$(curl -fsS "${auth[@]}" -X PUT             --data "$repo_payload"             "$api/builds/repos/connections")"
+          repo_connection_uuid="$(jq -r '.result.repo_connection_uuid // .result.uuid // empty' <<<"$repo_resp")"
+          test -n "$repo_connection_uuid"
+
+          triggers="$(curl -fsS "${auth[@]}" "$api/builds/workers/$worker_tag/triggers")"
+          preview_uuid="$(jq -r '.result[] | select(.trigger_name=="Professione Smart Preview") | .trigger_uuid' <<<"$triggers" | head -n1)"
+
+          payload="$(jq -nc             --arg worker_tag "$worker_tag"             --arg repo_connection_uuid "$repo_connection_uuid"             --arg build_token_uuid "$build_token_uuid"             --arg root "$ROOT_DIRECTORY"             '{
+              external_script_id:$worker_tag,
+              repo_connection_uuid:$repo_connection_uuid,
+              build_token_uuid:$build_token_uuid,
+              trigger_name:"Professione Smart Preview",
+              build_command:"npm run check",
+              deploy_command:"npx wrangler preview",
+              root_directory:$root,
+              branch_includes:["professione-smart-staging"],
+              branch_excludes:[],
+              path_includes:["professione-smart-worker/**"],
+              path_excludes:[],
+              build_caching_enabled:true
+            }')"
+
+          if [ -n "$preview_uuid" ]; then
+            curl -fsS "${auth[@]}" -X PATCH               --data "$payload"               "$api/builds/triggers/$preview_uuid" >/dev/null
+            echo "Preview trigger updated."
+          else
+            created="$(curl -fsS "${auth[@]}" -X POST               --data "$payload"               "$api/builds/triggers")"
+            preview_uuid="$(jq -r '.result.trigger_uuid // empty' <<<"$created")"
+            test -n "$preview_uuid"
+            echo "Preview trigger created."
+          fi
+
+          echo "Worker: $WORKER_NAME"
+          echo "Root directory: $ROOT_DIRECTORY"
+          echo "Branch: professione-smart-staging"
+          echo "Preview command: npx wrangler preview"
