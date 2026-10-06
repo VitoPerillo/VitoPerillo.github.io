@@ -64,6 +64,13 @@ jobs:
             rm -f "$tmp"
           }
 
+          echo "Cloudflare token length: ${#CF_API_TOKEN}" >&2
+          if [[ "$CF_API_TOKEN" == cfut_* ]]; then
+            echo "Cloudflare token prefix: valid-user-token" >&2
+          else
+            echo "Cloudflare token prefix: unexpected" >&2
+          fi
+
           verify="$(cf_call USER_TOKEN_VERIFY GET "https://api.cloudflare.com/client/v4/user/tokens/verify")"
           token_status="$(jq -r '.result.status // empty' <<<"$verify")"
           echo "Cloudflare user token status: $token_status" >&2
