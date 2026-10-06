@@ -41,21 +41,53 @@ jobs:
           api="https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID"
           auth=(-H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json")
 
-          scripts="$(curl -fsS "${auth[@]}" "$api/workers/scripts")"
-          worker_tag="$(jq -r --arg n "$WORKER_NAME" '.result[] | select(.id==$n) | .tag' <<<"$scripts" | head -n1)"
-          test -n "$worker_tag" && test "$worker_tag" != "null"
+          cf_call() {
+            local label="$1"
+            local method="$2"
+            local url="$3"
+            local data="${4:-}"
+            local tmp
+            tmp="$(mktemp)"
+            local code
+            if [ -n "$data" ]; then
+              code="$(curl -sS -o "$tmp" -w "%{http_code}" "${auth[@]}" -X "$method" --data "$data" "$url")"
+            else
+              code="$(curl -sS -o "$tmp" -w "%{http_code}" "${auth[@]}" -X "$method" "$url")"
+            fi
+            echo "$label HTTP $code" >&2
+            if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
+              jq -c '{success,errors,messages}' "$tmp" >&2 || true
+              rm -f "$tmp"
+              return 1
+            fi
+            cat "$tmp"
+            rm -f "$tmp"
+          }
 
-          tokens="$(curl -fsS "${auth[@]}" "$api/builds/tokens")"
+          scripts="$(cf_call WORKERS_SCRIPTS GET "$api/workers/scripts")"
+          worker_tag="$(jq -r --arg n "$WORKER_NAME" '.result[] | select(.id==$n) | .tag' <<<"$scripts" | head -n1)"
+          if [ -z "$worker_tag" ] || [ "$worker_tag" = "null" ]; then
+            echo "Worker tag not found for $WORKER_NAME" >&2
+            exit 3
+          fi
+
+          tokens="$(cf_call BUILDS_TOKENS GET "$api/builds/tokens")"
           build_token_uuid="$(jq -r '.result[0].build_token_uuid // empty' <<<"$tokens")"
-          test -n "$build_token_uuid"
+          if [ -z "$build_token_uuid" ]; then
+            echo "No Cloudflare Workers Builds token available." >&2
+            exit 4
+          fi
 
           repo_payload="$(jq -nc             --arg provider_account_id "$GH_PROVIDER_ACCOUNT_ID"             --arg provider_account_name "$GH_PROVIDER_ACCOUNT_NAME"             --arg repo_id "$GH_REPO_ID"             --arg repo_name "$GH_REPO_NAME"             '{provider_type:"github",provider_account_id:$provider_account_id,provider_account_name:$provider_account_name,repo_id:$repo_id,repo_name:$repo_name}')"
 
-          repo_resp="$(curl -fsS "${auth[@]}" -X PUT             --data "$repo_payload"             "$api/builds/repos/connections")"
+          repo_resp="$(cf_call REPO_CONNECTION PUT "$api/builds/repos/connections" "$repo_payload")"
           repo_connection_uuid="$(jq -r '.result.repo_connection_uuid // .result.uuid // empty' <<<"$repo_resp")"
-          test -n "$repo_connection_uuid"
+          if [ -z "$repo_connection_uuid" ]; then
+            echo "Repository connection UUID missing." >&2
+            exit 5
+          fi
 
-          triggers="$(curl -fsS "${auth[@]}" "$api/builds/workers/$worker_tag/triggers")"
+          triggers="$(cf_call LIST_TRIGGERS GET "$api/builds/workers/$worker_tag/triggers")"
           preview_uuid="$(jq -r '.result[] | select(.trigger_name=="Professione Smart Preview") | .trigger_uuid' <<<"$triggers" | head -n1)"
 
           payload="$(jq -nc             --arg worker_tag "$worker_tag"             --arg repo_connection_uuid "$repo_connection_uuid"             --arg build_token_uuid "$build_token_uuid"             --arg root "$ROOT_DIRECTORY"             '{
@@ -64,7 +96,7 @@ jobs:
               build_token_uuid:$build_token_uuid,
               trigger_name:"Professione Smart Preview",
               build_command:"npm run check",
-              deploy_command:"npx wrangler preview",
+              deploy_command:"npx wrangler versions upload",
               root_directory:$root,
               branch_includes:["professione-smart-staging"],
               branch_excludes:[],
@@ -74,16 +106,26 @@ jobs:
             }')"
 
           if [ -n "$preview_uuid" ]; then
-            curl -fsS "${auth[@]}" -X PATCH               --data "$payload"               "$api/builds/triggers/$preview_uuid" >/dev/null
+            cf_call UPDATE_TRIGGER PATCH "$api/builds/triggers/$preview_uuid" "$payload" >/dev/null
             echo "Preview trigger updated."
           else
-            created="$(curl -fsS "${auth[@]}" -X POST               --data "$payload"               "$api/builds/triggers")"
+            created="$(cf_call CREATE_TRIGGER POST "$api/builds/triggers" "$payload")"
             preview_uuid="$(jq -r '.result.trigger_uuid // empty' <<<"$created")"
-            test -n "$preview_uuid"
+            if [ -z "$preview_uuid" ]; then
+              echo "Preview trigger UUID missing after create." >&2
+              exit 6
+            fi
             echo "Preview trigger created."
           fi
+
+          manual_payload="$(jq -nc --arg branch "professione-smart-staging" '{branch:$branch}')"
+          build_resp="$(cf_call START_PREVIEW_BUILD POST "$api/builds/triggers/$preview_uuid/builds" "$manual_payload")"
+          build_uuid="$(jq -r '.result.build_uuid // empty' <<<"$build_resp")"
 
           echo "Worker: $WORKER_NAME"
           echo "Root directory: $ROOT_DIRECTORY"
           echo "Branch: professione-smart-staging"
-          echo "Preview command: npx wrangler preview"
+          echo "Preview deploy command: npx wrangler versions upload"
+          if [ -n "$build_uuid" ]; then
+            echo "Build UUID: $build_uuid"
+          fi
