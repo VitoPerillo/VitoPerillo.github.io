@@ -185,14 +185,15 @@ jobs:
           smoke_dir="$(mktemp -d)"
           trap 'rm -rf "$smoke_dir"' EXIT
           preview_base="${preview_url%/}"
+          sleep 4
 
-          curl -fsS --retry 3 --retry-delay 1 "$preview_base/health" -o "$smoke_dir/health"
+          curl -fsS --retry 10 --retry-all-errors --retry-delay 2 --max-time 20 "$preview_base/health" -o "$smoke_dir/health"
           if [ "$(cat "$smoke_dir/health")" != "ok" ]; then
             echo "MR_BRIDGE_BLOCK=preview_health_failed" >&2
             exit 11
           fi
 
-          curl -fsS --retry 3 --retry-delay 1 "$preview_base/" -o "$smoke_dir/home.html"
+          curl -fsS --retry 10 --retry-all-errors --retry-delay 2 --max-time 20 "$preview_base/" -o "$smoke_dir/home.html"
           grep -Fq '/home-photo.webp' "$smoke_dir/home.html"
           grep -Fq 'ATTIVA IL TUO SMARTPHONE COME POS ORA' "$smoke_dir/home.html"
           if grep -Fq '0.5%' "$smoke_dir/home.html"; then
@@ -200,14 +201,14 @@ jobs:
             exit 12
           fi
 
-          curl -fsS --retry 3 --retry-delay 1 "$preview_base/attiva" -o "$smoke_dir/attiva.html"
+          curl -fsS --retry 10 --retry-all-errors --retry-delay 2 --max-time 20 "$preview_base/attiva" -o "$smoke_dir/attiva.html"
           grep -Fq '/provider-photo.webp' "$smoke_dir/attiva.html"
           if grep -Fq '/home-photo.webp' "$smoke_dir/attiva.html"; then
             echo "MR_BRIDGE_BLOCK=beauty_image_leaked_to_attiva" >&2
             exit 13
           fi
 
-          curl -fsS --retry 3 --retry-delay 1 -D "$smoke_dir/home-photo.headers" "$preview_base/home-photo.webp" -o "$smoke_dir/home-photo.webp"
+          curl -fsS --retry 10 --retry-all-errors --retry-delay 2 --max-time 20 -D "$smoke_dir/home-photo.headers" "$preview_base/home-photo.webp" -o "$smoke_dir/home-photo.webp"
           grep -Eiq '^content-type:[[:space:]]*image/webp' "$smoke_dir/home-photo.headers"
           home_photo_bytes="$(wc -c < "$smoke_dir/home-photo.webp" | tr -d ' ')"
           if [ "$home_photo_bytes" -lt 10000 ]; then
@@ -215,7 +216,7 @@ jobs:
             exit 14
           fi
 
-          curl -fsS --retry 3 --retry-delay 1 -D "$smoke_dir/provider-photo.headers" "$preview_base/provider-photo.webp" -o "$smoke_dir/provider-photo.webp"
+          curl -fsS --retry 10 --retry-all-errors --retry-delay 2 --max-time 20 -D "$smoke_dir/provider-photo.headers" "$preview_base/provider-photo.webp" -o "$smoke_dir/provider-photo.webp"
           grep -Eiq '^content-type:[[:space:]]*image/webp' "$smoke_dir/provider-photo.headers"
 
           echo "MR_BRIDGE_PREVIEW_SMOKE=GREEN"
