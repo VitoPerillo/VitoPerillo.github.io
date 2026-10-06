@@ -140,12 +140,43 @@ jobs:
           manual_payload="$(jq -nc --arg branch "professione-smart-staging" '{branch:$branch}')"
           build_resp="$(cf_call START_PREVIEW_BUILD POST "$api/builds/triggers/$preview_uuid/builds" "$manual_payload")"
           build_uuid="$(jq -r '.result.build_uuid // empty' <<<"$build_resp")"
+          if [ -z "$build_uuid" ]; then
+            echo "MR Bridge did not receive a Cloudflare build UUID." >&2
+            exit 7
+          fi
+
+          preview_url=""
+          build_outcome=""
+          build_status=""
+          for attempt in $(seq 1 36); do
+            build_state="$(cf_call GET_BUILD GET "$api/builds/builds/$build_uuid")"
+            build_status="$(jq -r '.result.status // empty' <<<"$build_state")"
+            build_outcome="$(jq -r '.result.build_outcome // empty' <<<"$build_state")"
+            preview_url="$(jq -r '.result.preview_url // empty' <<<"$build_state")"
+            echo "Cloudflare build poll $attempt: status=$build_status outcome=$build_outcome"
+            if [ "$build_status" = "stopped" ]; then
+              break
+            fi
+            sleep 5
+          done
+
+          if [ "$build_status" != "stopped" ]; then
+            echo "MR_BRIDGE_BLOCK=cloudflare_preview_timeout" >&2
+            exit 8
+          fi
+          if [ "$build_outcome" != "success" ]; then
+            echo "MR_BRIDGE_BLOCK=cloudflare_preview_failed" >&2
+            echo "Cloudflare build outcome: $build_outcome" >&2
+            exit 9
+          fi
 
           echo "MR_BRIDGE_PREVIEW_REQUESTED=true"
           echo "Worker: $WORKER_NAME"
           echo "Root directory: $ROOT_DIRECTORY"
           echo "Branch: professione-smart-staging"
           echo "Preview deploy command: npx wrangler versions upload"
-          if [ -n "$build_uuid" ]; then
-            echo "Build UUID: $build_uuid"
+          echo "Build UUID: $build_uuid"
+          if [ -n "$preview_url" ]; then
+            echo "Preview URL: $preview_url"
           fi
+          echo "MR_BRIDGE_PREVIEW_GATE=GREEN"
