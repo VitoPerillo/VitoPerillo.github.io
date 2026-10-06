@@ -3,8 +3,9 @@ on:
   push:
     branches: [ritratto-collaudo]
     paths:
-      - 'ritratto-public/js/rs-portrait-engine.js'
-      - 'ritratto-public/qa/portrait-gate1.mjs'
+      - 'ritratto-public/js/**'
+      - 'ritratto-public/qa/**'
+      - '.github/workflows/ritratto-gate1.yml'
   workflow_dispatch:
 jobs:
   gate1:
@@ -14,4 +15,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node ritratto-public/qa/portrait-gate1.mjs\n      - run: npm install astronomy-engine@2.1.19 --no-save && node ritratto-public/qa/personal-horoscope-gate.mjs\n      - run: node ritratto-public/qa/gate1-full.mjs
+      - run: npm install astronomy-engine@2.1.19 --no-save
+      - run: node ritratto-public/qa/portrait-gate1.mjs
+      - run: node ritratto-public/qa/personal-horoscope-gate.mjs
+      - run: node ritratto-public/qa/gate1-full.mjs
