@@ -19,36 +19,69 @@ function readJson(file) {
 }
 
 function normalizeCloudflareCredential(raw) {
-  let value = String(raw || "").trim();
-  if (!value) return "";
+  const original = String(raw || "").replace(/\r/g, "").trim();
+  if (!original) return "";
 
-  if (value.startsWith("{") && value.endsWith("}")) {
+  const clean = (candidate) => String(candidate || "")
+    .trim()
+    .replace(/^[-]{0,2}(?:CLOUDFLARE_API_TOKEN|CF_API_TOKEN|API[_ ]?TOKEN|TOKEN)\s*[:=]\s*/i, "")
+    .replace(/^Authorization\s*:\s*Bearer\s+/i, "")
+    .replace(/^Bearer\s+/i, "")
+    .replace(/^['"]|['"]$/g, "")
+    .replace(/[\\'";,]+$/g, "")
+    .trim();
+
+  // JSON secret objects are accepted, but only known token fields are used.
+  if (original.startsWith("{") && original.endsWith("}")) {
     try {
-      const parsed = JSON.parse(value);
+      const parsed = JSON.parse(original);
       const candidates = [
         parsed.CLOUDFLARE_API_TOKEN,
+        parsed.CF_API_TOKEN,
         parsed.cloudflare_api_token,
         parsed.api_token,
         parsed.token,
         parsed.value,
-      ];
-      const found = candidates.find((v) => typeof v === "string" && v.trim());
-      if (found) value = found.trim();
+      ].map(clean).filter(Boolean);
+      if (candidates.length) return candidates[0];
     } catch {
-      // Keep the original value and let the explicit format checks below decide.
+      // Continue with text extraction; fail closed later if no single token can be isolated.
     }
   }
 
-  value = value
-    .replace(/^Authorization\s*:\s*Bearer\s+/i, "")
-    .replace(/^Bearer\s+/i, "")
-    .replace(/^CLOUDFLARE_API_TOKEN\s*=\s*/i, "")
-    .trim();
-
-  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
-    value = value.slice(1, -1).trim();
+  // Accept copied shell/header snippets without ever logging their contents.
+  const explicitPatterns = [
+    /Authorization\s*:\s*Bearer\s+["']?([A-Za-z0-9._-]{20,})/i,
+    /(?:CLOUDFLARE_API_TOKEN|CF_API_TOKEN|API[_ ]?TOKEN)\s*[:=]\s*["']?([A-Za-z0-9._-]{20,})/i,
+    /Bearer\s+["']?([A-Za-z0-9._-]{20,})/i,
+  ];
+  for (const re of explicitPatterns) {
+    const match = original.match(re);
+    if (match?.[1]) return clean(match[1]);
   }
-  return value;
+
+  const lines = original.split("\n").map(clean).filter(Boolean);
+  const accountId = String(process.env.CF_ACCOUNT_ID || "").toLowerCase();
+  const tokenLike = lines.filter((line) =>
+    /^[A-Za-z0-9._-]{20,256}$/.test(line) &&
+    line.toLowerCase() !== accountId
+  );
+
+  const prefixed = tokenLike.find((line) => line.startsWith("cfut_"));
+  if (prefixed) return prefixed;
+  if (tokenLike.length === 1) return tokenLike[0];
+
+  // Last resort for copied multi-line snippets: isolate token-looking fields,
+  // excluding the known account id. Ambiguity fails closed.
+  const fields = [...original.matchAll(/[A-Za-z0-9._-]{20,256}/g)]
+    .map((m) => clean(m[0]))
+    .filter((v) => v && v.toLowerCase() !== accountId);
+  const unique = [...new Set(fields)];
+  const cfut = unique.find((v) => v.startsWith("cfut_"));
+  if (cfut) return cfut;
+  if (unique.length === 1) return unique[0];
+
+  return "";
 }
 
 function exportMaskedToken(token) {
