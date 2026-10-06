@@ -64,7 +64,7 @@ jobs:
             rm -f "$tmp"
           }
 
-          scripts="$(cf_call WORKERS_SCRIPTS GET "$api/workers/scripts")"
+          verify="$(cf_call USER_TOKEN_VERIFY GET "https://api.cloudflare.com/client/v4/user/tokens/verify")"\n          token_status="$(jq -r '.result.status // empty' <<<"$verify")"\n          echo "Cloudflare user token status: $token_status" >&2\n          if [ "$token_status" != "active" ]; then\n            echo "Cloudflare API token is not active." >&2\n            exit 7\n          fi\n\n          accounts="$(cf_call LIST_ACCOUNTS GET "https://api.cloudflare.com/client/v4/accounts")"\n          account_match="$(jq -r --arg id "$CF_ACCOUNT_ID" '.result[] | select(.id==$id) | .id' <<<"$accounts" | head -n1)"\n          if [ "$account_match" != "$CF_ACCOUNT_ID" ]; then\n            echo "Target Cloudflare account is not visible to this token." >&2\n            exit 8\n          fi\n\n          scripts="$(cf_call WORKERS_SCRIPTS GET "$api/workers/scripts")"
           worker_tag="$(jq -r --arg n "$WORKER_NAME" '.result[] | select(.id==$n) | .tag' <<<"$scripts" | head -n1)"
           if [ -z "$worker_tag" ] || [ "$worker_tag" = "null" ]; then
             echo "Worker tag not found for $WORKER_NAME" >&2
