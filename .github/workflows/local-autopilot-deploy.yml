@@ -10,7 +10,6 @@ on:
       - "wrangler.jsonc"
       - "package.json"
       - "package-lock.json"
-      - "security/**"
       - ".github/workflows/local-autopilot-deploy.yml"
   workflow_dispatch:
 
