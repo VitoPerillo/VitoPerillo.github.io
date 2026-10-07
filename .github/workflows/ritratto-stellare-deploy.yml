@@ -24,6 +24,9 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Security Gate
+        run: node security/security-gate.mjs
+
       - name: Install Wrangler
         run: npm install --no-audit --no-fund
 

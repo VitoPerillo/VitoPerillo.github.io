@@ -10,7 +10,6 @@ on:
       - "wrangler.jsonc"
       - "package.json"
       - "package-lock.json"
-      - ".github/workflows/local-autopilot-deploy.yml"
   workflow_dispatch:
 
 permissions:
@@ -33,6 +32,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+
+      - name: Security Gate
+        run: node security/security-gate.mjs
 
       - name: Install
         run: npm install --no-audit --no-fund
