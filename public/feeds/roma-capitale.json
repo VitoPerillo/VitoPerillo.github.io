@@ -1,5 +1,14 @@
 [
   {
+    "id": "https://www.comune.roma.it/web/it/notizia/mun11-eventi-9-11-ottobre-2026.page",
+    "url": "https://www.comune.roma.it/web/it/notizia/mun11-eventi-9-11-ottobre-2026.page",
+    "title": "Gli eventi del fine settimana nel Municipio XI",
+    "text": "Municipio XI. Da venerd&igrave; 9 a domenica 11 ottobre , tanti appuntamenti a partecipazione gratuita nel territorio patrocinati dal Municipio XI: sport, musica, spettacolo e natura. Nell'ambito dell'Avviso Pubblico \" Lo spettacolo dal vivo fuori dal Centro \", MRF 5 s.r.l. organizza \" d&agrave; appuntamento presso il Punto Ristoro del Centro Polifunzionale \"Nicoletta Campanella\" in via Marino Mazzacurati 74:",
+    "date": "2026-10-07T14:45:00+02:00",
+    "area_slug": "municipio-xi",
+    "category_slug": "avvisi-utili"
+  },
+  {
     "id": "https://www.comune.roma.it/web/it/notizia/ali-della-citta-spettacolo-dal-vivo-corviale-mun11.page",
     "url": "https://www.comune.roma.it/web/it/notizia/ali-della-citta-spettacolo-dal-vivo-corviale-mun11.page",
     "title": "Le ali della citt&agrave;, a Corviale spettacolo dal vivo fino al 30 ottobre",
@@ -70,14 +79,5 @@
     "date": "2026-09-24T12:38:00+02:00",
     "area_slug": "municipio-xi",
     "category_slug": "avvisi-utili"
-  },
-  {
-    "id": "https://www.comune.roma.it/web/it/notizia/mun12-autismo-open-day-natura-inclusione.page",
-    "url": "https://www.comune.roma.it/web/it/notizia/mun12-autismo-open-day-natura-inclusione.page",
-    "title": "Municipio XII, una giornata nella natura dedicata all'inclusione",
-    "text": "Municipio XII. Il 4 ottobre open day gratuito dedicato ai bambini nello spettro autistico e alle loro famiglie.",
-    "date": "2026-09-23T15:34:00+02:00",
-    "area_slug": "municipio-xii",
-    "category_slug": "scuola-famiglie"
   }
 ]
