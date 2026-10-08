@@ -47,7 +47,9 @@ jobs:
 
       - name: Deploy to Cloudflare Workers
         if: env.CLOUDFLARE_API_TOKEN != ''
-        run: npx wrangler deploy
+        run: |
+          CF_TOKEN_CLEAN="$(printf '%s' "$CLOUDFLARE_API_TOKEN" | tr -d '\\r\\n')"
+          CLOUDFLARE_API_TOKEN="$CF_TOKEN_CLEAN" npx wrangler deploy
 
       - name: Explain skipped deploy
         if: env.CLOUDFLARE_API_TOKEN == ''
