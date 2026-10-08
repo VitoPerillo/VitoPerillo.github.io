@@ -305,6 +305,18 @@ async function readBody(request) {
   }
   return { data: await request.json(), file: null };
 }
+
+// Workers Builds deploys code but does not automatically run D1 migrations.
+// This idempotent bootstrap keeps migration 0003 usable without dashboard access.
+async function ensureSafeModuleTables(db) {
+  await db.batch([
+    db.prepare("CREATE TABLE IF NOT EXISTS la_moderation_actions (id INTEGER PRIMARY KEY AUTOINCREMENT,entity_type TEXT NOT NULL CHECK(entity_type IN ('submission','report','ad_order','content')),entity_id INTEGER NOT NULL,action TEXT NOT NULL CHECK(action IN ('held','approved','rejected','removed','restored')),reason_code TEXT NOT NULL,notes TEXT,automated INTEGER NOT NULL DEFAULT 0 CHECK(automated IN (0,1)),created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)"),
+    db.prepare("CREATE INDEX IF NOT EXISTS idx_la_moderation_entity ON la_moderation_actions(entity_type,entity_id,created_at)"),
+    db.prepare("CREATE TABLE IF NOT EXISTS la_ad_orders (id INTEGER PRIMARY KEY AUTOINCREMENT,business_name TEXT NOT NULL,email TEXT NOT NULL,email_hash TEXT NOT NULL,area_id INTEGER NOT NULL,package_code TEXT NOT NULL CHECK(package_code IN ('local_week','local_month','featured_month')),title TEXT NOT NULL,body TEXT NOT NULL,target_url TEXT NOT NULL,price_cents INTEGER NOT NULL,manage_token_hash TEXT NOT NULL,risk_score INTEGER NOT NULL DEFAULT 0,status TEXT NOT NULL DEFAULT 'held' CHECK(status IN ('held','approved_test','mock_paid','rejected','cancelled')),rights_declared INTEGER NOT NULL CHECK(rights_declared=1),terms_accepted INTEGER NOT NULL CHECK(terms_accepted=1),created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,reviewed_at TEXT,FOREIGN KEY(area_id) REFERENCES la_areas(id))"),
+    db.prepare("CREATE INDEX IF NOT EXISTS idx_la_ad_orders_status ON la_ad_orders(status,created_at)"),
+    db.prepare("INSERT INTO la_settings(key,value) VALUES('ads_payment_mode','test_no_payment') ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=CURRENT_TIMESTAMP"),
+  ]);
+}
 async function submission(request, env) {
   if (!(await rateLimit(env.DB, request, "submission", 5, 3600)))
     return responseJson({ error: "rate_limited" }, 429);
@@ -428,6 +440,7 @@ async function verifySubmission(request, env) {
   );
 }
 async function reviewSubmission(env, id) {
+  await ensureSafeModuleTables(env.DB);
   const s = await env.DB.prepare("SELECT * FROM la_submissions WHERE id=?")
     .bind(id)
     .first();
@@ -597,6 +610,7 @@ async function reportContent(request, env) {
 }
 
 async function adOrder(request, env) {
+  await ensureSafeModuleTables(env.DB);
   if (!(await rateLimit(env.DB, request, "ad_order", 3, 3600)))
     return responseJson({ error: "rate_limited" }, 429);
   const d = await request.json();
@@ -770,6 +784,8 @@ async function mediaGet(env, key) {
 async function adminRoute(request, env, p) {
   if (!(await requireAdmin(request, env)))
     return responseJson({ error: "forbidden" }, 403);
+  if (/^\/api\/admin\/(?:submissions|ad-orders|reports)/.test(p))
+    await ensureSafeModuleTables(env.DB);
   if (p === "/api/admin/health" && request.method === "GET") return health(env);
   if (p === "/api/admin/summary" && request.method === "GET") {
     const [content, areas, revenue] = await Promise.all([
