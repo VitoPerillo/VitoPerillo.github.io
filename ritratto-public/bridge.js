@@ -11,7 +11,6 @@ const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 function goodPlan(v){return PLANS.includes(v)}
 function goodCad(v){return CADS.includes(v)}
-function backendPlan(v){return v==="fenice"?"orione":v}
 function putIntent(plan,cadence){
   if(!goodPlan(plan)||!goodCad(cadence))return null;
   const i={plan,cadence,ts:Date.now()};
@@ -58,7 +57,7 @@ function directBuyCopy(i){
     const ps=sec?$$("p",sec):[];
     const submit=$('[type="submit"]',start);
     if(h)h.textContent="Completa i dati per acquistare "+label(i);
-    if(ps[0])ps[0].textContent="Inserisci i dati necessari per creare il tuo Ritratto Stellare. Dopo la verifica dell’email continuerai al pagamento PayPal.";
+    if(ps[0])ps[0].textContent="Inserisci i dati necessari per creare il tuo Ritratto Stellare. Dopo la verifica dell’email continuerai al pagamento Mollie.";
     if(submit)submit.textContent="CONTINUA ALL’ACQUISTO";
     if(sec&&!$(".rs-direct-buy-note",sec)){
       const n=document.createElement("p");
@@ -100,7 +99,7 @@ function showPurchaseBanner(i){
   const box=document.createElement("div");
   box.id="rs-direct-purchase-banner";
   box.style.cssText="position:sticky;top:10px;z-index:9999;margin:12px auto;padding:14px 16px;max-width:760px;border-radius:16px;background:#17102d;color:#fff;border:1px solid #dfbf78;box-shadow:0 12px 35px rgba(0,0,0,.3)";
-  box.innerHTML="<strong>Acquisto scelto: "+label(i)+"</strong><br><span>Controlla il piano qui sotto e premi il pulsante per aprire PayPal.</span>";
+  box.innerHTML="<strong>Acquisto scelto: "+label(i)+"</strong><br><span>Controlla il piano qui sotto e premi il pulsante per aprire Mollie.</span>";
   host.prepend(box);
 }
 function prepareIntentCheckout(i){
@@ -115,7 +114,7 @@ function prepareIntentCheckout(i){
     const btn=card&&$(".rs-plan-buy",card);
     if(btn&&!btn.disabled){
       clearInterval(t);
-      btn.textContent="CONTINUA SU PAYPAL · "+label(i);
+      btn.textContent="CONTINUA AL PAGAMENTO · "+label(i);
       card.scrollIntoView({behavior:"smooth",block:"center"});
       card.style.outline="2px solid #dfbf78";
       card.style.outlineOffset="4px";
@@ -130,23 +129,23 @@ async function startCheckout(plan,cadence,btn){
     return;
   }
   const old=btn.textContent;
-  btn.disabled=true; btn.textContent="PREPARO PAYPAL…";
+  btn.disabled=true; btn.textContent="PREPARO PAGAMENTO…";
   let payWin=null;
-  try{payWin=window.open("about:blank","rs_paypal_checkout")}catch(e){}
+  try{payWin=window.open("about:blank","rs_mollie_checkout")}catch(e){}
   try{
-    const j=await api("subscribe",{method:"POST",body:JSON.stringify({plan:backendPlan(plan),cadence})});
-    const dest=j.approve||j.redirect;
-    if(!dest)throw new Error("Link PayPal non disponibile");
+    const j=await api("mollie/checkout",{method:"POST",body:JSON.stringify({plan,cadence})});
+    const dest=j.checkout_url||j.redirect;
+    if(!dest)throw new Error("Link di pagamento non disponibile");
     if(payWin){
       payWin.location.href=dest;
     }else{
       const banner=$("#rs-direct-purchase-banner")||document.body;
       const a=document.createElement("a");
-      a.href=dest;a.target="_blank";a.rel="noopener";a.textContent="APRI PAYPAL";
+      a.href=dest;a.target="_blank";a.rel="noopener";a.textContent="APRI PAGAMENTO";
       a.style.cssText="display:inline-block;margin-top:10px;padding:10px 16px;border-radius:999px;background:#dfbf78;color:#24180a;font-weight:800";
       banner.appendChild(a);
     }
-    btn.textContent="PAYPAL APERTO · ATTENDO CONFERMA";
+    btn.textContent="PAGAMENTO APERTO · ATTENDO CONFERMA";
     pollActivation(i,btn,old);
   }catch(err){
     if(payWin)try{payWin.close()}catch(e){}

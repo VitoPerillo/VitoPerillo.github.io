@@ -1,26 +1,21 @@
 {
-  "version": "2026-09-26-master",
+  "version": "2026-10-08-mollie-staging",
   "frozen": true,
   "currency": "EUR",
   "plans": {
-    "fenice": {
+    "trial_andromeda": {
       "price_monthly": 0,
       "price_annual": null,
-      "annual_name": null,
       "trial_days": 30,
+      "card_required": false,
       "questions": {
         "scope": "trial",
-        "count": 1
+        "count": 150,
+        "per_day": 10,
+        "per_hour": 4
       },
-      "positioning": "Scoprire",
-      "features": [
-        "ritratto_essenziale",
-        "oggi",
-        "settimana",
-        "mese",
-        "anno",
-        "aree_4"
-      ]
+      "areas": 12,
+      "positioning": "Prova gratuita"
     },
     "pegaso": {
       "price_monthly": 6.9,
@@ -28,40 +23,20 @@
       "annual_name": "PEGASO STAR",
       "questions": {
         "scope": "month",
-        "count": 1
+        "count": 20
       },
-      "positioning": "Capire",
-      "features": [
-        "ritratto_completo",
-        "oggi",
-        "settimana",
-        "mese",
-        "anno",
-        "aree_4",
-        "pdf_ritratto",
-        "consigli_pratici",
-        "storico_30_giorni",
-        "notifiche_essenziali"
-      ]
+      "areas": 4
     },
-    "orione": {
+    "fenice": {
       "price_monthly": 9.9,
       "price_annual": 99,
-      "annual_name": "ORIONE STAR",
+      "annual_name": "FENICE STAR",
       "questions": {
         "scope": "month",
-        "count": 4
+        "count": 60
       },
-      "positioning": "Orientarsi",
-      "features": [
-        "all_pegaso",
-        "letture_approfondite",
-        "bussola_del_mese",
-        "momenti_chiave_30_giorni",
-        "storico_6_mesi",
-        "pdf_mese_esteso",
-        "notifiche_momenti_chiave"
-      ]
+      "areas": 8,
+      "backend_legacy_alias": "orione"
     },
     "andromeda": {
       "price_monthly": 14.9,
@@ -69,18 +44,9 @@
       "annual_name": "ANDROMEDA STAR",
       "questions": {
         "scope": "month",
-        "count": 12
+        "count": 150
       },
-      "positioning": "Collegare",
-      "features": [
-        "all_orione",
-        "radar_90_giorni",
-        "filo_del_cielo",
-        "mappa_annuale",
-        "storico_12_mesi",
-        "pdf_anno",
-        "notifiche_evolute"
-      ]
+      "areas": 12
     }
   },
   "excluded": [
@@ -91,7 +57,8 @@
   ],
   "safety": {
     "astrology": "interpretive_reflective_not_certain_prediction",
-    "live_paypal": "disabled_until_explicit_gate",
+    "live_payments": "disabled_until_explicit_gate",
+    "payment_provider": "mollie",
     "high_stakes": "no_medical_legal_financial_psychological_decision_substitution"
   }
 }
