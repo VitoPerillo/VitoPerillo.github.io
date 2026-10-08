@@ -307,7 +307,7 @@ async function readBody(request) {
 }
 
 // Workers Builds deploys code but does not automatically run D1 migrations.
-// This idempotent runtime bootstrap keeps migration 0003 available without manual dashboard access.
+// This idempotent runtime bootstrap keeps migration 0003 available without Cloudflare dashboard access.
 async function ensureSafeModuleTables(db) {
   await db.batch([
     db.prepare("CREATE TABLE IF NOT EXISTS la_moderation_actions (id INTEGER PRIMARY KEY AUTOINCREMENT,entity_type TEXT NOT NULL CHECK(entity_type IN ('submission','report','ad_order','content')),entity_id INTEGER NOT NULL,action TEXT NOT NULL CHECK(action IN ('held','approved','rejected','removed','restored')),reason_code TEXT NOT NULL,notes TEXT,automated INTEGER NOT NULL DEFAULT 0 CHECK(automated IN (0,1)),created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)"),
