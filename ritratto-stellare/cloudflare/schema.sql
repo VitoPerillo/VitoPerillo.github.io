@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   email_hash TEXT NOT NULL UNIQUE,
   email_ciphertext TEXT,
   birth_ciphertext TEXT,
-  plan TEXT NOT NULL DEFAULT 'fenice' CHECK(plan IN ('fenice','pegaso','orione','andromeda')),
+  plan TEXT NOT NULL DEFAULT 'trial_andromeda' CHECK(plan IN ('trial_andromeda','pegaso','fenice','andromeda')),
   cadence TEXT CHECK(cadence IN ('monthly','annual') OR cadence IS NULL),
   trial_ends TEXT,
   subscription_id TEXT,
