@@ -11,7 +11,6 @@ const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 function goodPlan(v){return PLANS.includes(v)}
 function goodCad(v){return CADS.includes(v)}
-function backendPlan(v){return v==="fenice"?"orione":v}
 function putIntent(plan,cadence){
   if(!goodPlan(plan)||!goodCad(cadence))return null;
   const i={plan,cadence,ts:Date.now()};
@@ -115,7 +114,7 @@ function prepareIntentCheckout(i){
     const btn=card&&$(".rs-plan-buy",card);
     if(btn&&!btn.disabled){
       clearInterval(t);
-      btn.textContent="CONTINUA SU PAGAMENTO · "+label(i);
+      btn.textContent="CONTINUA AL PAGAMENTO · "+label(i);
       card.scrollIntoView({behavior:"smooth",block:"center"});
       card.style.outline="2px solid #dfbf78";
       card.style.outlineOffset="4px";
@@ -132,7 +131,7 @@ async function startCheckout(plan,cadence,btn){
   const old=btn.textContent;
   btn.disabled=true; btn.textContent="PREPARO PAGAMENTO…";
   let payWin=null;
-  try{payWin=window.open("about:blank","rs_paypal_checkout")}catch(e){}
+  try{payWin=window.open("about:blank","rs_mollie_checkout")}catch(e){}
   try{
     const j=await api("mollie/checkout",{method:"POST",body:JSON.stringify({plan,cadence})});
     const dest=j.checkout_url||j.redirect;
