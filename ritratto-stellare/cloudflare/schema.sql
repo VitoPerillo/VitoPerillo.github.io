@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   pending_cadence TEXT,
   pending_subscription_id TEXT,
   pending_mollie_customer_id TEXT,
+  pending_payment_id TEXT,
   pending_state_hash TEXT,
   pending_started_at TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
