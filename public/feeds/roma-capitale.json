@@ -1,5 +1,14 @@
 [
   {
+    "id": "https://www.comune.roma.it/web/it/notizia/mun09-roma-welfair-fiera-del-fare-sanita-2026.page",
+    "url": "https://www.comune.roma.it/web/it/notizia/mun09-roma-welfair-fiera-del-fare-sanita-2026.page",
+    "title": "Al municipio XI Roma Welfair la fiera del fare sanit&agrave;",
+    "text": "Municipio XI. Al via la VII Edizione di \"Roma Welfair, la fiera del fare Sanit&agrave;\" , con il patrocinio del Municipio XI. Il filo rosso di questa edizione &egrave; \"Il Sistema che cura \". Eventi, tavoli tecnici, seminari e che animer&agrave; l&rsquo;Expo, con la partecipazione di aziende, startup, istituzioni e professionisti che presenteranno le tecnologie pi&ugrave; avanzate e i servizi pi&ugrave; innovativi incentrati su cittadini, operatori e strutture sanitarie. Previsti inoltre screening gratuiti (Longevity Check-up, valutazione dedicata alla longevit&agrave; e all&rsquo;invecchiamento in salute; valutazione e orientamento sulla fibromialgia; screening per lipedema e linfedema; scr",
+    "date": "2026-10-08T15:03:00+02:00",
+    "area_slug": "municipio-xi",
+    "category_slug": "servizi-municipio"
+  },
+  {
     "id": "https://www.comune.roma.it/web/it/notizia/mun11-eventi-9-11-ottobre-2026.page",
     "url": "https://www.comune.roma.it/web/it/notizia/mun11-eventi-9-11-ottobre-2026.page",
     "title": "Gli eventi del fine settimana nel Municipio XI",
@@ -61,23 +70,5 @@
     "date": "2026-09-29T10:04:00+02:00",
     "area_slug": "municipio-xi",
     "category_slug": "ambiente-quartiere"
-  },
-  {
-    "id": "https://www.comune.roma.it/web/it/notizia/gep-2026-arvalia-in-cammino-da-marconi-a-corviale.page",
-    "url": "https://www.comune.roma.it/web/it/notizia/gep-2026-arvalia-in-cammino-da-marconi-a-corviale.page",
-    "title": "GEP 2026. \"Arvalia in cammino\" da Marconi a Corviale",
-    "text": "Municipio XI. Il 26 e 27 settembre passeggiate urbane narrative ed esperienziali.",
-    "date": "2026-09-24T15:31:00+02:00",
-    "area_slug": "municipio-xi",
-    "category_slug": "servizi-municipio"
-  },
-  {
-    "id": "https://www.comune.roma.it/web/it/notizia/prove-aperte-di-civilta-spettacolo-dal-vivo-nei-municipi.page",
-    "url": "https://www.comune.roma.it/web/it/notizia/prove-aperte-di-civilta-spettacolo-dal-vivo-nei-municipi.page",
-    "title": "Prove aperte di civilt&agrave;, spettacolo dal vivo nei municipi",
-    "text": "Municipio XI. Teatro, musica e arti performative per cittadini di tutte le et&agrave;.",
-    "date": "2026-09-24T12:38:00+02:00",
-    "area_slug": "municipio-xi",
-    "category_slug": "avvisi-utili"
   }
 ]
