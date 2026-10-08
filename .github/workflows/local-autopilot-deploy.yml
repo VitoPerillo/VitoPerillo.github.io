@@ -49,6 +49,11 @@ jobs:
         if: env.CLOUDFLARE_API_TOKEN != ''
         run: |
           CF_TOKEN_CLEAN="$(printf '%s' "$CLOUDFLARE_API_TOKEN" | tr -d '\\r\\n')"
+          if [[ ! "$CF_TOKEN_CLEAN" =~ ^cfut_[A-Za-z0-9_-]+$ ]]; then
+            CF_TOKEN_CLEAN="$(printf '%s' "$CLOUDFLARE_API_TOKEN" | sed -n 's/.*\\(cfut_[A-Za-z0-9_-]*\\).*/\\1/p')"
+          fi
+          test -n "$CF_TOKEN_CLEAN"
+          echo "::add-mask::$CF_TOKEN_CLEAN"
           CLOUDFLARE_API_TOKEN="$CF_TOKEN_CLEAN" npx wrangler deploy
 
       - name: Explain skipped deploy
