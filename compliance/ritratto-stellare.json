@@ -3,5 +3,21 @@
   "standard": "VitoPerillo/yoganostress-wordpress-bridge@vito-compliance-standard-v1",
   "launch_policy": "fail_closed",
   "production_release_requires_central_gate_pass": true,
-  "current_status": "blocked_until_legal_gate_passes"
+  "current_status": "BLOCKED",
+  "blocker": "commercial operator unresolved; consumer subscription/privacy/withdrawal gates not PASS",
+  "release_profiles": {
+    "free": {
+      "status": "BLOCKED",
+      "blocker": "operator + standalone privacy/terms"
+    },
+    "paid": {
+      "status": "BLOCKED",
+      "blocker": "operator + consumer subscription/withdrawal/VAT gates"
+    }
+  },
+  "evidence": [
+    "central compliance/projects.v1.json",
+    "ritratto-stellare/MASTER-RITRATTO-STELLARE.md"
+  ],
+  "fail_closed": true
 }
