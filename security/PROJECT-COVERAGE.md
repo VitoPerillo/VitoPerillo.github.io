@@ -1,29 +1,47 @@
-# Universal Security Coverage
+# Universal Security + Compliance Coverage
 
 ## Policy
 
 All current and future technical/digital projects are in scope by default.
 
-A project cannot be considered release-ready unless its applicable Security Gate is PASS or an explicit, documented exception exists.
+A project cannot be considered release-ready unless:
+1. its applicable Security Gate is PASS or an explicit documented exception exists;
+2. its Vito Compliance project gate is PASS for the intended release profile;
+3. the repository is mapped in the central repository inventory.
 
-The shared baseline is adapted per architecture; controls marked N/A must be justified.
+Unknown repository/project = **BLOCKED**.
 
-## Current coverage
+## Current repository coverage — 9 October 2026
 
-| Project | Security status | Notes |
+| Repository / project | Security / compliance status | Notes |
 |---|---|---|
-| VitoPerillo.github.io / Local Autopilot | PASS | Shared gate on main |
-| Ritratto Stellare | PASS | Gate integrated before existing deploy workflows |
-| MR Bridge / yoganostress-wordpress-bridge | PASS | Dedicated PHP/WordPress gate on main |
-| Professione Smart | IN PROGRESS | Dedicated private repo gate branch exists; GitHub Actions currently failing before job steps |
-| Rivensight | IN PROGRESS | Dedicated private repo gate branch exists; GitHub Actions currently failing before job steps |
-| Vito AI / MR Control Hub | TESTED LOCALLY + STAGING HARDENED | Security headers validated on staging; local canonical Git commit exists; remote private repo still required |
-| Chakra Wholeness | TESTED LOCALLY | 9/9 tests PASS; local security-gate commit exists; remote private repo still required |
-| Gestionale Yoganostress | PARTIAL | Strong application security already verified locally; canonical remote repo still required |
-| Vito Prompt / Prompt Coach / spiritual coach | TODO | Must inherit the universal gate before public launch |
-| Vito Document Engine | TODO | Parser/sandbox-specific gate required; do not disturb frozen phase baselines |
-| Yoganostress Commerciale AI | TODO | Must inherit the universal gate before public launch |
+| VitoPerillo.github.io / Local Autopilot | SECURITY PASS · COMPLIANCE REVIEW | Privacy/Terms/editorial rules added on compliance branch; UGC human-review; ads TEST €0 |
+| VitoPerillo.github.io / Ritratto Stellare | SECURITY PASS · PUBLIC BLOCKED | Legal pack exists; PayPal LIVE off; privacy self-service hard-stop until auth/export/delete |
+| yoganostress-wordpress-bridge / MR Bridge | SECURITY STRONG · INTERNAL REVIEW | OIDC/Ed25519/Vault/hash-chain; 180-day audit retention patch on separate branch |
+| yoganostress-wordpress-bridge / Vito Prompt + Prompt Coach | SECURITY INHERITED · PUBLIC BLOCKED | AI transparency/18+ added; Coach non-therapy/autonomy boundary added |
+| professione-smart | SECURITY BASELINE · PUBLIC BLOCKED | Privacy/Terms/retention/DSAR/provider register structurally present; operator/provider binding remains |
+| chakra-wholeness | SECURITY BASELINE · COMPLIANCE 12/12 LOCAL PASS | Marketplace/operator/DSA/P2B gates still open |
+| vito-ai-control-hub | INTERNAL STAGING PASS | production forbidden; encrypted vault; 180-day audit and 30-day inactive-manifest retention tested |
+| spiritual-coach | STAGING SAFETY PASS · PUBLIC BLOCKED | Safety/CoachCheck/private session/export/delete present; public legal/18+ gates remain |
+| yoganostress-commerciale-ai | SECURITY PASS · COMPLIANCE REVIEW | Inbound Messenger no longer equals marketing consent; regression tests PASS |
+| yoganostress-gestionale | SECURITY PASS · COMPLIANCE REVIEW | Certificate document not stored; status/expiry only; formal health-data legal basis/retention remains |
+| rivensight | SECURITY BASELINE · PUBLIC BLOCKED | SSRF protection/secret guards present; B2B legal/privacy/source-rights gates remain |
+
+## Verified cross-project checks
+
+- Central repository coverage: **PASS — 9 repositories, 17 registered projects, 0 mapping problems**.
+- Yoganostress Commerciale AI: core test PASS + Cloudflare Security Gate PASS after consent separation.
+- Vito AI Control Hub: retention regression PASS.
+- Chakra Wholeness: local compliance suite 12/12 PASS.
+- New/unknown projects remain fail-closed by policy.
 
 ## New projects
 
-Any new codebase, worker, website, API, marketplace, AI service, automation, payment integration, plugin, or control-plane component is automatically covered by this policy.
+Any new codebase, worker, website, API, marketplace, AI service, automation, payment integration, plugin, or control-plane component is automatically in scope.
+
+Before public or paid launch it must:
+- be added to the central project registry;
+- be mapped in the repository inventory;
+- declare operator/release profile;
+- pass applicable Security + Compliance gates;
+- reopen the gate whenever data, providers, AI purpose, audience, payments, UGC, ads or business model materially change.
