@@ -25,6 +25,11 @@ need(!bridge.includes('v==="fenice"?"orione"'),"legacy plan remap detected");
 
 need(plans.safety?.live_paypal==="disabled_until_explicit_gate","PayPal LIVE safety flag changed");
 need(worker.includes('env.PAYPAL_ENV === "live" && env.LIVE_COMMERCIAL_AUTHORIZED !== "true"'),"runtime live PayPal hard stop missing");
+need(worker.includes('privacy_self_service_ready: false'),"privacy self-service hard stop missing");
+need(worker.includes('"/v1/privacy-readiness"'),"privacy readiness endpoint missing");
+need(worker.includes('"standalone_session_auth_not_implemented"'),"session-auth blocker missing");
+need(worker.includes('"profile_decryption_export_not_implemented"'),"intelligible-export blocker missing");
+need(worker.includes('"authenticated_account_delete_not_implemented"'),"authenticated-delete blocker missing");
 
 need(schema.includes("CREATE TABLE IF NOT EXISTS legal_acceptances"),"legal acceptance schema missing");
 for(const x of ["privacy_version","terms_version","age_18_plus","immediate_start_requested"]) need(schema.includes(x),"legal evidence field missing: "+x);
