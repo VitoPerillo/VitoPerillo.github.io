@@ -31,6 +31,9 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Legal / Compliance Gate
+        run: node compliance/enforce-local.mjs local-autopilot editorial
+
       - name: Security Gate
         run: node security/security-gate.mjs
 
