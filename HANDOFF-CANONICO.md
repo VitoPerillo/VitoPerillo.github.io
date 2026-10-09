@@ -15,6 +15,18 @@ Aggiornato: 2026-10-09
 - Corretto il falso positivo che interpretava “processo creativo” come procedimento giudiziario, senza indebolire il blocco dei veri contenuti giudiziari.
 - Commit codice lotto: `19d0d76a8962bece336cbed04d71d627430a1050`; correzione gate: `bfd9e67c652d012ee762d8a948511a0d847c4897`.
 
+## Secondo lotto editoriale e indicizzazione — 2026-10-09
+
+- Selezionati esclusivamente tre elementi ancora attuali tra gli 11 trattenuti dal bridge: Passeggiate pedagogiche nelle chiese fino al 29 novembre, Prove Aperte di Civiltà fino al 17 dicembre e The Green Loop fino a dicembre.
+- Gli altri otto elementi del bridge restano in `held`: non sono stati pubblicati eventi già conclusi per completare artificialmente il lotto.
+- I tre testi originali misurano 182, 194 e 178 parole; le sintesi misurano 113, 135 e 103 caratteri.
+- Tutti e tre superano gate editoriale, anti-copia, fact gate e revisione esplicita; applicazione idempotente tramite `reviewed_batch_2026_10_09_v2`.
+- Collaudo live finale: 9/9 pagine conformi; 9/9 dati strutturati `NewsArticle`; immagini SVG originali CC BY 4.0 HTTP 200; fonti integrali e canonical presenti.
+- `robots.txt`, sitemap generale e News Sitemap sono live HTTP 200. La News Sitemap usa namespace e tag obbligatori Google News e contiene soltanto articoli pubblicati negli ultimi due giorni.
+- Commit lotto e robots: `9d4aedc978fb7bbcfaf22d10cde5b70f1faff8b3`; correzione News Sitemap: `9a0fa4e3044256d899e27cbe72c34deb92b9d11f`.
+- Google può scoprire le sitemap tramite `robots.txt`; l'aggiunta della proprietà in Search Console richiede l'accesso manuale del proprietario e non è necessaria per il crawling automatico.
+- Nuove risorse Cloudflare: nessuna. Costo fisso aggiunto: €0.
+
 ## Gate editoriale automatico — 2026-10-09
 
 - Il bridge GitHub/Roma Capitale raccoglie ora esclusivamente in modalità `discovery`: nessuna notizia del feed viene pubblicata senza revisione umana.
