@@ -1,0 +1,20 @@
+{
+  "project_id": "local-autopilot",
+  "standard": "VitoPerillo/yoganostress-wordpress-bridge@vito-compliance-standard-v1",
+  "current_status": "BLOCKED",
+  "blocker": "operator/editorial classification and project legal gates not yet PASS",
+  "release_profiles": {
+    "editorial": {
+      "status": "BLOCKED",
+      "blocker": "operator identity + editorial/copyright/privacy gate"
+    },
+    "platform": {
+      "status": "BLOCKED",
+      "blocker": "operator + DSA/UGC/ads/B2B terms"
+    }
+  },
+  "evidence": [
+    "central compliance/projects.v1.json"
+  ],
+  "fail_closed": true
+}
