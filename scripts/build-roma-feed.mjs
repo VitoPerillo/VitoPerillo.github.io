@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import { decodeHtmlEntities } from "../src/core/utils.js";
 
 const BASE = "https://www.comune.roma.it";
 const OUT = new URL("../public/feeds/roma-capitale.json", import.meta.url);
@@ -27,9 +28,16 @@ const HEADERS = {
 };
 
 function decode(s="") {
-  return s.replace(/&nbsp;|&#160;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"')
+  return decodeHtmlEntities(s).replace(/&nbsp;|&#160;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"')
     .replace(/&#39;|&apos;/gi,"\'").replace(/&lt;/gi,"<").replace(/&gt;/gi,">")
     .replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(Number(n))).replace(/\s+/g," ").trim();
+}
+function clip(s="",limit=700) {
+  const value=decode(s);
+  if(value.length<=limit)return value;
+  const cut=value.slice(0,limit+1);
+  const boundary=cut.lastIndexOf(" ");
+  return cut.slice(0,boundary>limit*0.8?boundary:limit).replace(/[\s,;:]+$/g,"").trim();
 }
 function strip(s="") {
   return decode(s.replace(/<script\b[\s\S]*?<\/script>/gi," ").replace(/<style\b[\s\S]*?<\/style>/gi," ").replace(/<[^>]+>/g," "));
@@ -41,7 +49,7 @@ function leadParagraphs(html) {
   const ps=[...src.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/gi)]
     .map(m=>strip(m[1]))
     .filter(x=>x.length>=55&&!bad.test(x));
-  return decode(ps.slice(0,2).join(" ")).slice(0,700);
+  return clip(ps.slice(0,2).join(" "));
 }
 function attr(tag,name) {
   for (const m of tag.matchAll(/([A-Za-z:-]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g)) {
@@ -134,7 +142,7 @@ for (let i=0;i<urls.length;i+=5) {
       const label=c.areas.find(x=>x.areaSlugValue===uniqueAreas[0])?.label || "Roma";
       let text=decode(description);
       if (/vai al contenuto|cookie|google to translate|area riservata|seguici su/i.test(text)) text=leadParagraphs(html);
-      text=decode(label+". "+text).slice(0,700);
+      text=clip(label+". "+text);
       if (text.length < 80 || /vai al contenuto|google to translate|area riservata/i.test(text)) return null;
       return {
         id: url,

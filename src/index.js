@@ -35,7 +35,11 @@ import {
 } from "./render/pages.js";
 import { socialProvider } from "./social/adapter.js";
 import { MediaStorageAdapter } from "./media/adapter.js";
-import { fetchArticleDetails, reviewFactSheet } from "./core/article.js";
+import {
+  fetchArticleDetails,
+  reviewFactSheet,
+  editorialDraftGate,
+} from "./core/article.js";
 
 export default {
   async fetch(request, env, ctx) {
@@ -177,6 +181,7 @@ async function listSimple(db, table) {
 async function tick(env) {
   await recoverStale(env.DB);
   await ensureOfficialBridgeSource(env);
+  await quarantineIncompleteBridgeArticlesOnce(env.DB);
   await recoverOfficialBridgeGateOnce(env.DB);
   await sourceTick(env);
   await ensureOfficialBridgeJobs(env.DB);
@@ -204,11 +209,31 @@ async function ensureOfficialBridgeSource(env) {
   const url="https://raw.githubusercontent.com/VitoPerillo/VitoPerillo.github.io/main/public/feeds/roma-capitale.json";
   const existing=await env.DB.prepare("SELECT id FROM la_sources WHERE source_type='official_bridge' ORDER BY id DESC LIMIT 1").first();
   if(existing?.id){
-    await env.DB.prepare("UPDATE la_sources SET name='Roma Capitale · bridge AHÓ ROMA',url=?,source_type='official_bridge',parser_type='json',trust_level=95,usage_policy='auto',interval_minutes=5,active=1,config_json='{}',last_checked_at=NULL,updated_at=CURRENT_TIMESTAMP WHERE id=?").bind(url,existing.id).run();
+    await env.DB.prepare("UPDATE la_sources SET name='Roma Capitale · bridge AHÓ ROMA',url=?,source_type='official_bridge',parser_type='json',trust_level=95,usage_policy='discovery',interval_minutes=5,active=1,config_json='{}',last_checked_at=NULL,updated_at=CURRENT_TIMESTAMP WHERE id=?").bind(url,existing.id).run();
     return;
   }
   await env.DB.prepare("INSERT INTO la_sources(name,url,source_type,parser_type,trust_level,usage_policy,interval_minutes,active,config_json) VALUES(?,?,?,?,?,?,?,?,?)")
-    .bind("Roma Capitale · bridge AHÓ ROMA",url,"official_bridge","json",95,"auto",5,1,"{}").run();
+    .bind("Roma Capitale · bridge AHÓ ROMA",url,"official_bridge","json",95,"discovery",5,1,"{}").run();
+}
+
+async function quarantineIncompleteBridgeArticlesOnce(db) {
+  const key="official_bridge_complete_article_gate_v1";
+  const done=await db.prepare("SELECT value FROM la_settings WHERE key=?").bind(key).first();
+  if(done?.value)return;
+  const rows=await db.prepare(
+    "SELECT DISTINCT c.id,c.summary,c.body FROM la_content c JOIN la_ingest i ON i.content_id=c.id JOIN la_sources s ON s.id=i.source_id WHERE s.source_type='official_bridge' AND c.auto_generated=1 AND c.status IN ('published','updated')"
+  ).all();
+  let held=0;
+  for(const row of rows.results||[]){
+    const gate=editorialDraftGate("",{summary:row.summary||"",body:row.body||""});
+    if(gate.pass)continue;
+    await db.prepare("UPDATE la_content SET status='held',updated_at=CURRENT_TIMESTAMP WHERE id=?").bind(row.id).run();
+    await db.prepare("UPDATE la_ingest SET status='held',updated_at=CURRENT_TIMESTAMP WHERE content_id=?").bind(row.id).run();
+    held++;
+  }
+  await db.prepare("INSERT INTO la_settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=CURRENT_TIMESTAMP")
+    .bind(key,JSON.stringify({held,checked_at:new Date().toISOString()})).run();
+  if(held)await log(db,"warning","editorial_gate","Incomplete bridge articles moved to human review",{held});
 }
 
 async function recoverOfficialBridgeGateOnce(db) {

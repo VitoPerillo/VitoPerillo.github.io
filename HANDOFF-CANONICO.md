@@ -1,6 +1,14 @@
 # LOCAL AUTOPILOT — HANDOFF CANONICO
 
-Aggiornato: 2026-09-19
+Aggiornato: 2026-10-09
+
+## Gate editoriale automatico — 2026-10-09
+
+- Il bridge GitHub/Roma Capitale raccoglie ora esclusivamente in modalità `discovery`: nessuna notizia del feed viene pubblicata senza revisione umana.
+- Gli articoli automatici del bridge che non superano il gate completo (sintesi 70–320 caratteri e corpo 140–700 parole) vengono spostati una sola volta in `held` al primo ciclo del Worker.
+- Il feed normalizza le entità HTML e tronca soltanto a confine di parola.
+- Il workflow orario esegue Security Gate, syntax check e test completi prima di committare il feed.
+- Non sono state create nuove risorse e il costo fisso resta €0.
 
 ## Modulo 0.5 — moderazione UGC e pubblicità test
 

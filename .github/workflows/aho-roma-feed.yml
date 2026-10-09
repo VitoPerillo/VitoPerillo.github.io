@@ -33,6 +33,12 @@ jobs:
       - name: Build official Roma feed
         run: node scripts/build-roma-feed.mjs
 
+      - name: Security and quality gates
+        run: |
+          node security/security-gate.mjs
+          npm run check
+          npm test
+
       - name: Commit feed only when changed
         shell: bash
         run: |

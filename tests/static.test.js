@@ -44,3 +44,12 @@ test('P0 advertising is test-only with zero charged',()=>{const page=fs.readFile
 test('P1 public abuse reporting and admin review exist',()=>{const pages=fs.readFileSync(new URL('../src/render/pages.js',import.meta.url),'utf8');assert.match(pages,/api\/report/);assert.match(idx,/api\/admin\/reports\/resolve/)});
 test('P1 advertising test page exists',()=>assert.equal(fs.existsSync(new URL('../public/pubblicita.html',import.meta.url)),true));
 test('P0 migration 0003 has an idempotent Worker bootstrap',()=>{assert.match(idx,/ensureSafeModuleTables/);assert.match(idx,/CREATE TABLE IF NOT EXISTS la_ad_orders/);assert.match(idx,/CREATE TABLE IF NOT EXISTS la_moderation_actions/)});
+test('P0 official bridge collects for human review only',()=>{assert.match(idx,/source_type='official_bridge'[\s\S]{0,220}usage_policy='discovery'/);assert.match(idx,/"official_bridge","json",95,"discovery"/)});
+test('P0 incomplete bridge articles are quarantined once',()=>{assert.match(idx,/quarantineIncompleteBridgeArticlesOnce/);assert.match(idx,/official_bridge_complete_article_gate_v1/);assert.match(idx,/UPDATE la_content SET status='held'/)});
+test('P1 scheduled feed runs the full quality gate',()=>{const workflow=fs.readFileSync(new URL('../.github/workflows/aho-roma-feed.yml',import.meta.url),'utf8');assert.match(workflow,/security-gate\.mjs/);assert.match(workflow,/npm run check/);assert.match(workflow,/npm test/)});
+
+test('P1 committed official feed is clean and bounded',()=>{
+  const rows=JSON.parse(fs.readFileSync(new URL('../public/feeds/roma-capitale.json',import.meta.url),'utf8'));
+  assert.ok(rows.length>=3);
+  for(const row of rows){assert.doesNotMatch(row.title+row.text,/&(agrave|egrave|igrave|ograve|ugrave|quot|apos|ldquo|rdquo|rsquo);/i);assert.ok(row.text.length<=700);}
+});
