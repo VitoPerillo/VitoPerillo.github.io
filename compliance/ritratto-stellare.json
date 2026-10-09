@@ -4,20 +4,27 @@
   "launch_policy": "fail_closed",
   "production_release_requires_central_gate_pass": true,
   "current_status": "BLOCKED",
-  "blocker": "commercial operator unresolved; consumer subscription/privacy/withdrawal gates not PASS",
+  "blocker": "commercial operator unresolved; standalone backend must persist legal acceptance/export-delete before public release",
   "release_profiles": {
     "free": {
       "status": "BLOCKED",
-      "blocker": "operator + standalone privacy/terms"
+      "blocker": "operator identity + standalone privacy/DSAR backend integration",
+      "internal_legal_baseline": "PASS"
     },
     "paid": {
       "status": "BLOCKED",
-      "blocker": "operator + consumer subscription/withdrawal/VAT gates"
+      "blocker": "operator + persistent checkout acceptance + final withdrawal classification/confirmation + VAT/OSS",
+      "internal_legal_baseline": "STRUCTURALLY_PASS"
     }
   },
   "evidence": [
-    "central compliance/projects.v1.json",
-    "ritratto-stellare/MASTER-RITRATTO-STELLARE.md"
+    "compliance/ritratto-prelaunch-selftest.mjs — PASS",
+    "ritratto-stellare/privacy/index.html",
+    "ritratto-stellare/terms/index.html",
+    "ritratto-stellare/recesso/index.html",
+    "compliance/RITRATTO-PROVIDER-RETENTION-v1.md",
+    "ritratto-stellare/cloudflare/schema.sql legal_acceptances",
+    "PayPal LIVE remains disabled_until_explicit_gate"
   ],
   "fail_closed": true
 }
