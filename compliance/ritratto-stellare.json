@@ -1,0 +1,7 @@
+{
+  "project_id": "ritratto-stellare",
+  "standard": "VitoPerillo/yoganostress-wordpress-bridge@vito-compliance-standard-v1",
+  "launch_policy": "fail_closed",
+  "production_release_requires_central_gate_pass": true,
+  "current_status": "blocked_until_legal_gate_passes"
+}
