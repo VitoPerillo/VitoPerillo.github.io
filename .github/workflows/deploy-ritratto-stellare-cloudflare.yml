@@ -17,6 +17,9 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Legal / Compliance Gate
+        run: node compliance/enforce-local.mjs ritratto-stellare paid
+
       - name: Security Gate
         run: node security/security-gate.mjs
 
