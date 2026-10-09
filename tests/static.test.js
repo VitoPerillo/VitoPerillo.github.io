@@ -51,6 +51,7 @@ test('P0 reviewed editorial batch is applied only after the same production gate
 test('P0 second reviewed batch only consumes held ingests and is idempotent',()=>{assert.match(idx,/applyReviewedBatch20261009B/);assert.match(idx,/status='held'/);assert.match(idx,/reviewed_batch_2026_10_09_v2/)});
 test('P1 first publication after review receives a fresh publication date',()=>{const p=fs.readFileSync(new URL('../src/core/pipeline.js',import.meta.url),'utf8');assert.match(p,/published_at=CASE WHEN \?='held' THEN CURRENT_TIMESTAMP/)});
 test('P1 robots file exposes both sitemaps and protects private routes',()=>{const robots=fs.readFileSync(new URL('../public/robots.txt',import.meta.url),'utf8');assert.match(robots,/Allow: \//);assert.match(robots,/Disallow: \/admin/);assert.match(robots,/Sitemap: .*\/sitemap\.xml/);assert.match(robots,/Sitemap: .*\/news-sitemap\.xml/)});
+test('P1 Google Search Console verification remains in the document head',()=>{const pages=fs.readFileSync(new URL('../src/render/pages.js',import.meta.url),'utf8');assert.match(pages,/<head>[\s\S]*google-site-verification[\s\S]*<\/head>/)});
 test('P1 scheduled feed runs the full quality gate',()=>{const workflow=fs.readFileSync(new URL('../.github/workflows/aho-roma-feed.yml',import.meta.url),'utf8');assert.match(workflow,/security-gate\.mjs/);assert.match(workflow,/npm run check/);assert.match(workflow,/npm test/)});
 
 test('P1 committed official feed is clean and bounded',()=>{
