@@ -37,12 +37,29 @@ export default {
         service: "ritratto-stellare-api",
         paypal_environment: env.PAYPAL_ENV || "sandbox",
         live_authorized: env.LIVE_COMMERCIAL_AUTHORIZED === "true",
+        privacy_self_service_ready: false,
+        auth_session_ready: false,
+        encrypted_profile_export_ready: false,
+        account_delete_ready: false,
         db
       }, db ? 200 : 503, cors(env));
     }
 
     if (url.pathname === "/v1/plans" && request.method === "GET") {
       return json({ plans: PLANS }, 200, cors(env));
+    }
+
+    if (url.pathname === "/v1/privacy-readiness" && request.method === "GET") {
+      return json({
+        ok: false,
+        public_launch_allowed: false,
+        blockers: [
+          "standalone_session_auth_not_implemented",
+          "profile_decryption_export_not_implemented",
+          "authenticated_account_delete_not_implemented"
+        ],
+        rule: "Do not expose GDPR export/delete until authenticated session and intelligible decryption path are implemented."
+      }, 503, cors(env));
     }
 
     if (url.pathname.startsWith("/v1/paypal/") && env.PAYPAL_ENV === "live" && env.LIVE_COMMERCIAL_AUTHORIZED !== "true") {
