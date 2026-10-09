@@ -6,6 +6,10 @@ import {parseOfficialArticleHtml,editorialDraftGate} from '../src/core/article.j
 import {reviewedBatch20261009} from '../src/editorial/reviewed-batch-2026-10-09.js';
 
 test('P0 RED content never auto-publishes',()=>assert.equal(riskGate({title:'Denuncia contro Mario Rossi',text:'accusa grave'},90).level,'RED'));
+test('P0 judicial proceedings stay YELLOW while creative process stays GREEN',()=>{
+  assert.equal(riskGate({title:'Cronaca',text:'Il processo prosegue in tribunale.'},90).level,'YELLOW');
+  assert.equal(riskGate({title:'Teatro a Corviale',text:'Il processo creativo coinvolge artisti e residenti.'},90).level,'GREEN');
+});
 test('P0 low local value rejected',()=>assert.equal(valueGate({title:'Breve',text:'testo',area_id:1}).pass,false));
 test('P0 local utility accepted',()=>assert.equal(valueGate({title:'Chiusura temporanea di via Vitellia',text:'Lavori e chiusura in via Vitellia domani dalle 09:00 alle 13:00. La modifica interessa il traffico del quartiere e gli accessi locali.',area_id:1}).pass,true));
 test('P0 AI changed time blocked',()=>assert.equal(factGate({title:'Chiusura',text:'Via Roma chiusa 09:00-13:00'},{headline:'Chiusura',summary:'',body:'Via Roma chiusa 09:00-18:00'}).pass,false));

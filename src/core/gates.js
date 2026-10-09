@@ -12,7 +12,7 @@ const redPatterns = [
   /negro|frocio|zingaro|puttana|handicappato/i,
 ];
 const yellowPatterns = [
-  /arrest|indagat|processo|tribunale|aggress|furto|rapina|incidente grave|persona scomparsa/i,
+  /arrest|indagat|processo(?!\s+creativo)|tribunale|aggress|furto|rapina|incidente grave|persona scomparsa/i,
   /truff|ladro|corrott|abusiv|molest|droga|arma|rissa|discrimin/i,
   /\b(?:3\d{2}[ .-]?\d{6,7}|(?:\+39[ .-]?)?0\d{1,3}[ .-]?\d{5,8})\b/i,
 ];
