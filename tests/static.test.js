@@ -45,7 +45,8 @@ test('P1 public abuse reporting and admin review exist',()=>{const pages=fs.read
 test('P1 advertising test page exists',()=>assert.equal(fs.existsSync(new URL('../public/pubblicita.html',import.meta.url)),true));
 test('P0 migration 0003 has an idempotent Worker bootstrap',()=>{assert.match(idx,/ensureSafeModuleTables/);assert.match(idx,/CREATE TABLE IF NOT EXISTS la_ad_orders/);assert.match(idx,/CREATE TABLE IF NOT EXISTS la_moderation_actions/)});
 test('P0 official bridge collects for human review only',()=>{assert.match(idx,/source_type='official_bridge'[\s\S]{0,220}usage_policy='discovery'/);assert.match(idx,/"official_bridge","json",95,"discovery"/)});
-test('P0 incomplete bridge articles are quarantined once',()=>{assert.match(idx,/quarantineIncompleteBridgeArticlesOnce/);assert.match(idx,/official_bridge_complete_article_gate_v1/);assert.match(idx,/UPDATE la_content SET status='held'/)});
+test('P0 all incomplete published news are quarantined once',()=>{assert.match(idx,/quarantineIncompletePublishedNewsOnce/);assert.match(idx,/published_news_complete_article_gate_v2/);assert.match(idx,/UPDATE la_content SET status='held'/)});
+test('P0 reviewed editorial batch is applied only after the same production gates',()=>{assert.match(idx,/applyReviewedBatch20261009/);assert.match(idx,/editorApproved:true/);assert.match(idx,/verifiedSource:item\.verifiedSource/);assert.match(idx,/reviewed_batch_2026_10_09_v1/)});
 test('P1 scheduled feed runs the full quality gate',()=>{const workflow=fs.readFileSync(new URL('../.github/workflows/aho-roma-feed.yml',import.meta.url),'utf8');assert.match(workflow,/security-gate\.mjs/);assert.match(workflow,/npm run check/);assert.match(workflow,/npm test/)});
 
 test('P1 committed official feed is clean and bounded',()=>{

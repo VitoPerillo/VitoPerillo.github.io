@@ -2,7 +2,7 @@
 
 Aggiornato: 2026-10-09
 
-- Node test suite: **60/60 PASS**
+- Node test suite: **63/63 PASS**
 - Syntax check, incluso il builder del feed: **PASS**
 - Security Gate: **PASS**, zero blocchi; due avvisi non bloccanti già noti (`permissions_policy`, `audit`)
 - Migrazioni 0001 + 0002 + bootstrap idempotente 0003: **PASS**
@@ -12,3 +12,5 @@ Aggiornato: 2026-10-09
 - Motore editoriale: pagina integrale, fatti verificati, testo originale 140–700 parole, immagine originale CC BY 4.0 e revisione amministrativa
 - Bridge Roma Capitale: sola raccolta `discovery`; nessuna pubblicazione automatica degli estratti del feed
 - Riparazione live prevista al primo ciclo dopo il deploy: gli articoli automatici incompleti vengono spostati in `held`
+- Audit esteso a tutte le notizie pubblicate: gli estratti brevi, anche precedenti al bridge, vengono messi in revisione.
+- Lotto editoriale del 9 ottobre: 3/3 articoli PASS su lunghezza, anti-copia, numeri, date, orari e nomi propri.

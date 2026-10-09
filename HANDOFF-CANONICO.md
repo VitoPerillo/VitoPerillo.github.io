@@ -2,6 +2,15 @@
 
 Aggiornato: 2026-10-09
 
+## Audit completo e lotto editoriale — 2026-10-09
+
+- Audit live dei 10 contenuti pubblicati: 3 conformi; 7 estratti tra 5 e 14 parole non conformi.
+- Il gate una-tantum `published_news_complete_article_gate_v2` sposta in `held` qualsiasi notizia automatica pubblicata che non rispetti sintesi 70–320 caratteri e corpo 140–700 parole.
+- Primo lotto revisionato da pagine integrali ufficiali: Roma Welfair, eventi gratuiti nel Municipio XI dal 9 all’11 ottobre e Le Ali della Città a Corviale fino al 30 ottobre.
+- I tre testi originali misurano rispettivamente 171, 183 e 184 parole e superano gate editoriale, anti-copia e fact gate.
+- La pubblicazione usa le illustrazioni originali SVG già generate dal Worker e dichiarate CC BY 4.0.
+- Applicazione D1 idempotente tramite `reviewed_batch_2026_10_09_v1`; nessuna nuova risorsa Cloudflare.
+
 ## Gate editoriale automatico — 2026-10-09
 
 - Il bridge GitHub/Roma Capitale raccoglie ora esclusivamente in modalità `discovery`: nessuna notizia del feed viene pubblicata senza revisione umana.

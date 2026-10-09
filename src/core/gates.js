@@ -64,8 +64,8 @@ export function valueGate(record) {
 }
 
 export function factGate(source, generated) {
-  const src = `${source.title || ""} ${source.text || ""}`;
-  const out = `${generated.headline || ""} ${generated.summary || ""} ${generated.body || ""}`;
+  const src = `${source.title || ""}. ${source.text || ""}`;
+  const out = `${generated.headline || ""}. ${generated.summary || ""}. ${generated.body || ""}`;
   const violations = [];
   const mustBeSubset = (label, extractor) => {
     const s = new Set(extractor(src));
@@ -74,9 +74,8 @@ export function factGate(source, generated) {
   };
   mustBeSubset("date_time", datesAndTimes);
   mustBeSubset("number", significantNumbers);
-  const srcNames = properNames(src).map((v) => v.toLowerCase());
   for (const n of properNames(out))
-    if (!srcNames.includes(n.toLowerCase()))
+    if (!src.toLocaleLowerCase("it-IT").includes(n.toLocaleLowerCase("it-IT")))
       violations.push(`proper_name:${n}`);
   if (
     generated.address &&

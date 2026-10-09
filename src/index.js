@@ -40,6 +40,7 @@ import {
   reviewFactSheet,
   editorialDraftGate,
 } from "./core/article.js";
+import { reviewedBatch20261009 } from "./editorial/reviewed-batch-2026-10-09.js";
 
 export default {
   async fetch(request, env, ctx) {
@@ -181,7 +182,8 @@ async function listSimple(db, table) {
 async function tick(env) {
   await recoverStale(env.DB);
   await ensureOfficialBridgeSource(env);
-  await quarantineIncompleteBridgeArticlesOnce(env.DB);
+  await quarantineIncompletePublishedNewsOnce(env.DB);
+  await applyReviewedBatch20261009(env);
   await recoverOfficialBridgeGateOnce(env.DB);
   await sourceTick(env);
   await ensureOfficialBridgeJobs(env.DB);
@@ -216,12 +218,12 @@ async function ensureOfficialBridgeSource(env) {
     .bind("Roma Capitale · bridge AHÓ ROMA",url,"official_bridge","json",95,"discovery",5,1,"{}").run();
 }
 
-async function quarantineIncompleteBridgeArticlesOnce(db) {
-  const key="official_bridge_complete_article_gate_v1";
+async function quarantineIncompletePublishedNewsOnce(db) {
+  const key="published_news_complete_article_gate_v2";
   const done=await db.prepare("SELECT value FROM la_settings WHERE key=?").bind(key).first();
   if(done?.value)return;
   const rows=await db.prepare(
-    "SELECT DISTINCT c.id,c.summary,c.body FROM la_content c JOIN la_ingest i ON i.content_id=c.id JOIN la_sources s ON s.id=i.source_id WHERE s.source_type='official_bridge' AND c.auto_generated=1 AND c.status IN ('published','updated')"
+    "SELECT id,summary,body FROM la_content WHERE content_type='news' AND auto_generated=1 AND status IN ('published','updated')"
   ).all();
   let held=0;
   for(const row of rows.results||[]){
@@ -233,7 +235,27 @@ async function quarantineIncompleteBridgeArticlesOnce(db) {
   }
   await db.prepare("INSERT INTO la_settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=CURRENT_TIMESTAMP")
     .bind(key,JSON.stringify({held,checked_at:new Date().toISOString()})).run();
-  if(held)await log(db,"warning","editorial_gate","Incomplete bridge articles moved to human review",{held});
+  if(held)await log(db,"warning","editorial_gate","Incomplete published news moved to human review",{held});
+}
+
+async function applyReviewedBatch20261009(env) {
+  const key="reviewed_batch_2026_10_09_v1";
+  const done=await env.DB.prepare("SELECT value FROM la_settings WHERE key=?").bind(key).first();
+  if(done?.value)return;
+  const applied=[];
+  for(const item of reviewedBatch20261009){
+    const row=await env.DB.prepare("SELECT id FROM la_ingest WHERE source_url=? ORDER BY id DESC LIMIT 1").bind(item.source_url).first();
+    if(!row?.id)throw new Error(`reviewed_ingest_missing:${item.source_url}`);
+    const result=await processIngest(env,Number(row.id),{
+      editorApproved:true,
+      editorDraft:item.editorDraft,
+      verifiedSource:item.verifiedSource,
+    });
+    if(!["published","updated"].includes(String(result)))throw new Error(`reviewed_batch_not_published:${row.id}:${result}`);
+    applied.push(Number(row.id));
+  }
+  await env.DB.prepare("INSERT INTO la_settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=CURRENT_TIMESTAMP")
+    .bind(key,JSON.stringify({applied,reviewed_at:new Date().toISOString()})).run();
 }
 
 async function recoverOfficialBridgeGateOnce(db) {
