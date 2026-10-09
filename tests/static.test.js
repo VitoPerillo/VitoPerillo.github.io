@@ -12,6 +12,7 @@ const checks={
  'P0 upload whitelist':/image\/jpeg/.test(fs.readFileSync(new URL('../src/security/security.js',import.meta.url),'utf8'))&&!/image\/svg/.test(fs.readFileSync(new URL('../src/security/security.js',import.meta.url),'utf8')),
  'P0 social failure nonblocking job':/social_publish/.test(idx)&&/NullSocialProvider/.test(fs.readFileSync(new URL('../src/social/adapter.js',import.meta.url),'utf8')),
  'P0 news sitemap 2 days':/-2 days/.test(fs.readFileSync(new URL('../src/render/pages.js',import.meta.url),'utf8')),
+ 'P0 Google News sitemap required tags':/xmlns:news=/.test(fs.readFileSync(new URL('../src/render/pages.js',import.meta.url),'utf8'))&&/<news:publication>/.test(fs.readFileSync(new URL('../src/render/pages.js',import.meta.url),'utf8'))&&/<news:publication_date>/.test(fs.readFileSync(new URL('../src/render/pages.js',import.meta.url),'utf8'))&&/<news:title>/.test(fs.readFileSync(new URL('../src/render/pages.js',import.meta.url),'utf8')),
  'P0 expired event maintenance':/content_type='event'/.test(idx)&&/status='expired'/.test(idx),
  'P0 health dead cron':/cron_dead/.test(idx)&&/queue_heartbeat/.test(idx),
  'P0 dashboard action zero semantics':/action_required\s*:\s*action/.test(idx),

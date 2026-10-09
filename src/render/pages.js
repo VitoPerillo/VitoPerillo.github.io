@@ -384,14 +384,19 @@ export async function sitemap(db, base, newsOnly = false) {
     : "status IN ('published','updated','resolved')";
   const q = await db
     .prepare(
-      `SELECT content_type,slug,updated_at FROM la_content WHERE ${where} ORDER BY updated_at DESC LIMIT 5000`,
+      `SELECT content_type,slug,title,published_at,updated_at FROM la_content WHERE ${where} ORDER BY updated_at DESC LIMIT 5000`,
     )
     .all();
   let urls = (q.results || [])
-    .map(
-      (x) =>
-        `<url><loc>${html(root + routeFor(x))}</loc><lastmod>${new Date(String(x.updated_at).replace(" ", "T") + "Z").toISOString()}</lastmod></url>`,
-    )
+    .map((x) => {
+      const loc=html(root + routeFor(x));
+      const lastmod=new Date(String(x.updated_at).replace(" ", "T") + "Z").toISOString();
+      if(newsOnly){
+        const publicationDate=new Date(String(x.published_at).replace(" ", "T") + "Z").toISOString();
+        return `<url><loc>${loc}</loc><news:news><news:publication><news:name>AHÓ ROMA</news:name><news:language>it</news:language></news:publication><news:publication_date>${publicationDate}</news:publication_date><news:title>${html(x.title)}</news:title></news:news><lastmod>${lastmod}</lastmod></url>`;
+      }
+      return `<url><loc>${loc}</loc><lastmod>${lastmod}</lastmod></url>`;
+    })
     .join("");
   if (!newsOnly) {
     const a = await db
@@ -407,7 +412,7 @@ export async function sitemap(db, base, newsOnly = false) {
       .join("");
   }
   return new Response(
-    `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}</urlset>`,
+    `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"${newsOnly?' xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"':''}>${urls}</urlset>`,
     { headers: { "content-type": "application/xml;charset=utf-8" } },
   );
 }
