@@ -2,7 +2,7 @@
 
 Aggiornato: 2026-10-09
 
-- Node test suite: **63/63 PASS**
+- Node test suite: **64/64 PASS**
 - Syntax check, incluso il builder del feed: **PASS**
 - Security Gate: **PASS**, zero blocchi; due avvisi non bloccanti già noti (`permissions_policy`, `audit`)
 - Migrazioni 0001 + 0002 + bootstrap idempotente 0003: **PASS**
@@ -14,3 +14,4 @@ Aggiornato: 2026-10-09
 - Riparazione live prevista al primo ciclo dopo il deploy: gli articoli automatici incompleti vengono spostati in `held`
 - Audit esteso a tutte le notizie pubblicate: gli estratti brevi, anche precedenti al bridge, vengono messi in revisione.
 - Lotto editoriale del 9 ottobre: 3/3 articoli PASS su lunghezza, anti-copia, numeri, date, orari e nomi propri.
+- Collaudo Cloudflare: home, 6 pagine articolo, 6 immagini e News Sitemap HTTP 200; 6/6 articoli conformi al gate.

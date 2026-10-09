@@ -10,6 +10,10 @@ Aggiornato: 2026-10-09
 - I tre testi originali misurano rispettivamente 171, 183 e 184 parole e superano gate editoriale, anti-copia e fact gate.
 - La pubblicazione usa le illustrazioni originali SVG già generate dal Worker e dichiarate CC BY 4.0.
 - Applicazione D1 idempotente tramite `reviewed_batch_2026_10_09_v1`; nessuna nuova risorsa Cloudflare.
+- Collaudo live finale: 6/6 articoli pubblicati conformi, pagine e immagini HTTP 200; 11 contenuti non conformi restano in `held`.
+- Lotto nuovo live: 169, 183 e 184 parole; sintesi 115–121 caratteri; fonte integrale e CC BY 4.0 presenti.
+- Corretto il falso positivo che interpretava “processo creativo” come procedimento giudiziario, senza indebolire il blocco dei veri contenuti giudiziari.
+- Commit codice lotto: `19d0d76a8962bece336cbed04d71d627430a1050`; correzione gate: `bfd9e67c652d012ee762d8a948511a0d847c4897`.
 
 ## Gate editoriale automatico — 2026-10-09
 
