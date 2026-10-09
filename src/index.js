@@ -73,6 +73,9 @@ export default {
         return sitemap(env.DB, request.url, false);
       if (request.method === "GET" && p === "/news-sitemap.xml")
         return sitemap(env.DB, request.url, true);
+      if (env.ASSETS && request.method === "GET" && ["/privacy", "/termini", "/regole-editoriali"].includes(p)) {
+        const a=new URL(request.url);a.pathname=p+".html";return env.ASSETS.fetch(new Request(a.toString(),{method:"GET",headers:request.headers}));
+      }
       if (request.method === "GET" && p === "/api/areas")
         return listSimple(env.DB, "la_areas");
       if (request.method === "GET" && p === "/api/categories")
