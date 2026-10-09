@@ -36,15 +36,6 @@
     "category_slug": "servizi-municipio"
   },
   {
-    "id": "https://www.comune.roma.it/web/it/notizia/cie-open-day-3-e-4-ottobre-2026.page",
-    "url": "https://www.comune.roma.it/web/it/notizia/cie-open-day-3-e-4-ottobre-2026.page",
-    "title": "CIE, open day 3 e 4 ottobre",
-    "text": "Municipio XI. Nuovo open day dedicato alla carta d'identità elettronica. Sabato 3 e domenica 4 ottobre 2026 sono previste le aperture straordinarie degli ex PIT , del punto di rilascio di via Petroselli , 52 e dei Municipi V e XI. Per poter richiedere la carta d’identità in occasione degli open day è sempre obbligatorio l'appuntamento , prenotabile a partire dalle ore 9 di venerdì 2 ottobre fino a esaurimento disponibilità sul sito Agenda CIE del Ministero dell'Interno .",
-    "date": "2026-10-02T15:08:00+02:00",
-    "area_slug": "municipio-xi",
-    "category_slug": "avvisi-utili"
-  },
-  {
     "id": "https://www.comune.roma.it/web/it/notizia/periferie-al-via-passeggiate-pedagogiche-chiese.page",
     "url": "https://www.comune.roma.it/web/it/notizia/periferie-al-via-passeggiate-pedagogiche-chiese.page",
     "title": "Periferie, al via le Passeggiate pedagogiche nelle Chiese",
@@ -61,14 +52,5 @@
     "date": "2026-09-30T11:41:00+02:00",
     "area_slug": "municipio-xii",
     "category_slug": "scuola-famiglie"
-  },
-  {
-    "id": "https://www.comune.roma.it/web/it/notizia/sabato-3-e-domenica-4-ottobre-2026-mun11.page",
-    "url": "https://www.comune.roma.it/web/it/notizia/sabato-3-e-domenica-4-ottobre-2026-mun11.page",
-    "title": "Sabato 3 e domenica 4 ottobre nel Municipio XI",
-    "text": "Municipio XI. Un fine settimana ricco di appuntamenti di arte, cultura e socializzazione patrocinati dal Municipio XI . - Dalle 8 alle 11:30 AD SPEM , Associazione Donatori Sangue Problemi Ematologici, organizza una donazione di sangue presso il Parco di via Caselli, nella piazzetta dell'Ulivo .",
-    "date": "2026-09-29T10:04:00+02:00",
-    "area_slug": "municipio-xi",
-    "category_slug": "ambiente-quartiere"
   }
 ]
