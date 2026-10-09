@@ -64,3 +64,19 @@ CREATE TABLE IF NOT EXISTS events (
 
 CREATE INDEX IF NOT EXISTS idx_events_profile_created ON events(profile_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_profiles_subscription ON profiles(subscription_id);
+
+
+CREATE TABLE IF NOT EXISTS legal_acceptances (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  profile_id INTEGER,
+  acceptance_key TEXT NOT NULL UNIQUE,
+  privacy_version TEXT NOT NULL,
+  terms_version TEXT NOT NULL,
+  age_18_plus INTEGER NOT NULL CHECK(age_18_plus IN (0,1)),
+  immediate_start_requested INTEGER NOT NULL DEFAULT 0 CHECK(immediate_start_requested IN (0,1)),
+  digital_content_withdrawal_ack INTEGER CHECK(digital_content_withdrawal_ack IN (0,1) OR digital_content_withdrawal_ack IS NULL),
+  accepted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(profile_id) REFERENCES profiles(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_legal_acceptances_profile ON legal_acceptances(profile_id, accepted_at);
