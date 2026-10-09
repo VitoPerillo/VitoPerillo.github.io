@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /gestisci
+Disallow: /api/
+
+Sitemap: https://local-autopilot-v1.black-sea-41df.workers.dev/sitemap.xml
+Sitemap: https://local-autopilot-v1.black-sea-41df.workers.dev/news-sitemap.xml

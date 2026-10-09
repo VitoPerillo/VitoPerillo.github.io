@@ -41,6 +41,7 @@ import {
   editorialDraftGate,
 } from "./core/article.js";
 import { reviewedBatch20261009 } from "./editorial/reviewed-batch-2026-10-09.js";
+import { reviewedBatch20261009B } from "./editorial/reviewed-batch-2026-10-09-b.js";
 
 export default {
   async fetch(request, env, ctx) {
@@ -184,6 +185,7 @@ async function tick(env) {
   await ensureOfficialBridgeSource(env);
   await quarantineIncompletePublishedNewsOnce(env.DB);
   await applyReviewedBatch20261009(env);
+  await applyReviewedBatch20261009B(env);
   await recoverOfficialBridgeGateOnce(env.DB);
   await sourceTick(env);
   await ensureOfficialBridgeJobs(env.DB);
@@ -246,6 +248,26 @@ async function applyReviewedBatch20261009(env) {
   for(const item of reviewedBatch20261009){
     const row=await env.DB.prepare("SELECT id FROM la_ingest WHERE source_url=? ORDER BY id DESC LIMIT 1").bind(item.source_url).first();
     if(!row?.id)throw new Error(`reviewed_ingest_missing:${item.source_url}`);
+    const result=await processIngest(env,Number(row.id),{
+      editorApproved:true,
+      editorDraft:item.editorDraft,
+      verifiedSource:item.verifiedSource,
+    });
+    if(!["published","updated"].includes(String(result)))throw new Error(`reviewed_batch_not_published:${row.id}:${result}`);
+    applied.push(Number(row.id));
+  }
+  await env.DB.prepare("INSERT INTO la_settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=CURRENT_TIMESTAMP")
+    .bind(key,JSON.stringify({applied,reviewed_at:new Date().toISOString()})).run();
+}
+
+async function applyReviewedBatch20261009B(env) {
+  const key="reviewed_batch_2026_10_09_v2";
+  const done=await env.DB.prepare("SELECT value FROM la_settings WHERE key=?").bind(key).first();
+  if(done?.value)return;
+  const applied=[];
+  for(const item of reviewedBatch20261009B){
+    const row=await env.DB.prepare("SELECT id FROM la_ingest WHERE source_url=? AND status='held' ORDER BY id DESC LIMIT 1").bind(item.source_url).first();
+    if(!row?.id)throw new Error(`reviewed_held_ingest_missing:${item.source_url}`);
     const result=await processIngest(env,Number(row.id),{
       editorApproved:true,
       editorDraft:item.editorDraft,

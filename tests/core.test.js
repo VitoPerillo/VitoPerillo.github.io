@@ -4,6 +4,7 @@ import {normalizeSourceDate} from '../src/core/pipeline.js';
 import {decodeHtmlEntities} from '../src/core/utils.js';
 import {parseOfficialArticleHtml,editorialDraftGate} from '../src/core/article.js';
 import {reviewedBatch20261009} from '../src/editorial/reviewed-batch-2026-10-09.js';
+import {reviewedBatch20261009B} from '../src/editorial/reviewed-batch-2026-10-09-b.js';
 
 test('P0 RED content never auto-publishes',()=>assert.equal(riskGate({title:'Denuncia contro Mario Rossi',text:'accusa grave'},90).level,'RED'));
 test('P0 judicial proceedings stay YELLOW while creative process stays GREEN',()=>{
@@ -34,8 +35,9 @@ test('P0 editorial gate rejects short or copied drafts',()=>{
   assert.ok(editorialDraftGate(copied,{summary:'Sintesi originale sufficientemente chiara e utile per i residenti del quartiere interessato.',body:copied}).violations.includes('long_source_copy'));
 });
 test('P0 reviewed batch passes editorial and fact gates',()=>{
-  assert.equal(reviewedBatch20261009.length,3);
-  for(const item of reviewedBatch20261009){
+  const batches=[reviewedBatch20261009,reviewedBatch20261009B];
+  assert.deepEqual(batches.map(x=>x.length),[3,3]);
+  for(const item of batches.flat()){
     const editorial=editorialDraftGate(item.verifiedSource.text,item.editorDraft);
     assert.equal(editorial.pass,true,`${item.source_url}: ${editorial.violations.join(',')}`);
     const facts=factGate({title:item.verifiedSource.title,text:item.verifiedSource.text},item.editorDraft);

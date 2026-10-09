@@ -47,6 +47,9 @@ test('P0 migration 0003 has an idempotent Worker bootstrap',()=>{assert.match(id
 test('P0 official bridge collects for human review only',()=>{assert.match(idx,/source_type='official_bridge'[\s\S]{0,220}usage_policy='discovery'/);assert.match(idx,/"official_bridge","json",95,"discovery"/)});
 test('P0 all incomplete published news are quarantined once',()=>{assert.match(idx,/quarantineIncompletePublishedNewsOnce/);assert.match(idx,/published_news_complete_article_gate_v2/);assert.match(idx,/UPDATE la_content SET status='held'/)});
 test('P0 reviewed editorial batch is applied only after the same production gates',()=>{assert.match(idx,/applyReviewedBatch20261009/);assert.match(idx,/editorApproved:true/);assert.match(idx,/verifiedSource:item\.verifiedSource/);assert.match(idx,/reviewed_batch_2026_10_09_v1/)});
+test('P0 second reviewed batch only consumes held ingests and is idempotent',()=>{assert.match(idx,/applyReviewedBatch20261009B/);assert.match(idx,/status='held'/);assert.match(idx,/reviewed_batch_2026_10_09_v2/)});
+test('P1 first publication after review receives a fresh publication date',()=>{const p=fs.readFileSync(new URL('../src/core/pipeline.js',import.meta.url),'utf8');assert.match(p,/published_at=CASE WHEN \?='held' THEN CURRENT_TIMESTAMP/)});
+test('P1 robots file exposes both sitemaps and protects private routes',()=>{const robots=fs.readFileSync(new URL('../public/robots.txt',import.meta.url),'utf8');assert.match(robots,/Allow: \//);assert.match(robots,/Disallow: \/admin/);assert.match(robots,/Sitemap: .*\/sitemap\.xml/);assert.match(robots,/Sitemap: .*\/news-sitemap\.xml/)});
 test('P1 scheduled feed runs the full quality gate',()=>{const workflow=fs.readFileSync(new URL('../.github/workflows/aho-roma-feed.yml',import.meta.url),'utf8');assert.match(workflow,/security-gate\.mjs/);assert.match(workflow,/npm run check/);assert.match(workflow,/npm test/)});
 
 test('P1 committed official feed is clean and bounded',()=>{
