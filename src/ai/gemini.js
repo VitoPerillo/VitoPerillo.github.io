@@ -18,6 +18,14 @@ export class NullProvider {
   async classifyRisk(){ return {level:'YELLOW'}; }
 }
 
+function assertFreeTierEditorialBoundary(record){
+  if(record?.ai_data_class!=="public_editorial_source") throw new Error("gemini_free_nonpublic_data_blocked");
+  const text=`${record?.title||""} ${record?.text||""}`;
+  if(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(text)) throw new Error("gemini_free_personal_identifier_blocked");
+  if(/\b(?:\+39[ .-]?)?3\d{2}[ .-]?\d{6,7}\b/.test(text)) throw new Error("gemini_free_personal_identifier_blocked");
+  if(/\b[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]\b/i.test(text)) throw new Error("gemini_free_personal_identifier_blocked");
+}
+
 export class GeminiProvider {
   constructor(env){ this.env=env; }
   async call(payload){
@@ -30,6 +38,7 @@ export class GeminiProvider {
     return r.json();
   }
   async generateArticle(record){
+    assertFreeTierEditorialBoundary(record);
     const minimized={title:record.title,text:record.text,source_url:record.source_url,area_id:record.area_id,category_id:record.category_id,original_date:record.original_date,valid_from:record.valid_from,valid_until:record.valid_until};
     const prompt=`Restituisci SOLO JSON valido con campi headline,summary,body,facts,what_changes,valid_from,valid_until,confidence,social_text. Non inventare nomi, numeri, date, orari, prezzi o indirizzi. Scrivi una notizia locale utile e non clickbait. Dati pubblici verificati: ${JSON.stringify(minimized)}`;
     const data=await this.call({contents:[{parts:[{text:prompt}]}],generationConfig:{responseMimeType:'application/json'}});
@@ -39,6 +48,7 @@ export class GeminiProvider {
     return out;
   }
   async classifyRisk(record){
+    assertFreeTierEditorialBoundary(record);
     const publicOnly={title:record.title,text:record.text,source_url:record.source_url};
     const prompt=`Classifica il rischio editoriale come GREEN, YELLOW o RED. Rispondi SOLO JSON {"level":"..."}. Dati pubblici: ${JSON.stringify(publicOnly)}`;
     const data=await this.call({contents:[{parts:[{text:prompt}]}],generationConfig:{responseMimeType:'application/json'}});
