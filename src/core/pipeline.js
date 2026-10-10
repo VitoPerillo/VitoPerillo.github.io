@@ -19,7 +19,7 @@ export async function processIngest(env,id,{editorApproved=false,editorDraft=nul
       detail={title:String(verifiedSource.title||row.original_title),date:verifiedSource.date||row.original_date,text:String(verifiedSource.text),source_url:row.source_url};
     }else detail=await fetchArticleDetails(row.source_url);
   }
-  const record={title:normalizeSpace(decodeHtmlEntities(detail?.title||row.original_title)),text:detail?.text||normalizeSpace(decodeHtmlEntities(row.original_text)),source_url:row.source_url,original_date:normalizeSourceDate(detail?.date)||row.original_date,area_id:row.detected_area||null,category_id:row.detected_category||null};
+  const record={title:normalizeSpace(decodeHtmlEntities(detail?.title||row.original_title)),text:detail?.text||normalizeSpace(decodeHtmlEntities(row.original_text)),source_url:row.source_url,original_date:normalizeSourceDate(detail?.date)||row.original_date,area_id:row.detected_area||null,category_id:row.detected_category||null,ai_data_class:row.usage_policy==='auto'?'public_editorial_source':'not_ai_eligible'};
   const geo=await classifyGeo(env.DB,record,row.detected_area||null); record.area_id=geo.area_id; record.geo_confidence=geo.confidence;
   if(!record.area_id || geo.reason==='ambiguous'){await setStatus(env.DB,id,'held'); return 'held';}
   const fp=await fingerprint(record); const existing=row.content_id?{id:Number(row.content_id)}:await findExisting(env.DB,fp,record);
