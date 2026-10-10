@@ -34,6 +34,7 @@
   "vars": {
     "MAX_QUEUE_BATCH": "8",
     "AI_PROVIDER": "gemini",
+    "AI_AUTOPUBLISH_ENABLED": "false",
     "EMAIL_PROVIDER": "brevo",
     "PUBLIC_BASE_URL": "https://local-autopilot-v1.black-sea-41df.workers.dev",
     "GEMINI_MODEL": "gemini-2.5-flash"
