@@ -1349,6 +1349,21 @@ async function maintenance(env) {
     env.DB.prepare(
       "UPDATE la_submissions SET verification_token_hash=NULL WHERE expires_at<CURRENT_TIMESTAMP AND status='pending_email'",
     ),
+    env.DB.prepare(
+      "UPDATE la_submissions SET email='',email_hash='',verification_token_hash=NULL,edit_token_hash=NULL,payload_json='{}' WHERE created_at<datetime('now','-180 days') AND status IN ('approved','rejected')",
+    ),
+    env.DB.prepare(
+      "UPDATE la_content SET private_email=NULL WHERE private_email IS NOT NULL AND updated_at<datetime('now','-180 days')",
+    ),
+    env.DB.prepare(
+      "UPDATE la_reports SET email_hash=NULL,details='' WHERE status='resolved' AND resolved_at IS NOT NULL AND resolved_at<datetime('now','-180 days')",
+    ),
+    env.DB.prepare(
+      "UPDATE la_ad_orders SET email='',email_hash='',manage_token_hash='' WHERE created_at<datetime('now','-90 days') AND status IN ('approved_test','rejected','cancelled')",
+    ),
+    env.DB.prepare(
+      "DELETE FROM la_moderation_actions WHERE created_at<datetime('now','-365 days')",
+    ),
   ]);
   await env.DB.prepare(
     "INSERT INTO la_settings(key,value) VALUES('maintenance_heartbeat',CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP",
