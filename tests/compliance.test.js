@@ -34,3 +34,24 @@ test("No production payment or automatic UGC publication is introduced",()=>{
   assert.equal(/stripe|paypal|mollie/i.test(ads),false);
   assert.equal(/pubblicat[oa] automaticamente/i.test(ads),false);
 });
+
+
+test("Local Autopilot retention and tracking baseline",()=>{
+  const index=read("src/index.js");
+  const wrangler=read("wrangler.jsonc");
+  assert.match(index,/DELETE FROM la_ingest WHERE created_at<datetime\('now','-30 days'\)/);
+  assert.match(index,/DELETE FROM la_jobs WHERE status='completed' AND updated_at<datetime\('now','-14 days'\)/);
+  assert.match(index,/DELETE FROM la_logs WHERE level='info' AND created_at<datetime\('now','-14 days'\)/);
+  assert.match(index,/level IN \('warning','error'\) AND created_at<datetime\('now','-90 days'\)/);
+  assert.match(index,/status IN \('approved','rejected'\)/);
+  assert.match(index,/private_email=NULL/);
+  assert.match(index,/resolved_at<datetime\('now','-180 days'\)/);
+  assert.match(index,/approved_test','rejected','cancelled/);
+  assert.match(index,/DELETE FROM la_moderation_actions WHERE created_at<datetime\('now','-365 days'\)/);
+  assert.match(wrangler,/"EMAIL_PROVIDER": "brevo"/);
+  assert.match(wrangler,/"AI_PROVIDER": "gemini"/);
+  const publicFiles=["public/privacy.html","public/termini.html","public/regole-editoriali.html"].map(read).join("\n");
+  const combined=index+"\n"+publicFiles;
+  assert.equal(/googletagmanager|google-analytics|gtag\(|connect\.facebook\.net|fbq\(|meta pixel|hotjar|clarity\.ms/i.test(combined),false);
+  assert.equal(/document\.cookie|set-cookie/i.test(combined),false);
+});
