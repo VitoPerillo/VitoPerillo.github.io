@@ -55,3 +55,19 @@ test("Local Autopilot retention and tracking baseline",()=>{
   assert.equal(/googletagmanager|google-analytics|gtag\(|connect\.facebook\.net|fbq\(|meta pixel|hotjar|clarity\.ms/i.test(combined),false);
   assert.equal(/document\.cookie|set-cookie/i.test(combined),false);
 });
+
+
+test("Gemini Free data boundary and stale-media cleanup",()=>{
+  const gemini=read("src/ai/gemini.js");
+  const pipeline=read("src/core/pipeline.js");
+  const index=read("src/index.js");
+  assert.match(gemini,/public_editorial_source/);
+  assert.match(gemini,/gemini_free_nonpublic_data_blocked/);
+  assert.match(gemini,/gemini_free_personal_identifier_blocked/);
+  assert.match(gemini,/@[A-Z0-9.-]+/i);
+  assert.match(pipeline,/ai_data_class:row\.usage_policy==='auto'\?'public_editorial_source':'not_ai_eligible'/);
+  assert.match(index,/cleanupStaleSubmissionMedia/);
+  assert.match(index,/status='pending_email' AND created_at<datetime\('now','-7 days'\)/);
+  assert.match(index,/status='rejected' AND created_at<datetime\('now','-180 days'\)/);
+  assert.match(index,/media\.delete\(payload\.image_key\)/);
+});
