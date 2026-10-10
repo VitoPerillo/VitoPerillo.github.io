@@ -1326,7 +1326,22 @@ async function health(env) {
     queue_heartbeat: heartbeat?.value || null,
   });
 }
+async function cleanupStaleSubmissionMedia(env) {
+  const rows=await env.DB.prepare(
+    "SELECT id,payload_json FROM la_submissions WHERE (status='pending_email' AND created_at<datetime('now','-7 days')) OR (status='rejected' AND created_at<datetime('now','-180 days'))"
+  ).all();
+  const media=MediaStorageAdapter.fromEnv(env);
+  if(!media.available()) return;
+  for(const row of rows.results||[]){
+    const payload=safeJson(row.payload_json,{});
+    if(payload.image_key){
+      try{ await media.delete(payload.image_key); }catch{}
+    }
+  }
+}
+
 async function maintenance(env) {
+  await cleanupStaleSubmissionMedia(env);
   await env.DB.batch([
     env.DB.prepare(
       "DELETE FROM la_ingest WHERE created_at<datetime('now','-30 days') AND status IN ('published','updated','rejected')",
@@ -1348,6 +1363,9 @@ async function maintenance(env) {
     ),
     env.DB.prepare(
       "UPDATE la_submissions SET verification_token_hash=NULL WHERE expires_at<CURRENT_TIMESTAMP AND status='pending_email'",
+    ),
+    env.DB.prepare(
+      "UPDATE la_submissions SET status='rejected',email='',email_hash='',verification_token_hash=NULL,edit_token_hash=NULL,payload_json='{}' WHERE status='pending_email' AND created_at<datetime('now','-7 days')",
     ),
     env.DB.prepare(
       "UPDATE la_submissions SET email='',email_hash='',verification_token_hash=NULL,edit_token_hash=NULL,payload_json='{}' WHERE created_at<datetime('now','-180 days') AND status IN ('approved','rejected')",
