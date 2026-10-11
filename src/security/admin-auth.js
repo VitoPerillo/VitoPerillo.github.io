@@ -24,8 +24,8 @@ export async function adminAuthRoute(request, env, path) {
     if (!sameOrigin(request)) return responseJson({ error: "invalid_origin" }, 403);
     if (!(await rateLimit(env.DB, request, "admin_login_request", 5, 3600)))
       return responseJson({ error: "too_many_requests" }, 429);
-    const email = String(env.ADMIN_EMAIL || "").trim().toLowerCase();
-    if (!email || !env.BREVO_API_KEY || !env.EMAIL_FROM)
+    const email = String(env.ADMIN_EMAIL || "otachecker@gmail.com").trim().toLowerCase();
+    if (!env.BREVO_API_KEY)
       return responseJson({ error: "email_login_not_configured" }, 503);
     const code = randomSixDigitCode();
     const salt = randomToken(16);
