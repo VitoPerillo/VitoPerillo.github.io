@@ -3,7 +3,7 @@ on:
   push:
     branches: [vde-phase2c-ocr-benchmark-20261011]
     paths:
-      - ".github/workflows/vde-phase2c-paddle-benchmark.yml"
+      - ".github/workflows/vde-phase2c-paddle-benchmark.yml"\n      - "vde-phase2c/paddle_benchmark.py"
   workflow_dispatch:
 permissions:
   contents: read
