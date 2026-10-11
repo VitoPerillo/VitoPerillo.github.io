@@ -1,12 +1,17 @@
 name: VDE Phase2C PaddleOCR Benchmark
+
 on:
   push:
-    branches: [vde-phase2c-ocr-benchmark-20261011]
+    branches:
+      - vde-phase2c-ocr-benchmark-20261011
     paths:
-      - ".github/workflows/vde-phase2c-paddle-benchmark.yml"\n      - "vde-phase2c/paddle_benchmark.py"
+      - .github/workflows/vde-phase2c-paddle-benchmark.yml
+      - vde-phase2c/paddle_benchmark.py
   workflow_dispatch:
+
 permissions:
   contents: read
+
 jobs:
   benchmark:
     runs-on: ubuntu-24.04
@@ -25,9 +30,12 @@ jobs:
       - name: Run benchmark
         env:
           FLAGS_enable_pir_api: "0"
+          FLAGS_use_mkldnn: "0"
+          PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK: "True"
         run: |
           python vde-phase2c/paddle_benchmark.py
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: vde-phase2c-paddleocr-benchmark
           path: paddleocr-benchmark.json
