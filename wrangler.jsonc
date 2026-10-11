@@ -36,6 +36,8 @@
     "AI_PROVIDER": "gemini",
     "EMAIL_PROVIDER": "brevo",
     "ADMIN_EMAIL": "otachecker@gmail.com",
+    "EMAIL_FROM": "info@yoganostress.it",
+    "EMAIL_FROM_NAME": "AHÓ ROMA",
     "PUBLIC_BASE_URL": "https://local-autopilot-v1.black-sea-41df.workers.dev",
     "GEMINI_MODEL": "gemini-2.5-flash"
   }
