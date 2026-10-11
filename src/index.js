@@ -18,13 +18,17 @@ import {
 } from "./core/queue.js";
 import { BrevoEmail } from "./email/brevo.js";
 import {
-  requireAdmin,
   rateLimit,
   validUpload,
   stripImageMetadata,
   safeSourceUrl,
   validFormTiming,
 } from "./security/security.js";
+import {
+  adminAuthRoute,
+  ensureAdminAuthTables,
+  requireAdminSession,
+} from "./security/admin-auth.js";
 import { riskGate, ugcModerationGate } from "./core/gates.js";
 import {
   home,
@@ -92,6 +96,7 @@ export default {
         return adOrder(request, env);
       if (request.method === "POST" && p === "/api/manage")
         return manageSubmission(request, env);
+      if (p.startsWith("/api/admin-auth/")) return adminAuthRoute(request, env, p);
       if (p.startsWith("/api/admin/")) return adminRoute(request, env, p);
       if (
         env.ASSETS &&
@@ -851,7 +856,8 @@ async function mediaGet(env, key) {
 }
 
 async function adminRoute(request, env, p) {
-  if (!(await requireAdmin(request, env)))
+  await ensureAdminAuthTables(env.DB);
+  if (!(await requireAdminSession(request, env)))
     return responseJson({ error: "forbidden" }, 403);
   if (/^\/api\/admin\/(?:submissions|ad-orders|reports)/.test(p))
     await ensureSafeModuleTables(env.DB);

@@ -1,9 +1,4 @@
 import { sha256, nowIso } from '../core/utils.js';
-export async function requireAdmin(request,env){
-  const got=request.headers.get('authorization')||'';
-  if(!env.ADMIN_TOKEN || got!==`Bearer ${env.ADMIN_TOKEN}`) return false;
-  return true;
-}
 export async function rateLimit(db, request, action, limit, windowSeconds){
   const ip=request.headers.get('cf-connecting-ip')||'unknown';
   const key=await sha256(`${ip}|${action}`); const now=Date.now();

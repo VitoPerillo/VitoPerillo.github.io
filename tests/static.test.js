@@ -19,12 +19,14 @@ const checks={
  'P0 fixed free architecture bindings':/d1_databases/.test(wr)&&/kv_namespaces/.test(wr)&&/MEDIA_KV/.test(wr)&&!/r2_buckets/.test(wr)&&!/MEDIA_DB/.test(wr),
  'P1 retention raw ingest':/-30 days/.test(idx),
  'P1 retention completed jobs':/-14 days/.test(idx),
- 'P1 admin bearer auth':/Bearer/.test(fs.readFileSync(new URL('../src/security/security.js',import.meta.url),'utf8')),
+ 'P1 admin email auth with persistent HttpOnly session':/HttpOnly/.test(fs.readFileSync(new URL('../src/security/admin-auth.js',import.meta.url),'utf8'))&&/Max-Age/.test(fs.readFileSync(new URL('../src/security/admin-auth.js',import.meta.url),'utf8')),
 }; for(const [name,ok] of Object.entries(checks))test(name,()=>assert.equal(ok,true));
 
 test('P0 verification/edit tokens are not stored cleartext in queue payload',()=>{assert.equal(/verify_token|edit_token/.test(idx.match(/enqueue\(env\.DB,'send_verify_email'[\s\S]{0,150}/)?.[0]||''),false)});
 test('P1 public forms and magic-link UI exist',()=>{assert.equal(fs.existsSync(new URL('../public/segnala.html',import.meta.url)),true);assert.equal(fs.existsSync(new URL('../public/gestisci.html',import.meta.url)),true)});
 test('P1 admin dashboard exists',()=>assert.equal(fs.existsSync(new URL('../public/admin.html',import.meta.url)),true));
+test('P0 admin UI has no bearer token field or browser token storage',()=>{const admin=fs.readFileSync(new URL('../public/admin.html',import.meta.url),'utf8');assert.doesNotMatch(admin,/Bearer|la_admin_token|sessionStorage|>Token</i);assert.match(admin,/one-time-code/)});
+test('P0 admin OTP is single-use, rate-limited and expires',()=>{const auth=fs.readFileSync(new URL('../src/security/admin-auth.js',import.meta.url),'utf8');assert.match(auth,/consumed_at/);assert.match(auth,/CODE_SECONDS/);assert.match(auth,/admin_login_request/);assert.match(auth,/attempts/);assert.match(auth,/PBKDF2/)});
 test('P1 protected source run endpoint exists',()=>assert.match(idx,/api\/admin\/source\/run/));
 test('P0 discovery publication requires explicit admin review',()=>{assert.match(idx,/api\/admin\/ingest\/review/);assert.match(idx,/editorApproved\s*:\s*true/);assert.match(fs.readFileSync(new URL('../src/core/pipeline.js',import.meta.url),'utf8'),/discovery'&&!editorApproved/)});
 test('P1 admin can list and review held ingests',()=>{const admin=fs.readFileSync(new URL('../public/admin.html',import.meta.url),'utf8');assert.match(idx,/api\/admin\/ingests/);assert.match(admin,/Notizie da revisionare/);assert.match(admin,/reviewIngest/)});
