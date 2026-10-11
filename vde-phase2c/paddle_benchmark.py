@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json,re,statistics,time,sys
+import json,re,statistics,time,sys,resource
 from pathlib import Path
 from PIL import Image,ImageDraw,ImageFont,ImageFilter
 
@@ -89,7 +89,7 @@ out={
  "rotated_cer":next(r for r in rows if r["name"]=="rotated_90.png")["cer"],
  "exact_sensitive_accuracy":exact_ok/max(1,exact_total),"exact_sensitive_ok":exact_ok,"exact_sensitive_total":exact_total,
  "reading_order_columns":all(x>=0 for x in pos) and pos==sorted(pos),
- "median_latency_s":statistics.median(r["latency_s"] for r in rows),
+ "median_latency_s":statistics.median(r["latency_s"] for r in rows),\n "peak_rss_kb":int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss),\n "model_cache_bytes":sum(p.stat().st_size for p in (Path.home()/".paddlex").rglob("*") if p.is_file()),
  "rows":rows,
 }
 Path("paddleocr-benchmark.json").write_text(json.dumps(out,indent=2,ensure_ascii=False))
