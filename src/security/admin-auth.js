@@ -18,7 +18,7 @@ export async function ensureAdminAuthTables(db) {
 export async function adminAuthRoute(request, env, path) {
   await ensureAdminAuthTables(env.DB);
   if (path === "/api/admin-auth/status" && request.method === "GET") {
-    return responseJson({ authenticated: await requireAdminSession(request, env) });
+    return responseJson({ authenticated: await requireAdminSession(request, env), auth_version: 2 });
   }
   if (path === "/api/admin-auth/request" && request.method === "POST") {
     if (!sameOrigin(request)) return responseJson({ error: "invalid_origin" }, 403);
