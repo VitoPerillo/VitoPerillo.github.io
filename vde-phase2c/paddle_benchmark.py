@@ -59,7 +59,7 @@ def sensitive(s):
     return re.findall(r"(?:€\s*\d[\d.,]*|EUR\s*\d[\d.,]*|\b\d{1,2}/\d{1,2}/\d{4}\b|\b\d{4}-\d{4}\b|\b\d+[.,]\d+%)",s,re.I)
 
 from paddleocr import PaddleOCR
-ocr=PaddleOCR(lang="it",ocr_version="PP-OCRv6",use_doc_orientation_classify=True,use_doc_unwarping=False,use_textline_orientation=True,device="cpu")
+ocr=PaddleOCR(lang="it",ocr_version="PP-OCRv6",use_doc_orientation_classify=True,use_doc_unwarping=False,use_textline_orientation=True,device="cpu",enable_mkldnn=False,cpu_threads=4)
 rows=[]; exact_total=exact_ok=0
 for name,ref in truth.items():
     t=time.perf_counter()
