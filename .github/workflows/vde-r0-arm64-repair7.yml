@@ -1,0 +1,334 @@
+name: VDE R0 ARM64 Repair Gate 7
+
+on:
+  push:
+    branches: [vde-r0-arm64-repair7-20261014]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  arm64-release:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned OS runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            tesseract-ocr tesseract-ocr-eng tesseract-ocr-ita \
+            fonts-dejavu-core gcc libc6-dev
+          dpkg-query -W -f='${Package}==${Version}\n' \
+            tesseract-ocr tesseract-ocr-eng tesseract-ocr-ita libtesseract5 \
+            > system-packages.lock.txt
+          cat system-packages.lock.txt
+
+      - name: Install pinned CPU-only Python runtime
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu \
+            'torch==2.14.1+cpu' 'torchvision==0.29.1+cpu'
+          python -m pip install \
+            'rtree==1.4.1' \
+            'scipy==1.18.1' \
+            'opencv-python-headless==5.0.0.93' \
+            'docling-slim[format-pdf-docling,models-local,cli]==2.134.0' \
+            'python-docx==1.2.0' \
+            'openpyxl==3.1.5' \
+            'sentence-transformers==6.1.0' \
+            'Pillow==12.3.0' \
+            'pytesseract==0.3.13' \
+            'pypdfium2==5.8.0'
+
+      - name: Verify CPU-only dependency surface
+        run: |
+          python - <<'PY'
+          import importlib.metadata as md, json, platform, torch
+          bad=[]
+          for d in md.distributions():
+              n=(d.metadata.get('Name') or '').lower()
+              if n.startswith('nvidia-') or n.startswith('cuda-') or n in {'triton'}:
+                  bad.append(n)
+          out={
+            'arch':platform.machine(),
+            'torch':torch.__version__,
+            'torch_cuda':torch.version.cuda,
+            'cuda_packages':sorted(set(bad)),
+          }
+          print(json.dumps(out,indent=2))
+          assert platform.machine() in {'aarch64','arm64'}
+          assert torch.version.cuda is None
+          assert not bad, bad
+          PY
+
+      - name: Download only frozen model revisions
+        run: |
+          mkdir -p runtime-models/docling runtime-models/gte
+          python - <<'PY'
+          from huggingface_hub import snapshot_download
+          jobs=[
+            ('docling-project/docling-layout-heron','8f39ad3c0b4c58e9c2d2c84a38465abf757272d8','runtime-models/docling/docling-project--docling-layout-heron'),
+            ('docling-project/docling-layout-heron-onnx','40bde044036bb181c130ddf6c51792187268748f','runtime-models/docling/docling-project--docling-layout-heron-onnx'),
+            ('docling-project/docling-models','fc0f2d45e2218ea24bce5045f58a389aed16dc23','runtime-models/docling/docling-project--docling-models'),
+            ('alibaba-nlp-community/gte-multilingual-base','fdaec56c6a50d6ebcf691f616ee83a166346b76c','runtime-models/gte'),
+          ]
+          for repo,rev,dest in jobs:
+              print('PINNED_DOWNLOAD',repo,rev)
+              snapshot_download(repo_id=repo,revision=rev,local_dir=dest)
+          PY
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, json
+          roots=[Path('runtime-models/docling'),Path('runtime-models/gte')]
+          items={}
+          for root in roots:
+              for p in sorted(root.rglob('*')):
+                  if p.is_file():
+                      h=hashlib.sha256()
+                      with p.open('rb') as f:
+                          for b in iter(lambda:f.read(1024*1024),b''): h.update(b)
+                      items[str(p)]={'bytes':p.stat().st_size,'sha256':h.hexdigest()}
+          Path('model-artifacts.sha256.json').write_text(json.dumps(items,indent=2))
+          print('model_files',len(items),'bytes',sum(x['bytes'] for x in items.values()))
+          PY
+
+      - name: Real ARM64 runtime smoke
+        env:
+          HF_HUB_OFFLINE: "1"
+          TRANSFORMERS_OFFLINE: "1"
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+          import json, os, platform, resource, time
+          from pathlib import Path
+          from importlib.metadata import version
+          from PIL import Image,ImageDraw,ImageFont
+          import pytesseract, openpyxl
+          from docx import Document
+          from sentence_transformers import SentenceTransformer
+          from docling.datamodel.base_models import InputFormat
+          from docling.datamodel.pipeline_options import PdfPipelineOptions
+          from docling.document_converter import DocumentConverter, PdfFormatOption
+
+          def minimal_pdf(path,text):
+              esc=text.replace('\\','\\\\').replace('(','\\(').replace(')','\\)')
+              stream=f"BT /F1 18 Tf 72 720 Td ({esc}) Tj ET".encode('latin-1')
+              objs=[
+                b'<< /Type /Catalog /Pages 2 0 R >>',
+                b'<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+                b'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>',
+                b'<< /Length '+str(len(stream)).encode()+b' >>\nstream\n'+stream+b'\nendstream',
+                b'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+              ]
+              data=bytearray(b'%PDF-1.4\n'); offs=[0]
+              for i,obj in enumerate(objs,1):
+                  offs.append(len(data)); data += f'{i} 0 obj\n'.encode()+obj+b'\nendobj\n'
+              xref=len(data); data += f'xref\n0 {len(objs)+1}\n'.encode()+b'0000000000 65535 f \n'
+              for off in offs[1:]: data += f'{off:010d} 00000 n \n'.encode()
+              data += f'trailer\n<< /Size {len(objs)+1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n'.encode()
+              path.write_bytes(data)
+
+          out={'arch':platform.machine(),'versions':{},'checks':{},'latency_s':{}}
+          for n in ['docling-slim','python-docx','openpyxl','sentence-transformers','Pillow','pytesseract','pypdfium2','rtree','scipy','opencv-python-headless','torch','torchvision']:
+              out['versions'][n]=version(n)
+
+          pdf=Path('arm64-real.pdf'); minimal_pdf(pdf,'Ends 31 December 2030. EUR 24,500.50')
+          opts=PdfPipelineOptions(artifacts_path=Path('runtime-models/docling').resolve(),do_ocr=False,do_table_structure=True)
+          opts.enable_remote_services=False; opts.allow_external_plugins=False
+          opts.do_picture_description=False; opts.do_picture_classification=False
+          opts.do_chart_extraction=False; opts.do_code_enrichment=False; opts.do_formula_enrichment=False
+          conv=DocumentConverter(allowed_formats=[InputFormat.PDF],format_options={InputFormat.PDF:PdfFormatOption(pipeline_options=opts)})
+          t=time.perf_counter(); result=conv.convert(pdf); out['latency_s']['docling']=time.perf_counter()-t
+          txt=' '.join((getattr(x[0],'text','') or '') for x in result.document.iterate_items(with_groups=False))
+          print('DOCLING_TEXT_REPR',repr(txt)); out['docling_text']=txt; out['checks']['docling']='31 December 2030' in txt and '24,500.50' in txt
+
+          d=Document(); d.add_heading('Release gate',1); d.add_paragraph('Supplier shall deliver a monthly report.'); d.save('arm64.docx')
+          t=time.perf_counter(); d2=Document('arm64.docx'); out['latency_s']['docx']=time.perf_counter()-t
+          out['checks']['docx']=any('monthly report' in p.text for p in d2.paragraphs)
+
+          wb=openpyxl.Workbook(); ws=wb.active; ws.append(['Budget','Actual','Variance']); ws.append([5000,5500,'=B2-A2']); wb.save('arm64.xlsx')
+          t=time.perf_counter(); wb2=openpyxl.load_workbook('arm64.xlsx',data_only=False); out['latency_s']['xlsx']=time.perf_counter()-t
+          out['checks']['xlsx']=wb2.active['C2'].value=='=B2-A2'
+
+          im=Image.new('RGB',(1600,350),'white'); dr=ImageDraw.Draw(im); font=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',42)
+          dr.text((40,120),'FATTURA 2026-0042 TOTALE EUR 1.220,00',font=font,fill='black')
+          t=time.perf_counter(); ocr=pytesseract.image_to_string(im,lang='ita+eng'); out['latency_s']['ocr']=time.perf_counter()-t
+          out['checks']['ocr']='2026-0042' in ocr and ('1.220,00' in ocr or '1,220.00' in ocr)
+
+          t=time.perf_counter(); model=SentenceTransformer('runtime-models/gte',local_files_only=True,device='cpu'); out['latency_s']['gte_load']=time.perf_counter()-t
+          q=model.encode(['when does this deal finish?'],normalize_embeddings=True,convert_to_numpy=True,show_progress_bar=False)[0]
+          p=model.encode(['The agreement terminates on 31 December 2030.','Employees receive 25 days of annual leave.'],normalize_embeddings=True,convert_to_numpy=True,show_progress_bar=False)
+          scores=[float(x@q) for x in p]; out['gte_scores']=scores; out['gte_dimension']=int(model.get_sentence_embedding_dimension())
+          out['checks']['gte_offline']=scores[0]>scores[1] and out['gte_dimension']==768
+
+          out['tesseract_version']=str(pytesseract.get_tesseract_version()).splitlines()[0]
+          out['peak_rss_kb']=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+          out['gate_pass']=out['arch'] in {'aarch64','arm64'} and all(out['checks'].values())
+          Path('arm64-runtime-gate.json').write_text(json.dumps(out,indent=2))
+          print(json.dumps(out,indent=2))
+          if not out['gate_pass']: raise SystemExit(2)
+          PY
+
+      - name: Verify ARM64 chroot/seccomp sandbox compatibility
+        run: |
+          cat > sandbox_runner.c <<'C'
+          #define _GNU_SOURCE
+          #include <errno.h>
+          #include <grp.h>
+          #include <linux/audit.h>
+          #include <linux/filter.h>
+          #include <linux/seccomp.h>
+          #include <stddef.h>
+          #include <stdio.h>
+          #include <stdlib.h>
+          #include <string.h>
+          #include <sys/prctl.h>
+          #include <sys/resource.h>
+          #include <sys/syscall.h>
+          #include <sys/types.h>
+          #include <unistd.h>
+          static void die(const char*m){perror(m);_exit(125);}
+          static void lim(int r,rlim_t v){struct rlimit l={v,v};if(setrlimit(r,&l))die("setrlimit");}
+          #define DENY(nr) BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K,(nr),0,1),BPF_STMT(BPF_RET|BPF_K,SECCOMP_RET_ERRNO|(EPERM&SECCOMP_RET_DATA))
+          static void sec(void){
+            struct sock_filter f[]={
+              BPF_STMT(BPF_LD|BPF_W|BPF_ABS,offsetof(struct seccomp_data,arch)),
+          #if defined(__x86_64__)
+              BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K,AUDIT_ARCH_X86_64,1,0),
+          #elif defined(__aarch64__)
+              BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K,AUDIT_ARCH_AARCH64,1,0),
+          #else
+          #error unsupported_arch
+          #endif
+              BPF_STMT(BPF_RET|BPF_K,SECCOMP_RET_KILL_PROCESS),
+              BPF_STMT(BPF_LD|BPF_W|BPF_ABS,offsetof(struct seccomp_data,nr)),
+          #ifdef __NR_socket
+              DENY(__NR_socket),
+          #endif
+          #ifdef __NR_connect
+              DENY(__NR_connect),
+          #endif
+          #ifdef __NR_mount
+              DENY(__NR_mount),
+          #endif
+          #ifdef __NR_ptrace
+              DENY(__NR_ptrace),
+          #endif
+          #ifdef __NR_bpf
+              DENY(__NR_bpf),
+          #endif
+          #ifdef __NR_unshare
+              DENY(__NR_unshare),
+          #endif
+          #ifdef __NR_setns
+              DENY(__NR_setns),
+          #endif
+              BPF_STMT(BPF_RET|BPF_K,SECCOMP_RET_ALLOW)};
+            struct sock_fprog p={(unsigned short)(sizeof(f)/sizeof(f[0])),f};
+            if(prctl(PR_SET_NO_NEW_PRIVS,1,0,0,0))die("nnp");
+            if(prctl(PR_SET_SECCOMP,SECCOMP_MODE_FILTER,&p))die("seccomp");
+          }
+          int main(int argc,char**argv){
+            if(argc!=3)return 64;
+            lim(RLIMIT_CPU,5);lim(RLIMIT_AS,128UL*1024*1024);lim(RLIMIT_FSIZE,1048576);lim(RLIMIT_NOFILE,64);lim(RLIMIT_NPROC,32);
+            if(chroot(argv[1])) die("chroot");
+            if(chdir("/work")) die("chdir");
+            if(setgroups(0,NULL)||setgid(65534)||setuid(65534)) die("uid");
+            sec();
+            execl("/bin/probe","/bin/probe",NULL);die("exec");
+          }
+          C
+          cat > sandbox_probe.c <<'C'
+          #include <errno.h>
+          #include <fcntl.h>
+          #include <stdio.h>
+          #include <sys/socket.h>
+          #include <unistd.h>
+          int main(void){
+            int f=open("/work/inside",O_CREAT|O_WRONLY,0600);printf("work=%s\n",f>=0?"PASS":"FAIL");if(f>=0)close(f);
+            errno=0;int r=open("/root-write",O_CREAT|O_WRONLY,0600);printf("root_block=%s\n",r<0?"PASS":"FAIL");if(r>=0)close(r);
+            errno=0;int s=socket(AF_INET,SOCK_STREAM,0);printf("network=%s errno=%d\n",(s<0&&errno==EPERM)?"PASS":"FAIL",errno);
+            printf("uid=%s %u\n",geteuid()==65534?"PASS":"FAIL",(unsigned)geteuid());
+            return (f>=0 && r<0 && s<0 && errno==EPERM && geteuid()==65534)?0:2;
+          }
+          C
+          gcc -O2 -Wall -Wextra -Werror sandbox_runner.c -o sandbox_runner
+          gcc -static -O2 -Wall -Wextra -Werror sandbox_probe.c -o sandbox_probe
+          mkdir -p rootfs/bin rootfs/work
+          cp sandbox_probe rootfs/bin/probe
+          chmod 0555 rootfs rootfs/bin rootfs/bin/probe
+          sudo chown root:root rootfs rootfs/bin rootfs/bin/probe
+          sudo chown 65534:65534 rootfs/work
+          chmod 0700 rootfs/work
+          sudo ./sandbox_runner "$PWD/rootfs" /bin/probe | tee sandbox-gate.txt
+          grep -F 'work=PASS' sandbox-gate.txt
+          grep -F 'root_block=PASS' sandbox-gate.txt
+          grep -F 'network=PASS' sandbox-gate.txt
+          grep -F 'uid=PASS' sandbox-gate.txt
+
+      - name: Freeze ARM64 transitive runtime lock
+        run: |
+          python -m pip freeze --all | LC_ALL=C sort > requirements-transitive.arm64.lock
+          if grep -Ei '^(nvidia-|cuda-|triton==)' requirements-transitive.arm64.lock; then
+            echo "GPU dependency leaked into CPU runtime" >&2
+            exit 3
+          fi
+          sha256sum requirements-transitive.arm64.lock system-packages.lock.txt > release-locks.sha256.txt
+
+      - name: Freeze wheel SHA256 manifest
+        run: |
+          mkdir wheelhouse
+          python -m pip download --no-deps --dest wheelhouse --index-url https://download.pytorch.org/whl/cpu \
+            'torch==2.14.1+cpu' 'torchvision==0.29.1+cpu'
+          grep -Ev '^(torch|torchvision)==' requirements-transitive.arm64.lock > requirements-noncpu.lock
+          python -m pip download --no-deps --dest wheelhouse -r requirements-noncpu.lock
+          (cd wheelhouse && sha256sum * | LC_ALL=C sort) > wheel-artifacts.sha256.txt
+          rm -rf wheelhouse
+
+      - name: Generate final SPDX SBOM
+        run: |
+          python - <<'PY'
+          import json, subprocess, uuid
+          from pathlib import Path
+          rows=json.loads(subprocess.check_output(['python','-m','pip','list','--format=json']))
+          packages=[]
+          for r in sorted(rows,key=lambda x:x['name'].lower()):
+              n,v=r['name'],r['version']
+              packages.append({
+                'SPDXID':'SPDXRef-Package-'+''.join(c if c.isalnum() else '-' for c in n),
+                'name':n,'versionInfo':v,'downloadLocation':'NOASSERTION',
+                'filesAnalyzed':False,'licenseConcluded':'NOASSERTION','licenseDeclared':'NOASSERTION',
+                'externalRefs':[{'referenceCategory':'PACKAGE-MANAGER','referenceType':'purl','referenceLocator':f'pkg:pypi/{n}@{v}'}],
+              })
+          sbom={
+            'spdxVersion':'SPDX-2.3','dataLicense':'CC0-1.0','SPDXID':'SPDXRef-DOCUMENT',
+            'name':'VDE-R0-ARM64-runtime','documentNamespace':'https://vde.local/spdx/'+str(uuid.uuid4()),
+            'creationInfo':{'created':'2026-10-14T00:00:00Z','creators':['Tool: VDE-R0-Gate']},
+            'packages':packages,
+          }
+          Path('SBOM.final.arm64.spdx.json').write_text(json.dumps(sbom,indent=2))
+          PY
+          sha256sum arm64-runtime-gate.json model-artifacts.sha256.json wheel-artifacts.sha256.txt \
+            SBOM.final.arm64.spdx.json sandbox-gate.txt >> release-locks.sha256.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vde-r0-arm64-repair-evidence
+          path: |
+            arm64-runtime-gate.json
+            requirements-transitive.arm64.lock
+            requirements-noncpu.lock
+            system-packages.lock.txt
+            model-artifacts.sha256.json
+            wheel-artifacts.sha256.txt
+            SBOM.final.arm64.spdx.json
+            sandbox-gate.txt
+            release-locks.sha256.txt
+          retention-days: 1
