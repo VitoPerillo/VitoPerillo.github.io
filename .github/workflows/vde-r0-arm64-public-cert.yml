@@ -1,0 +1,239 @@
+name: VDE R0 ARM64 Public Certification
+on:
+  push:
+    branches: [vde-r0-arm64-cert-20261014]
+    paths:
+      - ".github/workflows/vde-r0-arm64-repair.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  arm64-release-gate:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: System runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends             tesseract-ocr tesseract-ocr-eng tesseract-ocr-ita             build-essential libgl1 libglib2.0-0
+          uname -a
+          python --version
+          tesseract --version | head -1
+
+      - name: Install CPU-only release profile
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu 'torch==2.14.1+cpu'
+          python -m pip install             'rtree==1.4.1'             'docling-slim[format-pdf-docling,models-local,cli]==2.134.0'             'python-docx==1.2.0'             'openpyxl==3.1.5'             'sentence-transformers==6.1.0'             'Pillow==12.3.0'             'pytesseract==0.3.13'             'pypdfium2==5.8.0'             'reportlab>=4,<5'             'psutil'             'huggingface-hub'
+          python - <<'PY'
+          import importlib.metadata as m, torch, platform, json
+          names=[
+            "torch","Rtree","docling-slim","python-docx","openpyxl",
+            "sentence-transformers","Pillow","pytesseract","pypdfium2"
+          ]
+          installed={n:m.version(n) for n in names}
+          bad=[]
+          for d in m.distributions():
+              n=(d.metadata.get("Name") or "").lower()
+              if n.startswith("nvidia-") or n.startswith("cuda-"):
+                  bad.append(n)
+          out={
+            "arch":platform.machine(),
+            "installed":installed,
+            "torch_cuda":torch.version.cuda,
+            "cuda_packages":sorted(set(bad)),
+          }
+          print(json.dumps(out,indent=2))
+          assert platform.machine() in ("aarch64","arm64")
+          assert torch.version.cuda is None
+          assert not bad, bad
+          PY
+
+      - name: Download exact frozen models only
+        env:
+          HF_HUB_DISABLE_TELEMETRY: "1"
+        run: |
+          python - <<'PY'
+          from huggingface_hub import snapshot_download
+          from pathlib import Path
+          root=Path("runtime-models")
+          d=root/"docling"; g=root/"gte"
+          d.mkdir(parents=True,exist_ok=True); g.mkdir(parents=True,exist_ok=True)
+          frozen=[
+            ("docling-project/docling-layout-heron","8f39ad3c0b4c58e9c2d2c84a38465abf757272d8",d/"docling-project--docling-layout-heron"),
+            ("docling-project/docling-layout-heron-onnx","40bde044036bb181c130ddf6c51792187268748f",d/"docling-project--docling-layout-heron-onnx"),
+            ("docling-project/docling-models","fc0f2d45e2218ea24bce5045f58a389aed16dc23",d/"docling-project--docling-models"),
+            ("alibaba-nlp-community/gte-multilingual-base","fdaec56c6a50d6ebcf691f616ee83a166346b76c",g),
+          ]
+          for repo,rev,path in frozen:
+              snapshot_download(repo_id=repo,revision=rev,local_dir=path)
+          PY
+
+      - name: Verify frozen model file hashes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, json
+          root=Path("runtime-models")
+          expected={
+            "docling/docling-project--docling-layout-heron/model.safetensors":"00333a43451945aaf89db8ca9c0a17e75d1537c17db60fdb91aa95f4c7929e0c",
+            "docling/docling-project--docling-layout-heron-onnx/model.onnx":"59c81a3a2923042d85034ffc487f8f47e4854117e879aef89b2b9f728fb4922a",
+            "docling/docling-project--docling-models/model_artifacts/tableformer/accurate/tableformer_accurate.safetensors":"2a7d6c924b3cd12fb99a09280ca9c33a89c5d60b93253617d2e088c1a40374d9",
+            "docling/docling-project--docling-models/model_artifacts/tableformer/fast/tableformer_fast.safetensors":"3119563aab5a7c96fda4d621119b63fd8806272b86c30936d15507616422f718",
+          }
+          got={}
+          for rel,sha in expected.items():
+              p=root/rel
+              assert p.is_file(), rel
+              h=hashlib.sha256(p.read_bytes()).hexdigest()
+              got[rel]=h
+              assert h==sha,(rel,h,sha)
+          Path("model-hashes.json").write_text(json.dumps(got,indent=2,sort_keys=True))
+          print(json.dumps(got,indent=2))
+          PY
+
+      - name: Real Docling PDF, DOCX, XLSX, OCR, GTE offline
+        env:
+          HF_HUB_OFFLINE: "1"
+          TRANSFORMERS_OFFLINE: "1"
+          HF_HUB_DISABLE_TELEMETRY: "1"
+        run: |
+          python - <<'PY'
+          import json, os, resource, time
+          from pathlib import Path
+          from reportlab.pdfgen import canvas
+          from PIL import Image,ImageDraw,ImageFont
+          import pytesseract, openpyxl
+          from docx import Document
+          from sentence_transformers import SentenceTransformer
+          from docling.datamodel.base_models import InputFormat
+          from docling.datamodel.pipeline_options import PdfPipelineOptions
+          from docling.document_converter import DocumentConverter, PdfFormatOption
+
+          out={}
+          pdf=Path("real.pdf")
+          c=canvas.Canvas(str(pdf))
+          c.drawString(72,720,"VDE ARM64 contract terminates 31 December 2030 EUR 24,500.50")
+          c.save()
+          opts=PdfPipelineOptions(
+              artifacts_path=Path("runtime-models/docling").resolve(),
+              do_ocr=False,do_table_structure=True,
+          )
+          opts.enable_remote_services=False
+          opts.allow_external_plugins=False
+          opts.do_picture_description=False
+          opts.do_picture_classification=False
+          opts.do_chart_extraction=False
+          opts.do_code_enrichment=False
+          opts.do_formula_enrichment=False
+          conv=DocumentConverter(
+              allowed_formats=[InputFormat.PDF],
+              format_options={InputFormat.PDF:PdfFormatOption(pipeline_options=opts)},
+          )
+          t=time.perf_counter()
+          result=conv.convert(pdf)
+          out["docling_latency_s"]=time.perf_counter()-t
+          text=" ".join((getattr(x[0],"text","") or "") for x in result.document.iterate_items(with_groups=False))
+          out["docling_text_ok"]="31 December 2030" in text and "24,500.50" in text
+
+          d=Document(); d.add_heading("Release gate",1); d.add_paragraph("Supplier shall deliver monthly report."); d.save("real.docx")
+          d2=Document("real.docx")
+          out["docx_ok"]=any("Supplier shall deliver" in p.text for p in d2.paragraphs)
+
+          wb=openpyxl.Workbook(); ws=wb.active
+          ws["A1"]="Budget"; ws["B1"]=5000; ws["C1"]="Actual"; ws["D1"]=5500; ws["E1"]="=D1-B1"
+          wb.save("real.xlsx")
+          wb2=openpyxl.load_workbook("real.xlsx",data_only=False)
+          out["xlsx_ok"]=wb2.active["E1"].value=="=D1-B1"
+
+          im=Image.new("RGB",(1600,360),"white"); draw=ImageDraw.Draw(im)
+          font=ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",42)
+          draw.text((40,120),"Invoice 2026-0042 Total EUR 1,220.00",font=font,fill="black")
+          ocr=pytesseract.image_to_string(im,lang="eng")
+          out["ocr_text"]=ocr.strip()
+          out["ocr_ok"]="2026-0042" in ocr and ("1,220.00" in ocr or "1,220" in ocr)
+
+          model=SentenceTransformer("runtime-models/gte",local_files_only=True,device="cpu")
+          q=model.encode(["when does this deal finish?"],normalize_embeddings=True,convert_to_numpy=True,show_progress_bar=False)[0]
+          p=model.encode(["The agreement terminates on 31 December 2030.","Employees receive 25 days of annual leave."],normalize_embeddings=True,convert_to_numpy=True,show_progress_bar=False)
+          scores=[float(x@q) for x in p]
+          out["gte_dimension"]=int(model.get_sentence_embedding_dimension())
+          out["gte_scores"]=scores
+          out["gte_ok"]=scores[0]>scores[1]
+          out["peak_rss_kb"]=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+          out["primitive_gate_pass"]=all(out[k] for k in ["docling_text_ok","docx_ok","xlsx_ok","ocr_ok","gte_ok"])
+          Path("runtime-primitives.json").write_text(json.dumps(out,indent=2))
+          print(json.dumps(out,indent=2))
+          assert out["primitive_gate_pass"]
+          PY
+
+      - name: ARM64 seccomp sandbox compatibility
+        run: |
+          gcc -O2 -Wall -Wextra vde-r0/linux_sandbox_runner.c -o sandbox-runner
+          gcc -static -O2 -Wall -Wextra vde-r0/sandbox_probe.c -o sandbox-probe
+          ROOT="$PWD/rootfs"
+          mkdir -p "$ROOT/bin" "$ROOT/work"
+          cp sandbox-probe "$ROOT/bin/probe"
+          chown -R root:root "$ROOT"
+          chmod -R a-w "$ROOT"
+          chmod 0777 "$ROOT/work"
+          sudo ./sandbox-runner "$ROOT" /work 5 128 1048576 -- /bin/probe | tee sandbox-probe.txt
+          grep -q 'network_blocked=PASS errno=1' sandbox-probe.txt
+          grep -q 'euid_nobody=PASS uid=65534' sandbox-probe.txt
+          grep -q 'root_write_blocked=PASS' sandbox-probe.txt
+          grep -q 'traversal_write_blocked=PASS' sandbox-probe.txt
+          grep -q 'symlink_escape_blocked=PASS' sandbox-probe.txt
+
+      - name: Freeze transitive lock and final SPDX SBOM
+        run: |
+          python -m pip freeze --all | LC_ALL=C sort > requirements-arm64-final.lock
+          python -m pip inspect --local > pip-inspect-arm64.json
+          python - <<'PY'
+          import importlib.metadata as m, json, hashlib, platform
+          from pathlib import Path
+          packages=[]
+          for d in sorted(m.distributions(),key=lambda x:(x.metadata.get("Name") or "").lower()):
+              name=d.metadata.get("Name") or "UNKNOWN"
+              ver=d.version
+              lic=d.metadata.get("License") or "NOASSERTION"
+              packages.append({
+                "SPDXID":"SPDXRef-Package-"+''.join(c if c.isalnum() else '-' for c in name),
+                "name":name,"versionInfo":ver,
+                "downloadLocation":"NOASSERTION",
+                "filesAnalyzed":False,
+                "licenseConcluded":"NOASSERTION",
+                "licenseDeclared":lic if len(lic)<120 else "NOASSERTION",
+                "copyrightText":"NOASSERTION",
+              })
+          doc={
+            "spdxVersion":"SPDX-2.3","dataLicense":"CC0-1.0",
+            "SPDXID":"SPDXRef-DOCUMENT","name":"VDE-R0-ARM64-Release-SBOM",
+            "documentNamespace":"https://vde.local/spdx/"+hashlib.sha256(Path("requirements-arm64-final.lock").read_bytes()).hexdigest(),
+            "creationInfo":{"created":"2026-10-14T00:00:00Z","creators":["Tool: VDE-R0-Gate"]},
+            "packages":packages,
+            "comment":"Generated on Ubuntu 24.04 ARM64 clean GitHub runner; OS runtime includes Tesseract eng+ita.",
+          }
+          Path("SBOM.final.spdx.json").write_text(json.dumps(doc,indent=2,sort_keys=True))
+          PY
+          sha256sum requirements-arm64-final.lock pip-inspect-arm64.json SBOM.final.spdx.json model-hashes.json runtime-primitives.json sandbox-probe.txt > release-sha256.txt
+
+      - name: Upload R0 evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: vde-r0-arm64-repair-evidence
+          path: |
+            requirements-arm64-final.lock
+            pip-inspect-arm64.json
+            SBOM.final.spdx.json
+            model-hashes.json
+            runtime-primitives.json
+            sandbox-probe.txt
+            release-sha256.txt
+          retention-days: 2
