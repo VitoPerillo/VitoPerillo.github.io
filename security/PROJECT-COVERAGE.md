@@ -12,7 +12,7 @@ A project is release-ready only when its applicable chain is evidenced:
 
 Controls marked N/A must be justified.
 
-See `security/SECURITY-RELEASE-BOARD.md` for the strict evidence matrix.
+See `security/SECURITY-RELEASE-BOARD.md` for the strict evidence matrix and `security/SECURITY-PUBLICATION-ORDER.md` for the exact execution order to publication.
 
 ## Current coverage
 
@@ -23,8 +23,8 @@ See `security/SECURITY-RELEASE-BOARD.md` for the strict evidence matrix.
 | MR Bridge / yoganostress-wordpress-bridge | PASS existing gate | PARTIAL | Staging/OIDC/backup/rollback capabilities exist; release-level restore/rollback exercise still partial |
 | Professione Smart | PASS current-main local revalidation | PARTIAL | main b36a02da…: syntax + blocking gate + Wrangler dry-run PASS; isolated local Worker /health 200 and unauthenticated Stripe mobile endpoints 401. Fresh GitHub Security Revalidation run 38528718009 blocked before steps by billing/spending. Real Cloudflare staging is additionally blocked because non-interactive Wrangler has no existing authorized API token for remote D1 schema-only export/create |
 | Rivensight | PASS current-main local revalidation | PARTIAL | main 8ad2b80d…: syntax + tests + gate PASS; local /health 200; unauthenticated /automation/run 401; synthetic state backup/restore preserved SHA and post-restore /health 200. Fresh GitHub Security Revalidation run 38528736856 blocked before steps by account billing/spending |
-| MR Control Hub | PASS | PARTIAL | Canonical private repo; staging health/security headers validated; remaining release-chain evidence incomplete |
-| Chakra Wholeness | PASS remote build gate | PARTIAL | main 3b8feed…; Vercel preview dpl_2Y9nKSAgiPfAbZLBxpz7NJqGTmWk READY and remote Django security gate PASS; restore/rollback/full preview E2E incomplete |
+| MR Control Hub | PASS | PARTIAL | main 09afccb7…; Wrangler toolchain audit fixed from 3 HIGH to 0 vulnerabilities; Security Gate + dry-run PASS; staging health/security headers previously validated |
+| Chakra Wholeness | PASS remote build gate | PARTIAL | main 3b8feed… remains canonical; dependency-fix branch 688a0bf… has clean venv audit 0 vulnerabilities, 9/9 tests PASS and Vercel preview dpl_GvBMnuBwcDLAnPZkX6LqCo3ezjsi READY. PR #2 intentionally unmerged to avoid possible production auto-deploy |
 | Gestionale Yoganostress | PASS canonical RC4 gate | PARTIAL | Byte-exact RC4 recovered and gated; final negative security + restore/rollback release exercise still incomplete |
 | Spiritual Coach | PASS previous gate + Red Team | PARTIAL | 39/39 Red Team and staging health PASS; dependency/restore/rollback/full live E2E incomplete |
 | Yoganostress Commerciale AI | PASS previous Cloudflare gate | PARTIAL | Consent/privacy tests + dry-run + health evidence; broader Red Team/restore/rollback incomplete |
