@@ -1,0 +1,46 @@
+# Security Release Board
+
+Updated: 2026-10-14
+
+## Evidence rule
+
+PASS means direct technical evidence on the canonical/current component.  
+PARTIAL means useful evidence exists but at least one required release gate is missing.  
+BLOCKED means a real external or canonical-source blocker exists.  
+N/A means the control does not apply in the current lifecycle stage.
+
+A project is **RELEASE PASS** only when all applicable columns through post-deploy are PASS.
+
+| Project | Canonical source | Repo / branch / commit | Security Gate | Dependency scan | Real staging | E2E | Red Team | Backup / restore | Rollback | Release Candidate | Production | Post-deploy | Overall |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Local Autopilot | Established | VitoPerillo.github.io / main / 029c53c13d3f2b13af538672489ba7d5db1c295c | PASS existing shared gate | PARTIAL — no current dedicated dependency evidence recorded | PARTIAL — existing runtime not revalidated in this cycle | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | Existing, untouched | PARTIAL | RELEASE PARTIAL |
+| Ritratto Stellare | Established | VitoPerillo.github.io / main / 029c53c13d3f2b13af538672489ba7d5db1c295c | PASS existing pre-deploy gate | PARTIAL | PARTIAL — PayPal Sandbox exists, no fresh security staging proof in this cycle | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | Existing, untouched | PARTIAL | RELEASE PARTIAL |
+| MR Bridge | Established | yoganostress-wordpress-bridge / main / d208d5b3c52c1216bb56cb8a9b2505e330127254 | PASS existing PHP/WordPress gate | PARTIAL | PASS existing staging/OIDC evidence | PARTIAL | PARTIAL | PASS backup capability; restore execution not fully re-certified here | PASS rollback capability; current exercise not re-run | PARTIAL | Existing, untouched | PARTIAL | RELEASE PARTIAL |
+| Professione Smart | Current main revalidated | professione-smart / main / b36a02daec3d25928bf68642a554b335fd81f5a2 | PASS — node syntax + blocking gate + Wrangler dry-run on current main | N/A — no package manifest/dependency tree in current repo | FAIL/MISSING — no isolated real staging proven | PARTIAL — recent Stripe pairing checks exist but no complete current payment E2E on canonical main | PARTIAL | FAIL/MISSING | PARTIAL — Cloudflare version rollback possible but not exercised for this RC | FAIL/MISSING | Existing Worker, untouched | FAIL/MISSING | RELEASE PARTIAL |
+| Rivensight | Current main revalidated | rivensight / main / 8ad2b80da363b9073348fb6989a6e08470da235a | PASS — syntax + tests + blocking gate | N/A — package.json has no dependencies | FAIL/MISSING — no isolated provider staging proven | PASS local — server start + /health HTTP 200 with synthetic credentials | PARTIAL | FAIL/MISSING — persistent data restore not exercised | PARTIAL — Docker/provider rollback not exercised | FAIL/MISSING | Existing Render service, untouched | PARTIAL — live /health evidence exists, no fresh release deploy | RELEASE PARTIAL |
+| MR Control Hub | Canonical private repo | vito-ai-control-hub / main / 23896ee9b02502b8ce944478f4135dfc2096c0bc | PASS previous blocking Wrangler gate | PARTIAL | PASS — staging health 200 + security headers | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | Staging only / production untouched | PASS staging health | RELEASE PARTIAL |
+| Chakra Wholeness | Canonical private repo | chakra-wholeness / main / 3b8feed04797b2642123f35a64a8669e80f3ad63 | PASS remote — Vercel build logs show Django security checks PASS | PARTIAL — dependencies install cleanly but no dedicated vulnerability scan recorded | PASS — Vercel preview dpl_2Y9nKSAgiPfAbZLBxpz7NJqGTmWk READY | PASS local 9/9; remote security build PASS, full user-flow E2E still partial | PARTIAL | FAIL/MISSING — Neon backup/restore not exercised | PARTIAL | PARTIAL | Existing production untouched | PASS preview build result | RELEASE PARTIAL |
+| Gestionale Yoganostress | PASS byte-exact RC4 | yoganostress-gestionale / main / ea414b972a6ed10b29463d28325070e3bf547278 | PASS — canonical ZIP SHA + 15-control gate | N/A for packaged PHP dependencies as currently structured | PASS existing staging RC4 + MR Bridge attestation | PASS existing booking/cancel credit-flow evidence; final full staff gate still not re-run here | PARTIAL — negative security suite not fully re-certified in this cycle | PASS backup capability; restore execution remains PARTIAL | PASS rollback capability; release rollback exercise PARTIAL | PASS canonical RC4 identified | Existing production RC4, untouched | PARTIAL | RELEASE PARTIAL |
+| Spiritual Coach | Canonical private repo | spiritual-coach / main / ded1b9224ad161bc176c6f629909f8ef3fb03f73 | PASS previous Wrangler gate | PARTIAL | PASS — staging deployed, /api/v1/health 200, production_forbidden=true | PARTIAL live; local behavior suite strong | PASS 39/39 previous Red Team | FAIL/MISSING — D1 restore exercise not recorded | PARTIAL | PARTIAL | No production release | PASS staging health | RELEASE PARTIAL |
+| Yoganostress Commerciale AI | Canonical private repo | yoganostress-commerciale-ai / main / e8553fa8eaca60bf4943a4f70c1092f1c7bbe8cf | PASS previous Cloudflare gate + dry-run | PARTIAL/N/A depending runtime package set | PASS live health existing; isolated staging distinction not fully documented | PASS consent/privacy tests; broader E2E PARTIAL | PARTIAL | FAIL/MISSING | PARTIAL | PARTIAL | Existing service untouched | PASS health only | RELEASE PARTIAL |
+| Vito AI | Canonical branch confirmed | yoganostress-wordpress-bridge / vito-ai-multicloud-rc14 / 9517ddb3b9eae698ea077172adf535b6ca5cf94c | PASS universal gate integrated in Render build | PASS — pdfjs-dist fixed to 6.3.289; npm reports 0 vulnerabilities | PARTIAL — staging branch exists but no fresh provider deploy after gate | PASS local sensitive suite; live E2E after gate missing | PASS selected hard/security red teams | PARTIAL | PARTIAL | PARTIAL | No production change | FAIL/MISSING after new gate | RELEASE PARTIAL |
+| Vito Prompt / Prompt Coach | Same Vito AI runtime | yoganostress-wordpress-bridge / vito-ai-coach-staging / af385cda8499e14617b7844e6c68e7d50bda0169 | PASS universal gate integrated in Render build | PASS for current minimal dependency set during validation | PARTIAL — staging branch exists, no fresh provider deploy after gate | PASS local passwordless/Guided Discovery/ecosystem/Prompt tests | PASS Prompt hard Red Team | PARTIAL | PARTIAL | PARTIAL | No production change | FAIL/MISSING after new gate | RELEASE PARTIAL |
+| Vito Document Engine | Canonical metadata only; bytes unavailable | FASE 2B commit aef9b180a190c273b0e74a320cb88eff5b0e5af4 / snapshot SHA-256 78ba8e0d8802720efa210e43aa0581825de4d1a6694753c120222d60d5c7578a | BLOCKED — cannot attach gate to unavailable canonical bytes | BLOCKED | BLOCKED | Existing historical evidence only | Existing Parser Sandbox/hostile-file evidence only | BLOCKED | BLOCKED | BLOCKED | N/A | N/A | BLOCKED |
+| Vito AutoLoop | Specification only | No runtime/repository release target yet | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | SPEC ONLY |
+
+## Current external blockers
+
+1. **GitHub-hosted private runners**: fresh Security Revalidation runs for Professione Smart (38528718009) and Rivensight (38528736856) failed before any step. GitHub explicitly reports: recent account payments failed or spending limit must be increased. This is an infrastructure/billing blocker, not a code failure. No paid change is authorized.
+2. **Vito Document Engine Phase 2B**: canonical metadata is known, but exact bytes are currently unavailable on PC, Library, and GitHub. Older Phase 2A/1F snapshots must not replace the canonical Phase 2B baseline.
+
+## Shortest zero-cost path to release readiness
+
+1. Professione Smart: create/identify isolated staging, run real Stripe/Mollie E2E, add D1 backup/restore + rollback drill, freeze RC.
+2. Rivensight: create isolated staging or disposable local/container-equivalent environment, exercise persistent-data backup/restore and rollback, freeze RC.
+3. Gestionale Yoganostress: finish final staff/security negative gate and perform restore/rollback exercise against staging RC4.
+4. Chakra Wholeness: add dependency vulnerability scan, run full preview E2E, prove Neon backup/restore + rollback, freeze RC.
+5. Vito AI / Prompt / Coach: deploy security-gated staging branches, run provider E2E + post-deploy health, exercise backup/rollback, freeze RC.
+6. Spiritual Coach and Commerciale AI: re-certify dependency status, live E2E, backup/restore and rollback on staging.
+7. MR Control Hub / MR Bridge: complete release-level backup/restore/rollback exercises and freeze explicit RCs.
+8. Local Autopilot and Ritratto Stellare: reconcile canonical release metadata and close staging/E2E/restore/rollback gaps without redoing already valid security gates.
+9. VDE: recover exact Phase 2B bytes; if formally unrecoverable, create a new separately named reconstructed baseline only after equivalence tests against the documented Phase 2B capabilities.
