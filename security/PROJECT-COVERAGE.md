@@ -21,8 +21,8 @@ See `security/SECURITY-RELEASE-BOARD.md` for the strict evidence matrix.
 | Local Autopilot | PASS existing gate | PARTIAL | Canonical release/staging/E2E/restore/rollback evidence not fully reconciled in current board |
 | Ritratto Stellare | PASS existing gate | PARTIAL | Existing deploy gate; full release chain not yet evidenced |
 | MR Bridge / yoganostress-wordpress-bridge | PASS existing gate | PARTIAL | Staging/OIDC/backup/rollback capabilities exist; release-level restore/rollback exercise still partial |
-| Professione Smart | PASS current-main local revalidation | PARTIAL | main b36a02da…: syntax + blocking gate + Wrangler dry-run PASS. Fresh GitHub Security Revalidation run 38528718009 blocked before steps by account billing/spending |
-| Rivensight | PASS current-main local revalidation | PARTIAL | main 8ad2b80d…: syntax + tests + gate PASS; local /health 200. Fresh GitHub Security Revalidation run 38528736856 blocked before steps by account billing/spending |
+| Professione Smart | PASS current-main local revalidation | PARTIAL | main b36a02da…: syntax + blocking gate + Wrangler dry-run PASS; isolated local Worker /health 200 and unauthenticated Stripe mobile endpoints 401. Fresh GitHub Security Revalidation run 38528718009 blocked before steps by billing/spending. Real Cloudflare staging is additionally blocked because non-interactive Wrangler has no existing authorized API token for remote D1 schema-only export/create |
+| Rivensight | PASS current-main local revalidation | PARTIAL | main 8ad2b80d…: syntax + tests + gate PASS; local /health 200; unauthenticated /automation/run 401; synthetic state backup/restore preserved SHA and post-restore /health 200. Fresh GitHub Security Revalidation run 38528736856 blocked before steps by account billing/spending |
 | MR Control Hub | PASS | PARTIAL | Canonical private repo; staging health/security headers validated; remaining release-chain evidence incomplete |
 | Chakra Wholeness | PASS remote build gate | PARTIAL | main 3b8feed…; Vercel preview dpl_2Y9nKSAgiPfAbZLBxpz7NJqGTmWk READY and remote Django security gate PASS; restore/rollback/full preview E2E incomplete |
 | Gestionale Yoganostress | PASS canonical RC4 gate | PARTIAL | Byte-exact RC4 recovered and gated; final negative security + restore/rollback release exercise still incomplete |
@@ -36,7 +36,7 @@ See `security/SECURITY-RELEASE-BOARD.md` for the strict evidence matrix.
 ## Current infrastructure blockers
 
 - Fresh GitHub-hosted private-runner revalidation attempts for Professione Smart and Rivensight fail before any step because GitHub reports failed recent account payments or a required spending-limit increase. No paid change is authorized.
-- VDE Phase 2B exact bytes are unavailable on PC, Library and GitHub; canonical commit/snapshot metadata is preserved.
+- VDE Phase 2B exact bytes are unavailable on all currently authorized recovery surfaces (PC, Library/conversation-file index and accessible GitHub repositories); canonical commit/snapshot metadata is preserved in security/VDE-PHASE2B-RECOVERY-EVIDENCE.md.
 
 ## New projects
 
