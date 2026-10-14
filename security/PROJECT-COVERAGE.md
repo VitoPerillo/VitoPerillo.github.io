@@ -4,36 +4,39 @@
 
 All current and future technical/digital projects are in scope by default.
 
-A project cannot be considered release-ready unless its applicable Security Gate is PASS or an explicit, documented exception exists.
+**Security Gate PASS is not the same as Release PASS.**
 
-The shared baseline is adapted per architecture; controls marked N/A must be justified.
+A project is release-ready only when its applicable chain is evidenced:
+
+`CANONICAL SOURCE → SECURITY GATE → DEPENDENCIES → STAGING → E2E → RED TEAM → BACKUP/RESTORE → ROLLBACK → RC → PRODUCTION → POST-DEPLOY`
+
+Controls marked N/A must be justified.
+
+See `security/SECURITY-RELEASE-BOARD.md` for the strict evidence matrix.
 
 ## Current coverage
 
-| Project | Security status | Notes |
-|---|---|---|
-| VitoPerillo.github.io / Local Autopilot | PASS | Shared gate on main |
-| Ritratto Stellare | PASS | Gate integrated before existing deploy workflows |
-| MR Bridge / yoganostress-wordpress-bridge | PASS | Dedicated PHP/WordPress gate on main |
-| Professione Smart | DEPLOY GATE PASS | Private remote repo; blocking gate merged on main; Wrangler dry-run PASS. GitHub-hosted Actions unavailable because account billing/spending blocks runner startup |
-| Rivensight | DEPLOY GATE PASS | Private remote repo; Docker build gate merged on main; exact RUN commands syntax+tests+gate PASS; live /health 200. Full local image build not run because Docker is not installed |
-| MR Control Hub | VALIDATED | Private remote repo vito-ai-control-hub; blocking Wrangler build gate on main; dry-run PASS; staging live 200 with security headers and production_forbidden=true |
-| Chakra Wholeness | VALIDATED | Private remote repo; portable Security Gate PASS + 9/9 local tests PASS. Fresh Vercel preview dpl_2Y9nKSAgiPfAbZLBxpz7NJqGTmWk built from main and reached READY; remote build logs show all Django security checks PASS. Production was not changed |
-| Gestionale Yoganostress | CANONICAL RC4 + DEPLOY GATE | Canonical RC4 recovered from GitHub artifact 11537672068 and verified byte-for-byte (SHA-256 7f8a4cbd…77931b; 38 plugin files). Private repo yoganostress-gestionale created with provenance, canonical ZIP and 15-control Security Gate PASS. MR Bridge staging workflow on main now uses only canonical RC4 and blocks on SHA/security/PHP lint before deploy; post-deploy verifies runtime + attestation. Current GitHub billing/spending block prevents runner startup, so no post-merge deploy occurred |
-| Spiritual Coach | VALIDATED | Private remote repo; Wrangler deploy gate on main; 39/39 Red Team PASS; staging deployed and /api/v1/health returns 200 with production_forbidden=true |
-| Yoganostress Commerciale AI | DEPLOY GATE PASS | Private remote repo; Cloudflare build gate on main; consent/privacy tests + Worker security checks + Wrangler dry-run PASS; live /health 200 |
-| Vito AI / Vito Prompt / Prompt Coach | DEPLOY GATE PASS | Canonical source confirmed in yoganostress-wordpress-bridge branches vito-ai-multicloud-rc14 and vito-ai-coach-staging. They share the same Vito AI runtime. Universal security gate is now part of each Render build while autoDeployTrigger remains off. Multicloud gate PASS with tenant isolation, session rotation, high-risk guard, Prompt hard red-team, legal acceptance, Connected Apps/GitHub least privilege; pdfjs-dist upgraded from vulnerable 5.7.284 to 6.3.289 and npm now reports 0 vulnerabilities. Coach/Prompt gate PASS with passwordless auth, Guided Discovery, ecosystem isolation and Prompt hard red-team |
-| Vito Document Engine | BLOCKED: CANONICAL PHASE 2B BYTES UNAVAILABLE | Security baseline evidence exists, including Parser Sandbox and hostile-file/isolation gates. Canonical Phase 2B metadata is known: commit aef9b180a190c273b0e74a320cb88eff5b0e5af4, snapshot vito-document-engine-phase2b-final-pass.zip, SHA-256 78ba8e0d8802720efa210e43aa0581825de4d1a6694753c120222d60d5c7578a. Exact Phase 2B bytes are not currently present on PC, Library or GitHub; only older 2A/1F snapshots remain. Do not downgrade the canonical baseline |
+| Project | Security status | Release status | Notes |
+|---|---|---|---|
+| Local Autopilot | PASS existing gate | PARTIAL | Canonical release/staging/E2E/restore/rollback evidence not fully reconciled in current board |
+| Ritratto Stellare | PASS existing gate | PARTIAL | Existing deploy gate; full release chain not yet evidenced |
+| MR Bridge / yoganostress-wordpress-bridge | PASS existing gate | PARTIAL | Staging/OIDC/backup/rollback capabilities exist; release-level restore/rollback exercise still partial |
+| Professione Smart | PASS current-main local revalidation | PARTIAL | main b36a02da…: syntax + blocking gate + Wrangler dry-run PASS. Fresh GitHub Security Revalidation run 38528718009 blocked before steps by account billing/spending |
+| Rivensight | PASS current-main local revalidation | PARTIAL | main 8ad2b80d…: syntax + tests + gate PASS; local /health 200. Fresh GitHub Security Revalidation run 38528736856 blocked before steps by account billing/spending |
+| MR Control Hub | PASS | PARTIAL | Canonical private repo; staging health/security headers validated; remaining release-chain evidence incomplete |
+| Chakra Wholeness | PASS remote build gate | PARTIAL | main 3b8feed…; Vercel preview dpl_2Y9nKSAgiPfAbZLBxpz7NJqGTmWk READY and remote Django security gate PASS; restore/rollback/full preview E2E incomplete |
+| Gestionale Yoganostress | PASS canonical RC4 gate | PARTIAL | Byte-exact RC4 recovered and gated; final negative security + restore/rollback release exercise still incomplete |
+| Spiritual Coach | PASS previous gate + Red Team | PARTIAL | 39/39 Red Team and staging health PASS; dependency/restore/rollback/full live E2E incomplete |
+| Yoganostress Commerciale AI | PASS previous Cloudflare gate | PARTIAL | Consent/privacy tests + dry-run + health evidence; broader Red Team/restore/rollback incomplete |
+| Vito AI | PASS universal gate | PARTIAL | Branch vito-ai-multicloud-rc14; pdfjs-dist upgraded to 6.3.289, npm 0 vulnerabilities; fresh security-gated provider staging deploy/post-deploy still missing |
+| Vito Prompt / Prompt Coach | PASS shared Vito AI runtime gate | PARTIAL | Branch vito-ai-coach-staging; passwordless/Guided Discovery/ecosystem/Prompt Red Team PASS; provider staging/restore/rollback incomplete |
+| Vito Document Engine | BLOCKED | BLOCKED | Canonical Phase 2B metadata known but exact bytes unavailable; do not downgrade to Phase 2A |
+| Vito AutoLoop | N/A — spec only | N/A | No runtime yet; automatically enters gate when implementation starts |
 
-## Infrastructure constraints
+## Current infrastructure blockers
 
-- Private GitHub Actions currently do not start because GitHub reports failed recent account payments or a spending-limit requirement. No paid-plan or spending-limit increase is part of this security design.
-- Provider-native build/deploy gates are therefore the primary blocking control where available.
-- Vercel Hobby preview validation for Chakra is temporarily blocked by the free daily API deployment limit; no plan change is required for the installed build gate to remain configured.
-
-## Spec-only projects
-
-- Vito AutoLoop is currently a frozen specification, not a deployed codebase/runtime. It is in scope automatically when implementation starts; no runtime gate can be attached before code exists.
+- Fresh GitHub-hosted private-runner revalidation attempts for Professione Smart and Rivensight fail before any step because GitHub reports failed recent account payments or a required spending-limit increase. No paid change is authorized.
+- VDE Phase 2B exact bytes are unavailable on PC, Library and GitHub; canonical commit/snapshot metadata is preserved.
 
 ## New projects
 
