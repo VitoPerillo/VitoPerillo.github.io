@@ -3,7 +3,7 @@ on:
   push:
     branches: [vde-r0-arm64-cert-20261014]
     paths:
-      - ".github/workflows/vde-r0-arm64-repair.yml"
+      - ".github/workflows/vde-r0-arm64-public-cert.yml"
   workflow_dispatch:
 permissions:
   contents: read
