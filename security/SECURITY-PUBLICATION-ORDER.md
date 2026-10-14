@@ -62,22 +62,31 @@ Exact path:
 ## 3. Gestionale Yoganostress
 
 Current:
-- Canonical byte-exact RC4 proven.
-- Security Gate PASS.
-- Staging RC4 and MR Bridge attestation exist.
-- Booking/cancel credit-flow evidence exists.
+- RC4 byte-exact remains the validated base and rollback target.
+- Red Team on current RC4 found a real P1: staff URL `?session_id=` can canonicalize from staging to the production-path `/gestione/`; no redirect was followed and production was not modified.
+- Negative live checks on RC4 PASS: unauthenticated staff page exposes login only; unauthenticated mark-paid/cancel return 403; fixture state remained DUE / BOOKED / 7 credits.
+- Existing candidate `security/rc5-staff-route-isolation` head `be5cacff98a713eab4653d023c6c16aef3c4a6b7` supersedes RC4 for release work.
+- RC5 is `0.4.27-GO-LIVE-MINIMUM-RC5`, switches staff navigation to `yns_staff_session` / `yns_staff_customer`, adds a staging-only canonical guard, includes regression test, package manifest SHA `86da281de9979b5b17171de8daa16af8646166a88a38c645357249c27a70e791`, and explicit RC4 rollback SHA `7f8a4cbdb1f91c2c41b792c4c55761c1d52cef16d269d5ac296a07a65277931b`.
+- Direct branch-file regression verification PASS 13/13.
+- RC5 is not yet staging-validated.
+- GitHub private runner failed before any step; WPVibe quota is exhausted for the current rolling window; the active MR direct deploy client exists but its matching private key is not recoverable from the authorized PC locations checked; no staging Application Password is present.
+- Production remains untouched.
 
 Exact path:
-1. Complete final staging staff E2E on RC4.
-2. Complete negative security gate: session, capability, nonce, replay, unauthorized requests.
-3. Re-run functional Agenda/Clienti/Carnet/Pagamenti only where not already evidenced.
-4. Execute staging backup.
-5. Execute real staging restore drill.
-6. Execute rollback drill to previous known-good artifact, then return to RC4.
-7. Freeze one RC: commit + ZIP + SHA-256 + backup ID + rollback target.
-8. Production deploy through gated MR Bridge only.
-9. Post-deploy health, login, booking/cancel, payment-state smoke.
-10. Remove QA fixtures and synthetic staff account.
+1. Do not return to RC4 as release candidate; keep RC4 only as rollback baseline.
+2. Reuse RC5 `security/rc5-staff-route-isolation`; do not duplicate it with another branch.
+3. Restore an already-authorized staging deploy channel at €0 (WPVibe quota rollover, existing MR direct private key if recovered, or existing GitHub runner once billing block clears). Do not create new credentials solely to bypass the gate.
+4. Independently verify the RC5 package SHA before deploy.
+5. Deploy RC5 to staging only through MR Bridge with pre-deploy backup.
+6. Run staff login → Agenda → session → participant → customer → carnet → DUE→PAID → cancel → CANCELLED → credit 7→8 → logout.
+7. Complete negative security gate: invalid/no session, capability denial, CSRF/nonce failure, replay, forged/expired staff session, unauthorized mutation, and ensure state unchanged on every rejected request.
+8. Create and verify a staging data backup; record backup ID/checksum.
+9. Execute real staging restore drill and health/audit-chain verification.
+10. Execute rollback drill to byte-exact RC4, verify health/state, then redeploy RC5 and re-run the critical smoke.
+11. Remove/neutralize QA fixture and synthetic staff session/account used for this final gate.
+12. Freeze one RC5 release record: commit, ZIP SHA-256, MR Bridge attestation/tree hash, backup ID, rollback artifact/SHA.
+13. Production deploy only after every applicable Board column is PASS.
+14. Post-deploy health, staff login, one booking/cancel/payment-state smoke, audit verification and rollback readiness.
 
 ## 4. Chakra Wholeness
 
