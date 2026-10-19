@@ -1,5 +1,14 @@
 [
   {
+    "id": "https://www.comune.roma.it/web/it/notizia/mun11-nona-edizione-manifestazione-podistica.page",
+    "url": "https://www.comune.roma.it/web/it/notizia/mun11-nona-edizione-manifestazione-podistica.page",
+    "title": "Municipio XI, la nona edizione di \"Corri con Chiara\"",
+    "text": "Municipio XI. Tematica: Iniziative - Eventi - Sport per il sociale - Salute Giunge alla sua nona edizione \"Corri con Chiara\" , la manifestazione podistica su strada non competitiva a carattere amatoriale per tutti , dagli 8 ai 99 anni.",
+    "date": "2026-10-19T13:39:00+02:00",
+    "area_slug": "municipio-xi",
+    "category_slug": "viabilita-trasporti"
+  },
+  {
     "id": "https://www.comune.roma.it/web/it/notizia/mun11-csaq-ciricillo-rome-art-week.page",
     "url": "https://www.comune.roma.it/web/it/notizia/mun11-csaq-ciricillo-rome-art-week.page",
     "title": "Municipio XI. CSAQ Ciricillo, XI edizione di Rome Art Week",
@@ -43,14 +52,5 @@
     "date": "2026-10-12T12:32:00+02:00",
     "area_slug": "municipio-xi",
     "category_slug": "scuola-famiglie"
-  },
-  {
-    "id": "https://www.comune.roma.it/web/it/notizia/mun09-roma-welfair-fiera-del-fare-sanita-2026.page",
-    "url": "https://www.comune.roma.it/web/it/notizia/mun09-roma-welfair-fiera-del-fare-sanita-2026.page",
-    "title": "Al municipio XI Roma Welfair la fiera del fare sanità",
-    "text": "Municipio XI. Al via la VII Edizione di \"Roma Welfair, la fiera del fare Sanità\" , con il patrocinio del Municipio XI. Il filo rosso di questa edizione è \"Il Sistema che cura \". Eventi, tavoli tecnici, seminari e che animerà l’Expo, con la partecipazione di aziende, startup, istituzioni e professionisti che presenteranno le tecnologie più avanzate e i servizi più innovativi incentrati su cittadini, operatori e strutture sanitarie. Previsti inoltre screening gratuiti (Longevity Check-up, valutazione dedicata alla longevità e all’invecchiamento in salute; valutazione e orientamento sulla fibromialgia; screening per lipedema e linfedema; screening ecografico della tiroide; esame",
-    "date": "2026-10-08T15:03:00+02:00",
-    "area_slug": "municipio-xi",
-    "category_slug": "servizi-municipio"
   }
 ]
