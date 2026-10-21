@@ -16,7 +16,7 @@ Le musiche sono di Marco Profeta. La serata unisce spettacolo e solidarietà: l�
 
 Per il pubblico del territorio è un’occasione per assistere a una proposta culturale serale senza un biglietto obbligatorio e, nello stesso tempo, sostenere un’iniziativa benefica. I posti del teatro non sono però illimitati.
 
-Roma Capitale indica la possibilità di prenotare scrivendo all’indirizzo email riportato nella pagina del Municipio XI. Prima di raggiungere il teatro è quindi prudente verificare la disponibilità e consultare la fonte ufficiale per eventuali aggiornamenti organizzativi. L’illustrazione associata a questo articolo è originale; non riproduce la locandina o fotografie dello spettacolo.`,
+La pagina ufficiale indica la possibilità di prenotare scrivendo all’indirizzo email riportato nella pagina del Municipio XI. Prima di raggiungere il teatro è quindi prudente verificare la disponibilità e consultare la fonte ufficiale per eventuali aggiornamenti organizzativi. L’illustrazione associata a questo articolo è originale; non riproduce la locandina o fotografie dello spettacolo.`,
       valid_from: "2026-10-20T00:00:00+02:00",
       valid_until: "2026-10-24T23:59:59+02:00",
       confidence: 98,
@@ -66,7 +66,7 @@ Per modalità di partecipazione, possibili aggiornamenti e indicazioni dell’ul
 
 La comunicazione ufficiale annuncia tre giornate con autrici e autori, presentazioni di libri e occasioni di dialogo aperte al pubblico. Sono previsti anche laboratori rivolti a bambine e bambini, ragazze e ragazzi, così da coinvolgere lettori di età diverse.
 
-Il festival nasce in relazione con il territorio e punta a creare nuovi spazi di partecipazione attraverso il piacere di leggere e condividere. Al momento della pubblicazione di questo articolo, Roma Capitale non ha ancora indicato il calendario dettagliato delle attività né tutte le sedi.
+Il festival nasce in relazione con il territorio e punta a creare nuovi spazi di partecipazione attraverso il piacere di leggere e condividere. Al momento della pubblicazione di questo articolo, La pagina ufficiale non ha ancora indicato il calendario dettagliato delle attività né tutte le sedi.
 
 Le date del 13, 14 e 15 novembre sono quindi confermate, mentre orari, luoghi e modalità di accesso devono essere verificati quando sarà disponibile il programma completo. Prima di organizzare la partecipazione è consigliabile tornare sulla pagina ufficiale del Municipio XI. L’illustrazione collegata all’articolo è originale e non riproduce materiale promozionale del festival.`,
       valid_from: "2026-10-12T00:00:00+02:00",
