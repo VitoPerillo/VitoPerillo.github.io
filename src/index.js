@@ -46,6 +46,7 @@ import {
 } from "./core/article.js";
 import { reviewedBatch20261009 } from "./editorial/reviewed-batch-2026-10-09.js";
 import { reviewedBatch20261009B } from "./editorial/reviewed-batch-2026-10-09-b.js";
+import { reviewedBatch20261021 } from "./editorial/reviewed-batch-2026-10-21.js";
 
 export default {
   async fetch(request, env, ctx) {
@@ -191,6 +192,8 @@ async function tick(env) {
   await quarantineIncompletePublishedNewsOnce(env.DB);
   await applyReviewedBatch20261009(env);
   await applyReviewedBatch20261009B(env);
+  await archiveCertainlyExpiredContent20261021(env);
+  await applyReviewedBatch20261021(env);
   await recoverOfficialBridgeGateOnce(env.DB);
   await sourceTick(env);
   await ensureOfficialBridgeJobs(env.DB);
@@ -271,6 +274,47 @@ async function applyReviewedBatch20261009B(env) {
   if(done?.value)return;
   const applied=[];
   for(const item of reviewedBatch20261009B){
+    const row=await env.DB.prepare("SELECT id FROM la_ingest WHERE source_url=? AND status='held' ORDER BY id DESC LIMIT 1").bind(item.source_url).first();
+    if(!row?.id)throw new Error(`reviewed_held_ingest_missing:${item.source_url}`);
+    const result=await processIngest(env,Number(row.id),{
+      editorApproved:true,
+      editorDraft:item.editorDraft,
+      verifiedSource:item.verifiedSource,
+    });
+    if(!["published","updated"].includes(String(result)))throw new Error(`reviewed_batch_not_published:${row.id}:${result}`);
+    applied.push(Number(row.id));
+  }
+  await env.DB.prepare("INSERT INTO la_settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=CURRENT_TIMESTAMP")
+    .bind(key,JSON.stringify({applied,reviewed_at:new Date().toISOString()})).run();
+}
+
+async function archiveCertainlyExpiredContent20261021(env) {
+  const key="editorial_expiry_audit_2026_10_21_v1";
+  const done=await env.DB.prepare("SELECT value FROM la_settings WHERE key=?").bind(key).first();
+  if(done?.value)return;
+  const urls=[
+    "https://www.comune.roma.it/web/it/notizia/buoni-libro-2026-2027-domande-online-fino-al-25-settembre.page",
+    "https://www.comune.roma.it/web/it/notizia/mun11-eventi-9-11-ottobre-2026.page",
+    "https://www.comune.roma.it/web/it/notizia/mun09-roma-welfair-fiera-del-fare-sanita-2026.page",
+  ];
+  const archived=[];
+  for(const url of urls){
+    const row=await env.DB.prepare("SELECT id,status FROM la_content WHERE source_url=? AND status IN ('published','updated') ORDER BY id DESC LIMIT 1").bind(url).first();
+    if(!row?.id)continue;
+    await env.DB.prepare("UPDATE la_content SET status='expired',updated_at=CURRENT_TIMESTAMP WHERE id=? AND status IN ('published','updated')").bind(Number(row.id)).run();
+    archived.push({id:Number(row.id),previous_status:String(row.status),source_url:url});
+  }
+  await env.DB.prepare("INSERT INTO la_settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=CURRENT_TIMESTAMP")
+    .bind(key,JSON.stringify({archived,reviewed_at:new Date().toISOString()})).run();
+  await log(env.DB,"info","editorial_expiry","Certainly expired content archived",{count:archived.length});
+}
+
+async function applyReviewedBatch20261021(env) {
+  const key="reviewed_batch_2026_10_21_v1";
+  const done=await env.DB.prepare("SELECT value FROM la_settings WHERE key=?").bind(key).first();
+  if(done?.value)return;
+  const applied=[];
+  for(const item of reviewedBatch20261021){
     const row=await env.DB.prepare("SELECT id FROM la_ingest WHERE source_url=? AND status='held' ORDER BY id DESC LIMIT 1").bind(item.source_url).first();
     if(!row?.id)throw new Error(`reviewed_held_ingest_missing:${item.source_url}`);
     const result=await processIngest(env,Number(row.id),{
