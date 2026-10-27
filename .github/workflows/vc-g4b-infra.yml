@@ -66,18 +66,20 @@ jobs:
       - name: Verify real Meta consent hold hooks in installed WordPress
         run: |
           set -euo pipefail
-          php /tmp/wp eval '
-          if (!class_exists("\\FacebookPixelPlugin\\Core\\FacebookSignalState")) {
-            throw new Exception("Meta signal state class missing");
+          cat > /tmp/vc-meta-hook-check.php <<'PHP'
+          <?php
+          if (!class_exists('\\FacebookPixelPlugin\\Core\\FacebookSignalState')) {
+            throw new Exception('Meta signal state class missing');
           }
-          if (call_user_func(['FacebookPixelPlugin\Core\FacebookSignalState', 'is_held']) !== true) {
-            throw new Exception("Meta signals not held");
+          if (\\FacebookPixelPlugin\\Core\\FacebookSignalState::is_held() !== true) {
+            throw new Exception('Meta signals not held');
           }
-          if (apply_filters("before_conversions_api_event_sent", true) !== false) {
-            throw new Exception("CAPI pre-send hook not held");
+          if (apply_filters('before_conversions_api_event_sent', true) !== false) {
+            throw new Exception('CAPI pre-send hook not held');
           }
-          echo "PASS: installed Meta plugin signal hold and synthetic CAPI pre-send hook denied";
-          ' --path=/tmp/vc-wordpress --allow-root
+          echo "PASS: actual Meta signal state hold and synthetic CAPI pre-send denial";
+          PHP
+          php /tmp/wp eval-file /tmp/vc-meta-hook-check.php --path=/tmp/vc-wordpress --allow-root
       - name: Run loopback-only web server and real headless Chrome
         run: |
           set -euo pipefail
