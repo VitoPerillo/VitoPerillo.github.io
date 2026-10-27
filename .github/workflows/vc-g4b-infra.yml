@@ -1,0 +1,110 @@
+name: Vito Compliance G4-B infrastructure smoke (isolated)
+on:
+  push:
+    branches:
+      - lab/vc-g4b-infra-20261027
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: vc-g4b-infra
+  cancel-in-progress: true
+jobs:
+  wordpress-innodb-chromium:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: disposable-root
+          MYSQL_DATABASE: vc_lab
+          MYSQL_USER: vc_lab
+          MYSQL_PASSWORD: disposable-only-ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -u root -pdisposable-root"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - name: Install runtime tools on disposable runner
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq php-cli php-mysql php-curl php-mbstring php-xml php-zip mariadb-client
+          php -v | head -2
+          php -m | grep -E '^mysqli$|^pdo_mysql$' || true
+          command -v google-chrome || command -v chromium || command -v chromium-browser
+      - name: Install WordPress on isolated MySQL InnoDB
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 2 https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /tmp/wp
+          php /tmp/wp --info | head -12
+          mkdir -p /tmp/vc-wordpress
+          php /tmp/wp core download --path=/tmp/vc-wordpress --quiet --allow-root
+          php /tmp/wp config create --path=/tmp/vc-wordpress --dbname=vc_lab --dbuser=vc_lab --dbpass=disposable-only-ci --dbhost=127.0.0.1:3306 --skip-check --allow-root
+          php /tmp/wp core install --path=/tmp/vc-wordpress --url=http://127.0.0.1:8765 --title="Vito Compliance G4B Infrastructure" --admin_user=ci_admin --admin_password=disposable-ci-pass --admin_email=ci@example.invalid --skip-email --allow-root
+          php /tmp/wp rewrite structure '/%postname%/' --path=/tmp/vc-wordpress --allow-root
+          php /tmp/wp db query 'CREATE TABLE wp_vc_g4b_probe (id BIGINT UNSIGNED NOT NULL PRIMARY KEY, state VARCHAR(30) NOT NULL) ENGINE=InnoDB' --path=/tmp/vc-wordpress --allow-root
+          mysql --protocol=TCP -h 127.0.0.1 -u vc_lab -pdisposable-only-ci -N -e "SELECT TABLE_NAME,ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA='vc_lab' AND TABLE_NAME IN ('wp_options','wp_vc_g4b_probe')" | tee /tmp/g4b_engines
+          grep -q $'wp_options\tInnoDB' /tmp/g4b_engines
+          grep -q $'wp_vc_g4b_probe\tInnoDB' /tmp/g4b_engines
+          echo 'PASS: actual MySQL/InnoDB with core WordPress database and isolated probe table'
+      - name: Install official Meta Pixel plugin (no credentials or outgoing Meta traffic)
+        run: |
+          set -euo pipefail
+          php /tmp/wp plugin install official-facebook-pixel --activate --path=/tmp/vc-wordpress --allow-root
+          php /tmp/wp plugin get official-facebook-pixel --field=status --path=/tmp/vc-wordpress --allow-root | grep -qx active
+          php /tmp/wp plugin get official-facebook-pixel --field=version --path=/tmp/vc-wordpress --allow-root
+          mkdir -p /tmp/vc-wordpress/wp-content/mu-plugins
+          cat > /tmp/vc-wordpress/wp-content/mu-plugins/ci-guard.php <<'PHP'
+          <?php
+          add_filter('facebook_signals_held', '__return_true', PHP_INT_MAX);
+          add_filter('before_conversions_api_event_sent', '__return_false', PHP_INT_MAX);
+          PHP
+          echo 'PASS: genuine WordPress Meta plugin active with test-only hold filters'
+      - name: Run loopback-only web server and real headless Chrome
+        run: |
+          set -euo pipefail
+          cat > /tmp/vc-router.php <<'PHP'
+          <?php
+          $path=parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH);
+          if (is_file($_SERVER['DOCUMENT_ROOT'].$path)) return false;
+          require $_SERVER['DOCUMENT_ROOT'].'/index.php';
+          PHP
+          nohup php -S 127.0.0.1:8765 -t /tmp/vc-wordpress /tmp/vc-router.php >/tmp/vc-web.log 2>&1 &
+          for i in $(seq 1 25); do if curl -fsS http://127.0.0.1:8765/wp-json/ >/tmp/vc-rest.json; then break; fi; sleep 1; done
+          php -r '$j=json_decode(file_get_contents("/tmp/vc-rest.json"),true);if(!isset($j["namespaces"]))exit(1);'
+          mkdir -p /tmp/vc-browser
+          cd /tmp/vc-browser
+          npm install --no-audit --no-fund --silent --no-save puppeteer-core@24.21.0
+          cat > /tmp/vc-browser/test.js <<'JS'
+          const puppeteer=require('puppeteer-core');
+          (async()=>{
+            const exe=process.env.CHROME || '/usr/bin/google-chrome';
+            const b=await puppeteer.launch({executablePath:exe,headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
+            try{
+              const p=await b.newPage();
+              await p.setRequestInterception(true);
+              p.on('request',r=>{
+                const u=new URL(r.url());
+                if(['127.0.0.1','localhost'].includes(u.hostname))r.continue();else r.abort();
+              });
+              const resp=await p.goto('http://127.0.0.1:8765/',{waitUntil:'domcontentloaded',timeout:30000});
+              if(resp.status()!==200)throw Error('WordPress homepage HTTP '+resp.status());
+              const title=await p.title();
+              if(!title.includes('Vito Compliance'))throw Error('Unexpected title: '+title);
+              const rest=await p.evaluate(async()=>{const r=await fetch('/wp-json/');return {status:r.status,body:await r.json()}});
+              if(rest.status!==200||!rest.body.namespaces)throw Error('WP REST not functional');
+              await p.evaluate(()=>{document.cookie='_fbp=ci_test; Path=/; SameSite=Lax';});
+              const before=await p.evaluate(()=>document.cookie);
+              if(!before.includes('_fbp=ci_test'))throw Error('Browser root cookie not stored');
+              await p.evaluate(()=>{document.cookie='_fbp=; Max-Age=0; Path=/; SameSite=Lax';});
+              const after=await p.evaluate(()=>document.cookie);
+              if(after.includes('_fbp=ci_test'))throw Error('Root cookie not deleted');
+              console.log('PASS: real Chrome -> WordPress -> REST; native browser root-path cookie lifecycle');
+            }finally{await b.close()}
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)" node test.js
+          echo 'PASS: WordPress + MySQL InnoDB + official Meta plugin + real Chromium infrastructure on disposable runner'
