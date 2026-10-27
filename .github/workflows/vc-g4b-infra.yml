@@ -39,7 +39,7 @@ jobs:
         run: |
           set -euo pipefail
           curl -fsSL --retry 2 https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /tmp/wp
-          php /tmp/wp --info | head -12
+          php /tmp/wp --info
           mkdir -p /tmp/vc-wordpress
           php /tmp/wp core download --path=/tmp/vc-wordpress --quiet --allow-root
           php /tmp/wp config create --path=/tmp/vc-wordpress --dbname=vc_lab --dbuser=vc_lab --dbpass=disposable-only-ci --dbhost=127.0.0.1:3306 --skip-check --allow-root
