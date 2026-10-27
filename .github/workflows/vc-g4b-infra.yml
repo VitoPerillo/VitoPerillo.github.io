@@ -71,7 +71,7 @@ jobs:
           if (!class_exists('\\FacebookPixelPlugin\\Core\\FacebookSignalState')) {
             throw new Exception('Meta signal state class missing');
           }
-          if (\\FacebookPixelPlugin\\Core\\FacebookSignalState::is_held() !== true) {
+          if (call_user_func(['FacebookPixelPlugin\Core\FacebookSignalState', 'is_held']) !== true) {
             throw new Exception('Meta signals not held');
           }
           if (apply_filters('before_conversions_api_event_sent', true) !== false) {
