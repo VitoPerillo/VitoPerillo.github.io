@@ -1,5 +1,14 @@
 [
   {
+    "id": "https://www.comune.roma.it/web/it/notizia/cie-open-day-sabato-31-ottobre-2026.page",
+    "url": "https://www.comune.roma.it/web/it/notizia/cie-open-day-sabato-31-ottobre-2026.page",
+    "title": "CIE, open day sabato 31 ottobre",
+    "text": "Municipio XIII. Nuovo open day dedicato alla carta d'identità elettronica. Sabato 31 ottobre sono previste le aperture straordinarie degli ex Punti di Informazione Turistica , del punto di rilascio di via Petroselli , 52 e del Municipio XIII. Per poter richiedere la carta d’identità in occasione degli open day è sempre obbligatorio l'appuntamento , prenotabile a partire dalle ore 9 di venerdì 30 ottobre fino a esaurimento disponibilità sul sito Agenda CIE del Ministero dell'Interno .",
+    "date": "2026-10-27T15:14:00+02:00",
+    "area_slug": "municipio-xiii",
+    "category_slug": "avvisi-utili"
+  },
+  {
     "id": "https://www.comune.roma.it/web/it/notizia/mun11-convegno-donne-divergenti-societa-disabile-30-ottobre-2026.page",
     "url": "https://www.comune.roma.it/web/it/notizia/mun11-convegno-donne-divergenti-societa-disabile-30-ottobre-2026.page",
     "title": "Municipio XI, convegno \"Donne divergenti in una società disabile\"",
@@ -61,14 +70,5 @@
     "date": "2026-10-14T10:49:00+02:00",
     "area_slug": "portuense",
     "category_slug": "scuola-famiglie"
-  },
-  {
-    "id": "https://www.comune.roma.it/web/it/notizia/mun11-molinari-art-center-torna-respiri-festival-17-18-ottobre-2026.page",
-    "url": "https://www.comune.roma.it/web/it/notizia/mun11-molinari-art-center-torna-respiri-festival-17-18-ottobre-2026.page",
-    "title": "Municipio XI, al Molinari Art Center torna 'Respiri Festival'",
-    "text": "Municipio XI. Tornano 'Respiri Festival' e il progetto 'Contaminazioni' a cura del Molinari Art Center . Anche per questa edizione, in programma spettacoli per valorizzare nuovi talenti artistici e luoghi di rilevanza culturale, la crescita culturale del pubblico, la promozione della creatività femminile e la proposta di tematiche di elevato valore culturale e sociale. Apre la manifestazione - venerdì 17 ottobre alle 20:00 - lo spettacolo teatrale 'Quattro mamme scelte a caso' .",
-    "date": "2026-10-13T18:55:00+02:00",
-    "area_slug": "municipio-xi",
-    "category_slug": "servizi-municipio"
   }
 ]
