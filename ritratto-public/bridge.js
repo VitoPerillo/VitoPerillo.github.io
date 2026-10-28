@@ -41,7 +41,8 @@ function api(path,opt={}){
   opt.headers=Object.assign({
     "Content-Type":"application/json",
     "X-WP-Nonce":cfg.nonce||"",
-    "X-RS-CSRF":cfg.csrf||""
+    "X-RS-CSRF":cfg.csrf||"",
+    "Authorization":cfg.sessionToken?("Bearer "+cfg.sessionToken):""
   },opt.headers||{});
   return fetch(rest+path,opt).then(async r=>{
     let j={}; try{j=await r.json()}catch(e){}
@@ -159,7 +160,7 @@ function pollActivation(i,btn,old){
     n++;
     try{
       const me=await api("me");
-      if(me&&(me.plan===i.plan||(i.plan==="fenice"&&me.plan==="orione"))&&(i.cadence!=="annual"||me.cadence==="annual")){
+      if(me&&(me.plan===i.plan)&&(i.cadence!=="annual"||me.cadence==="annual")){
         clearInterval(t);
         localStorage.removeItem(KEY);
         btn.disabled=false;btn.textContent="ACQUISTO ATTIVO";
