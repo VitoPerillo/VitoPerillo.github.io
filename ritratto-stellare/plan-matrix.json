@@ -35,8 +35,7 @@
         "scope": "month",
         "count": 60
       },
-      "areas": 8,
-      "backend_legacy_alias": "orione"
+      "areas": 8
     },
     "andromeda": {
       "price_monthly": 14.9,
