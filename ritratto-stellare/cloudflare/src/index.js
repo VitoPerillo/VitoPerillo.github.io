@@ -16,6 +16,14 @@ async function mollie(env,path,init={}){
  if(!r.ok)throw new Error(d?.detail||d?.title||("mollie_http_"+r.status));return d;
 }
 async function profileByPublicId(env,id){return env.DB.prepare("SELECT id,public_id,email_ciphertext,plan,cadence,mollie_customer_id,subscription_id,subscription_status FROM profiles WHERE public_id=?").bind(id).first();}
+async function sha256hex(v){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");}
+async function profileBySession(request,env){
+ const auth=request.headers.get("authorization")||"";
+ if(!auth.startsWith("Bearer "))return null;
+ const token=auth.slice(7).trim();if(token.length<32)return null;
+ const hash=await sha256hex(token);
+ return env.DB.prepare(`SELECT p.id,p.public_id,p.email_ciphertext,p.plan,p.cadence,p.mollie_customer_id,p.subscription_id,p.subscription_status FROM sessions s JOIN profiles p ON p.id=s.profile_id WHERE s.token_hash=? AND s.expires_at>CURRENT_TIMESTAMP`).bind(hash).first();
+}
 async function logEvent(env,pid,type,payload){await env.DB.prepare("INSERT INTO events(profile_id,event_type,payload_json) VALUES(?,?,?)").bind(pid||null,type,JSON.stringify(payload||{})).run();}
 export default{async fetch(request,env){
  const url=new URL(request.url),ch=cors(env);if(request.method==="OPTIONS")return new Response(null,{status:204,headers:ch});
@@ -25,9 +33,9 @@ export default{async fetch(request,env){
 
   if(url.pathname==="/v1/mollie/checkout"&&request.method==="POST"){
    if((env.MOLLIE_ENV||"test")==="live"&&env.LIVE_COMMERCIAL_AUTHORIZED!=="true")return json({ok:false,error:"live_commercial_not_authorized"},503,ch);
-   const b=await request.json().catch(()=>({})),plan=String(b.plan||"").toLowerCase(),cadence=String(b.cadence||"").toLowerCase(),profileId=String(b.profile_id||"");
-   if(!valid(plan,cadence))return json({ok:false,error:"invalid_plan"},400,ch);if(!profileId)return json({ok:false,error:"profile_required"},400,ch);
-   const profile=await profileByPublicId(env,profileId);if(!profile)return json({ok:false,error:"profile_not_found"},404,ch);
+   const b=await request.json().catch(()=>({})),plan=String(b.plan||"").toLowerCase(),cadence=String(b.cadence||"").toLowerCase();
+   if(!valid(plan,cadence))return json({ok:false,error:"invalid_plan"},400,ch);
+   const profile=await profileBySession(request,env);if(!profile)return json({ok:false,error:"unauthorized"},401,ch);const profileId=profile.public_id;
    let customerId=profile.mollie_customer_id;
    if(!customerId){const customer=await mollie(env,"/customers",{method:"POST",body:JSON.stringify({metadata:{profile_id:profileId}})});customerId=customer.id;await env.DB.prepare("UPDATE profiles SET mollie_customer_id=?,updated_at=CURRENT_TIMESTAMP WHERE id=?").bind(customerId,profile.id).run();}
    const origin=(env.PUBLIC_ORIGIN||"https://vitoperillo.github.io").replace(/\/$/,""),apiOrigin=(env.API_ORIGIN||url.origin).replace(/\/$/,"");
@@ -62,7 +70,7 @@ export default{async fetch(request,env){
   }
 
   if(url.pathname==="/v1/mollie/cancel"&&request.method==="POST"){
-   const b=await request.json().catch(()=>({})),profile=await profileByPublicId(env,String(b.profile_id||""));if(!profile?.mollie_customer_id||!profile?.subscription_id)return json({ok:false,error:"subscription_not_found"},404,ch);
+   const profile=await profileBySession(request,env);if(!profile)return json({ok:false,error:"unauthorized"},401,ch);if(!profile.mollie_customer_id||!profile.subscription_id)return json({ok:false,error:"subscription_not_found"},404,ch);
    if(profile.subscription_status==="canceled")return json({ok:true,status:"canceled",idempotent:true},200,ch);
    await mollie(env,"/customers/"+encodeURIComponent(profile.mollie_customer_id)+"/subscriptions/"+encodeURIComponent(profile.subscription_id),{method:"DELETE"});
    await env.DB.prepare("UPDATE profiles SET subscription_status='canceled',updated_at=CURRENT_TIMESTAMP WHERE id=?").bind(profile.id).run();await logEvent(env,profile.id,"subscription_canceled",{subscription_id:profile.subscription_id});return json({ok:true,status:"canceled"},200,ch);
