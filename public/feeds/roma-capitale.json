@@ -1,5 +1,23 @@
 [
   {
+    "id": "https://www.comune.roma.it/web/it/notizia/mun13-manutenzione-strade-notturna-nov-dic-2026.page",
+    "url": "https://www.comune.roma.it/web/it/notizia/mun13-manutenzione-strade-notturna-nov-dic-2026.page",
+    "title": "Municipio XIII, al via la manutenzione stradale notturna",
+    "text": "Municipio XIII. Tematica: Riqualificazione strade - Opere e manutenzione della Città Partono i lavori di manutenzione delle pavimentazioni stradali su alcune strade del Municipio XIII . Sono in programma in orario notturno, tra le 20:30 e le 6:30 , sino a fine dicembre , e prevedono cantieri mobili e limitazioni alla sosta e restringimenti di carreggiata in via Cornelia (dal civico 498 a via Pietro d’Abano); via di Boccea (da circonvallazione Cornelia a largo di Boccea); largo di Boccea ; via Domenico Tardini (da largo di Boccea a via Nostra Signora di Lourdes); via Nostra Signora di Lourdes (da via Tardini a via Federico Patetta); viale di Valle Aurelia (da via Gennaro Bezziccheri a via",
+    "date": "2026-11-02T15:28:00+02:00",
+    "area_slug": "municipio-xiii",
+    "category_slug": "viabilita-trasporti"
+  },
+  {
+    "id": "https://www.comune.roma.it/web/it/notizia/mun11-incontro-disabilita-8-novembre-2026.page",
+    "url": "https://www.comune.roma.it/web/it/notizia/mun11-incontro-disabilita-8-novembre-2026.page",
+    "title": "Municipio XI, incontro \"Disabilità e soluzioni per vivere meglio\"",
+    "text": "Municipio XI. Tematica: Disabilità - Persone con disabilità - Famiglie - Iniziative Con il patrocinio del Municipio XI , l'Associazione Culturale StarRos Academy ASDC APS organizza un incontro per parlare di \"Disabilità e soluzioni per vivere meglio\" .",
+    "date": "2026-11-02T13:10:00+02:00",
+    "area_slug": "municipio-xi",
+    "category_slug": "scuola-famiglie"
+  },
+  {
     "id": "https://www.comune.roma.it/web/it/notizia/mun11-prima-strada-scolastica-mangia-smog.page",
     "url": "https://www.comune.roma.it/web/it/notizia/mun11-prima-strada-scolastica-mangia-smog.page",
     "title": "Inaugurata nel Municipio XI la prima strada scolastica \"mangia-smog\"",
@@ -50,15 +68,6 @@
     "title": "Municipio XI, il 23 ottobre il pedibus di \"Tutti Giù Per Strada\"",
     "text": "Municipio XI. Iniziativa per sensibilizzare sui temi della sicurezza stradale e dell'inquinamento ambientale.",
     "date": "2026-10-22T10:51:00+02:00",
-    "area_slug": "municipio-xi",
-    "category_slug": "viabilita-trasporti"
-  },
-  {
-    "id": "https://www.comune.roma.it/web/it/notizia/mun11-nona-edizione-manifestazione-podistica.page",
-    "url": "https://www.comune.roma.it/web/it/notizia/mun11-nona-edizione-manifestazione-podistica.page",
-    "title": "Municipio XI, la nona edizione di \"Corri con Chiara\"",
-    "text": "Municipio XI. Tematica: Iniziative - Eventi - Sport per il sociale - Salute Giunge alla sua nona edizione \"Corri con Chiara\" , la manifestazione podistica su strada non competitiva a carattere amatoriale per tutti , dagli 8 ai 99 anni.",
-    "date": "2026-10-19T13:39:00+02:00",
     "area_slug": "municipio-xi",
     "category_slug": "viabilita-trasporti"
   }
