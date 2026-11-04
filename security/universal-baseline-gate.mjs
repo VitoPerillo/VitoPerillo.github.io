@@ -1,4 +1,4 @@
-[Reading 152 lines from start (total: 152 lines, 0 remaining)]
+[Reading 154 lines from start (total: 154 lines, 0 remaining)]
 
 #!/usr/bin/env node
 import fs from "node:fs";
@@ -17,6 +17,8 @@ const EXCLUDED_DIRS=new Set([
   "artifacts","artifact","backup","backups","archive","archives","release","releases",
   "tmp","temp",".cache","docs","documentation"
 ]);
+const EXCLUDED_DIR_RE=/^(?:\.|tests?|fixtures?|snapshots?|recovery|prechange|old|copy|compliance-test|security-verify|p\d+-)/i;
+const EXCLUDED_FILE_RE=/(?:^\.env|\.dev\.vars|local-secrets|credentials?|client-private|private-key)/i;
 const SOURCE_EXT=new Set([".js",".mjs",".cjs",".ts",".tsx",".jsx",".py",".php",".toml",".yml",".yaml",".json",".sql"]);
 const TEST_MARKERS=[/[/\\]tests?[/\\]/i,/\.test\./i,/\.spec\./i,/[/\\]security[/\\].*gate/i];
 
@@ -25,7 +27,7 @@ const controls=[
     id:"edge",
     label:"EDGE",
     runtime:[/cloudflare/i,/wrangler/i,/vercel/i,/reverse.?proxy/i,/firewall/i,/waf/i],
-    strong:[/wrangler\.(toml|jsonc?)$/i,/vercel\.json$/i,/cloudflare/i,/waf/i,/firewall/i]
+    strong:[/wrangler\.(toml|jsonc?)$/i,/vercel\.json$/i,/\bwaf\b/i,/firewall/i,/security.?headers/i]
   },
   {
     id:"bot_spam",
@@ -63,8 +65,8 @@ function walk(root){
     for(const e of entries){
       const full=path.join(dir,e.name);
       if(e.isDirectory()){
-        if(!EXCLUDED_DIRS.has(e.name.toLowerCase())) stack.push(full);
-      } else if(e.isFile() && SOURCE_EXT.has(path.extname(e.name).toLowerCase())){
+        if(!EXCLUDED_DIRS.has(e.name.toLowerCase()) && !EXCLUDED_DIR_RE.test(e.name)) stack.push(full);
+      } else if(e.isFile() && SOURCE_EXT.has(path.extname(e.name).toLowerCase()) && !EXCLUDED_FILE_RE.test(e.name)){
         files.push(full);
       }
     }
