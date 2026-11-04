@@ -1,5 +1,14 @@
 [
   {
+    "id": "https://www.comune.roma.it/web/it/notizia/mun11-prima-strada-scolastica-mangia-smog.page",
+    "url": "https://www.comune.roma.it/web/it/notizia/mun11-prima-strada-scolastica-mangia-smog.page",
+    "title": "Inaugurata nel Municipio XI la prima strada scolastica \"mangia-smog\"",
+    "text": "Municipio XI. Parte da via Gaetano Astolfi il progetto innovativo di rigenerazione urbana in chiave ambientale.",
+    "date": "2026-11-04T18:36:00+02:00",
+    "area_slug": "municipio-xi",
+    "category_slug": "viabilita-trasporti"
+  },
+  {
     "id": "https://www.comune.roma.it/web/it/notizia/mun13-stagione-autunnale-auditorium-albergotti-2026.page",
     "url": "https://www.comune.roma.it/web/it/notizia/mun13-stagione-autunnale-auditorium-albergotti-2026.page",
     "title": "Municipio XIII, al via la stagione all'Auditorium Albergotti",
@@ -43,15 +52,6 @@
     "date": "2026-11-02T13:10:00+02:00",
     "area_slug": "municipio-xi",
     "category_slug": "scuola-famiglie"
-  },
-  {
-    "id": "https://www.comune.roma.it/web/it/notizia/mun11-prima-strada-scolastica-mangia-smog.page",
-    "url": "https://www.comune.roma.it/web/it/notizia/mun11-prima-strada-scolastica-mangia-smog.page",
-    "title": "Inaugurata nel Municipio XI la prima strada scolastica \"mangia-smog\"",
-    "text": "Municipio XI. Parte da via Gaetano Astolfi il progetto innovativo di rigenerazione urbana in chiave ambientale.",
-    "date": "2026-10-31T11:10:00+02:00",
-    "area_slug": "municipio-xi",
-    "category_slug": "viabilita-trasporti"
   },
   {
     "id": "https://www.comune.roma.it/web/it/notizia/mun13-laboratorio-teatrale-immaginario-2026.page",
