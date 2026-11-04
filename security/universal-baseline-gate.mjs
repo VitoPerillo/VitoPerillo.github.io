@@ -1,3 +1,5 @@
+[Reading 152 lines from start (total: 152 lines, 0 remaining)]
+
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
@@ -94,26 +96,17 @@ function findEvidence(root,files,control){
     let text="";
     try{text=fs.readFileSync(file,"utf8");}catch{continue;}
     const isTest=TEST_MARKERS.some(rx=>rx.test(file));
-    const contentPatterns=control.runtime.filter(rx=>!rx.source.includes("\\."));
-    const filePatterns=control.runtime.filter(rx=>rx.source.includes("\\."));
     let matched=null;
-    for(const rx0 of contentPatterns){
+    for(const rx0 of control.runtime){
       const rx=new RegExp(rx0.source,rx0.flags.replace("g",""));
-      if(rx.test(text)){matched=rx;break;}
+      if(rx.test(text)||rx.test(rel)){matched=rx;break;}
     }
-    if(!matched){
-      for(const rx0 of filePatterns){
-        const rx=new RegExp(rx0.source,rx0.flags.replace("g",""));
-        if(rx.test(rel)){matched=rx;break;}
-      }
-    }
-    if(!matched)continue;
-
     const strong=control.strong.some(rx0=>{
       const rx=new RegExp(rx0.source,rx0.flags.replace("g",""));
       return rx.test(text)||rx.test(rel);
     });
-    const ev={file:rel,line:lineOf(text,matched),strong};
+    if(!matched && !strong)continue;
+    const ev={file:rel,line:matched?lineOf(text,matched):0,strong};
     (isTest?tests:runtime).push(ev);
   }
   return {runtime,tests};
@@ -159,3 +152,5 @@ for(const root of roots){
 }
 console.log("UNIVERSAL_BASELINE_GATE="+(blocking?"BLOCK":"PASS")+"|blocking="+blocking);
 if(!reportOnly && blocking)process.exit(1);
+
+[executed on device: VitoPerillo (eb5c5ec8-10c7-462f-bbfa-a8361b6b93d8)]
