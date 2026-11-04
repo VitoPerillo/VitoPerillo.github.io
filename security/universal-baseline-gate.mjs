@@ -17,10 +17,10 @@ const EXCLUDED_DIRS=new Set([
   "artifacts","artifact","backup","backups","archive","archives","release","releases",
   "tmp","temp",".cache","docs","documentation"
 ]);
-const EXCLUDED_DIR_RE=/^(?:\.|tests?|fixtures?|snapshots?|recovery|prechange|old|copy|compliance-test|security-verify|p\d+-)/i;
+const EXCLUDED_DIR_RE=/(?:^\.|test|sandbox|fixture|snapshot|recovery|prechange|backup|artifact|archive|copy|\bold\b|compliance-test|security-verify|p\d+-|gate-\d{8})/i;
 const EXCLUDED_FILE_RE=/(?:^\.env|\.dev\.vars|local-secrets|credentials?|client-private|private-key)/i;
 const SOURCE_EXT=new Set([".js",".mjs",".cjs",".ts",".tsx",".jsx",".py",".php",".toml",".yml",".yaml",".json",".sql"]);
-const TEST_MARKERS=[/[/\\]tests?[/\\]/i,/\.test\./i,/\.spec\./i,/[/\\]security[/\\].*gate/i];
+const TEST_MARKERS=[/[/\\]tests?[/\\]/i,/(?:^|[._-])test(?:[._-]|$)/i,/\.spec\./i,/[/\\]security[/\\].*gate/i];
 
 const controls=[
   {
