@@ -25,6 +25,9 @@ jobs:
       - name: Run shared security gate
         run: node security/security-gate.mjs
 
+      - name: Run universal baseline regression self-test
+        run: node security/universal-baseline-gate.selftest.mjs
+
       - name: Existing repository tests
         shell: bash
         run: |
