@@ -1,3 +1,5 @@
+[Reading 43 lines from start (total: 43 lines, 0 remaining)]
+
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -15,6 +17,8 @@ function write(rel,text){
 
 write("README.md","turnstile rate limit authorization nonce cloudflare");
 write("artifacts/old/index.js","turnstile rateLimit authorization nonce cloudflare");
+write(".stripe-default/extension.js","turnstile rateLimit authorization nonce cloudflare");
+write("cloudflare.local-secrets.json","{\"provider\":\"cloudflare\",\"turnstile\":true}");
 write("wrangler.toml","name='fixture'");
 write("src/index.js",`
 export function verifyTurnstile(){ return "cf-turnstile-response"; }
@@ -39,3 +43,5 @@ if(r.status===0) throw new Error("expected BLOCK when bot protection is absent")
 if(!r.stdout.includes("FAIL|bot_spam|NO_RUNTIME_EVIDENCE")) throw new Error("false-positive regression\n"+r.stdout);
 
 console.log("SELFTEST=PASS");
+
+[executed on device: VitoPerillo (eb5c5ec8-10c7-462f-bbfa-a8361b6b93d8)]
