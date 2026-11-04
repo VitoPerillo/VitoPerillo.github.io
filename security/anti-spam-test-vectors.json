@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "cases": [
+    {"name":"honeypot_filled","expected":"BLOCK"},
+    {"name":"missing_human_token","expected":"BLOCK"},
+    {"name":"invalid_human_token","expected":"BLOCK"},
+    {"name":"human_verifier_unavailable","expected":"BLOCK"},
+    {"name":"rate_limit_exceeded","expected":"BLOCK_429"},
+    {"name":"otp_replay","expected":"BLOCK"},
+    {"name":"valid_human_within_limit","expected":"ALLOW"},
+    {"name":"signed_server_to_server","expected":"ALLOW_WITHOUT_CAPTCHA"}
+  ]
+}
