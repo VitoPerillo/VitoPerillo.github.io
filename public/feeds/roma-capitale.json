@@ -1,5 +1,23 @@
 [
   {
+    "id": "https://www.comune.roma.it/web/it/notizia/mun13-montespaccato-riapre-biblioteca-cornelia.page",
+    "url": "https://www.comune.roma.it/web/it/notizia/mun13-montespaccato-riapre-biblioteca-cornelia.page",
+    "title": "A Montespaccato riapre la Biblioteca Cornelia",
+    "text": "Municipio XI. è la quarta delle 21 interessate dal programma di efficientamento energetico e valorizzazione degli spazi.",
+    "date": "2026-11-10T13:56:00+02:00",
+    "area_slug": "montespaccato",
+    "category_slug": "servizi-municipio"
+  },
+  {
+    "id": "https://www.comune.roma.it/web/it/notizia/mun11-roma-jazz-contest-finale.page",
+    "url": "https://www.comune.roma.it/web/it/notizia/mun11-roma-jazz-contest-finale.page",
+    "title": "Municipio XI. \"Roma Jazz Contest\", la finale",
+    "text": "Municipio XI. Tutto pronto per la finale della quinta edizione del \"Roma Jazz Contest\" , organizzato dall' Associazione Musicale e Culturale Sette Note Romane . Il concorso, rivolto a giovani solisti di musica jazz provenienti da tutto il mondo, selezionati da una giuria prestigiosa, si propone l'obiettivo di diffondere la pratica strumentale ed incoraggiare i giovani allo studio della musica , valorizzando il talento e favorendo il principio della solidarietà .",
+    "date": "2026-11-10T13:52:00+02:00",
+    "area_slug": "municipio-xi",
+    "category_slug": "servizi-municipio"
+  },
+  {
     "id": "https://www.comune.roma.it/web/it/notizia/mun12-presentazione-consulta-salute-mentale.page",
     "url": "https://www.comune.roma.it/web/it/notizia/mun12-presentazione-consulta-salute-mentale.page",
     "title": "Municipio XII. Consulta della Salute Mentale, presentazione il 12 novembre",
@@ -69,15 +87,6 @@
     "text": "Municipio XIII. 5 appuntamenti per scoprire la costruzione scenotecnica e delle tecniche del teatro di figura.",
     "date": "2026-10-28T10:05:00+02:00",
     "area_slug": "municipio-xiii",
-    "category_slug": "servizi-municipio"
-  },
-  {
-    "id": "https://www.comune.roma.it/web/it/notizia/mun11-convegno-donne-divergenti-societa-disabile-30-ottobre-2026.page",
-    "url": "https://www.comune.roma.it/web/it/notizia/mun11-convegno-donne-divergenti-societa-disabile-30-ottobre-2026.page",
-    "title": "Municipio XI, convegno \"Donne divergenti in una società disabile\"",
-    "text": "Municipio XI. Venerdì 30 ottobre dalle 10 nella sala consiliare in via Marino Mazzacurati 73/75.",
-    "date": "2026-10-27T12:06:00+02:00",
-    "area_slug": "municipio-xi",
     "category_slug": "servizi-municipio"
   }
 ]
