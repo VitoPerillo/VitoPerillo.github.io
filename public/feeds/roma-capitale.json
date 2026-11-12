@@ -1,5 +1,14 @@
 [
   {
+    "id": "https://www.comune.roma.it/web/it/notizia/mun11-torna-arvalia-legge-13-15-novembre-2026.page",
+    "url": "https://www.comune.roma.it/web/it/notizia/mun11-torna-arvalia-legge-13-15-novembre-2026.page",
+    "title": "Municipio XI. Torna Arvalia Legge, dal 13 al 15 novembre",
+    "text": "Municipio XI. Dal 13 al 15 novembre 2026 torna Arvalia Legge &ndash; Festival del libro e della lett(erat)ura : tre giornate di incontri con autori, presentazioni, letture e attività per bambini, tra letteratura, attualità, diritti e partecipazione. Il festival si aprirà venerdì 13 novembre all’ Opificio Italiacamp , in via Luigi Pierantoni 2A.",
+    "date": "2026-11-12T16:52:00+02:00",
+    "area_slug": "municipio-xi",
+    "category_slug": "scuola-famiglie"
+  },
+  {
     "id": "https://www.comune.roma.it/web/it/notizia/mun13-montespaccato-riapre-biblioteca-cornelia.page",
     "url": "https://www.comune.roma.it/web/it/notizia/mun13-montespaccato-riapre-biblioteca-cornelia.page",
     "title": "A Montespaccato riapre la Biblioteca Cornelia",
@@ -52,15 +61,6 @@
     "date": "2026-11-03T14:46:00+02:00",
     "area_slug": "municipio-xii",
     "category_slug": "viabilita-trasporti"
-  },
-  {
-    "id": "https://www.comune.roma.it/web/it/notizia/mun11-torna-arvalia-legge-13-15-novembre-2026.page",
-    "url": "https://www.comune.roma.it/web/it/notizia/mun11-torna-arvalia-legge-13-15-novembre-2026.page",
-    "title": "Municipio XI. Torna Arvalia Legge, dal 13 al 15 novembre",
-    "text": "Municipio XI. Dal 13 al 15 novembre 2026 torna Arvalia Legge &ndash; Festival del libro e della lett(erat)ura : tre giornate di incontri con autori, presentazioni, letture e attività per bambini, tra letteratura, attualità, diritti e partecipazione. Il festival si aprirà venerdì 13 novembre all’ Opificio Italiacamp , in via Luigi Pierantoni 2A.",
-    "date": "2026-11-03T12:53:00+02:00",
-    "area_slug": "municipio-xi",
-    "category_slug": "scuola-famiglie"
   },
   {
     "id": "https://www.comune.roma.it/web/it/notizia/mun13-manutenzione-strade-notturna-nov-dic-2026.page",
