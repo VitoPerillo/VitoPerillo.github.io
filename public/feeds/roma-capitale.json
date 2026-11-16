@@ -1,5 +1,14 @@
 [
   {
+    "id": "https://www.comune.roma.it/web/it/notizia/mun12-lavori-mercato-cambio-viabilita.page",
+    "url": "https://www.comune.roma.it/web/it/notizia/mun12-lavori-mercato-cambio-viabilita.page",
+    "title": "Municipio XII. Mercato San Giovanni di Dio, cambio viabilità",
+    "text": "Municipio XII. Tematica: Commercio su aree pubbliche - Lavori pubblici - Viabilità Prende il via oggi, lunedì 16 novembre la disciplina provvisoria del traffico necessaria per consentire l’ avvio dei lavori e la realizzazione del mercato temporaneo di Piazza San Giovanni di Dio .",
+    "date": "2026-11-16T11:01:00+02:00",
+    "area_slug": "municipio-xii",
+    "category_slug": "viabilita-trasporti"
+  },
+  {
     "id": "https://www.comune.roma.it/web/it/notizia/mun11-torna-arvalia-legge-13-15-novembre-2026.page",
     "url": "https://www.comune.roma.it/web/it/notizia/mun11-torna-arvalia-legge-13-15-novembre-2026.page",
     "title": "Municipio XI. Torna Arvalia Legge, dal 13 al 15 novembre",
@@ -70,14 +79,5 @@
     "date": "2026-11-02T15:28:00+02:00",
     "area_slug": "municipio-xiii",
     "category_slug": "viabilita-trasporti"
-  },
-  {
-    "id": "https://www.comune.roma.it/web/it/notizia/mun11-incontro-disabilita-8-novembre-2026.page",
-    "url": "https://www.comune.roma.it/web/it/notizia/mun11-incontro-disabilita-8-novembre-2026.page",
-    "title": "Municipio XI, incontro \"Disabilità e soluzioni per vivere meglio\"",
-    "text": "Municipio XI. Tematica: Disabilità - Persone con disabilità - Famiglie - Iniziative Con il patrocinio del Municipio XI , l'Associazione Culturale StarRos Academy ASDC APS organizza un incontro per parlare di \"Disabilità e soluzioni per vivere meglio\" .",
-    "date": "2026-11-02T13:10:00+02:00",
-    "area_slug": "municipio-xi",
-    "category_slug": "scuola-famiglie"
   }
 ]
