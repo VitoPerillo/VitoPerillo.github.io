@@ -1,5 +1,23 @@
 [
   {
+    "id": "https://www.comune.roma.it/web/it/notizia/cie-open-day-21-22-novembre-2026.page",
+    "url": "https://www.comune.roma.it/web/it/notizia/cie-open-day-21-22-novembre-2026.page",
+    "title": "CIE, open day 21 e 22 novembre",
+    "text": "Municipio XII. Aperti gli ex PIT, via Petroselli e i Municipi III, IV, VIII, XII e XV.",
+    "date": "2026-11-17T14:29:00+02:00",
+    "area_slug": "municipio-xii",
+    "category_slug": "avvisi-utili"
+  },
+  {
+    "id": "https://www.comune.roma.it/web/it/notizia/bastogi-palazzina-f-parte-bonifica-amianto.page",
+    "url": "https://www.comune.roma.it/web/it/notizia/bastogi-palazzina-f-parte-bonifica-amianto.page",
+    "title": "Bastogi, al via la bonifica dell'amianto nella palazzina F",
+    "text": "Municipio XIII. Zevi: \"Tuteliamo la salute dei cittadini. Avanti con la riqualificazione\".",
+    "date": "2026-11-17T14:21:00+02:00",
+    "area_slug": "municipio-xiii",
+    "category_slug": "servizi-municipio"
+  },
+  {
     "id": "https://www.comune.roma.it/web/it/notizia/mun11-inaugurazione-magliana-2-0.page",
     "url": "https://www.comune.roma.it/web/it/notizia/mun11-inaugurazione-magliana-2-0.page",
     "title": "Municipio XI, il 17 novembre inaugurazione Magliana 2.0",
@@ -70,14 +88,5 @@
     "date": "2026-11-03T17:25:00+02:00",
     "area_slug": "aurelio",
     "category_slug": "ambiente-quartiere"
-  },
-  {
-    "id": "https://www.comune.roma.it/web/it/notizia/mun12-teatro-verde-a-motore-2026.page",
-    "url": "https://www.comune.roma.it/web/it/notizia/mun12-teatro-verde-a-motore-2026.page",
-    "title": "Municipio XII. Torna il teatro verde a motore",
-    "text": "Municipio XII. Spettacoli e laboratori creativi arrivano nelle strade e nelle piazze del territorio.",
-    "date": "2026-11-03T14:46:00+02:00",
-    "area_slug": "municipio-xii",
-    "category_slug": "viabilita-trasporti"
   }
 ]
