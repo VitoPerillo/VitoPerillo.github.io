@@ -1,14 +1,5 @@
 [
   {
-    "id": "https://www.comune.roma.it/web/it/notizia/cie-open-day-21-22-novembre-2026.page",
-    "url": "https://www.comune.roma.it/web/it/notizia/cie-open-day-21-22-novembre-2026.page",
-    "title": "CIE, open day 21 e 22 novembre",
-    "text": "Municipio XII. Aperti gli ex PIT, via Petroselli e i Municipi III, IV, VIII, IX, XII e XV.",
-    "date": "2026-11-18T11:42:00+02:00",
-    "area_slug": "municipio-xii",
-    "category_slug": "avvisi-utili"
-  },
-  {
     "id": "https://www.comune.roma.it/web/it/notizia/bastogi-palazzina-f-parte-bonifica-amianto.page",
     "url": "https://www.comune.roma.it/web/it/notizia/bastogi-palazzina-f-parte-bonifica-amianto.page",
     "title": "Bastogi, al via la bonifica dell'amianto nella palazzina F",
@@ -70,14 +61,5 @@
     "date": "2026-11-09T09:47:00+02:00",
     "area_slug": "municipio-xii",
     "category_slug": "servizi-municipio"
-  },
-  {
-    "id": "https://www.comune.roma.it/web/it/notizia/mun11-prima-strada-scolastica-mangia-smog.page",
-    "url": "https://www.comune.roma.it/web/it/notizia/mun11-prima-strada-scolastica-mangia-smog.page",
-    "title": "Inaugurata nel Municipio XI la prima strada scolastica \"mangia-smog\"",
-    "text": "Municipio XI. Parte da via Gaetano Astolfi il progetto innovativo di rigenerazione urbana in chiave ambientale.",
-    "date": "2026-11-04T18:36:00+02:00",
-    "area_slug": "municipio-xi",
-    "category_slug": "viabilita-trasporti"
   }
 ]
