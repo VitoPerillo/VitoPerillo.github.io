@@ -166,7 +166,7 @@ export async function home(db) {
 
       ${more.length ? `<section class="section wrap latest-grid"><div class="section-head"><div><span class="kicker">ALTRE NOTIZIE</span><h2>Dal territorio</h2></div></div><div class="grid cards">${more.map(card).join("")}</div></section>` : ""}
 
-      <section class="section muted"><div class="wrap"><div class="section-head"><div><span class="kicker">QUARTIERI</span><h2>Vai direttamente nella tua zona</h2></div><a href="/quartieri">Tutti →</a></div><div class="chips">${areaLinks}</div></div></section>
+      
 
       <section class="section wrap"><div class="section-head"><div><span class="kicker">EVENTI</span><h2>Cosa fare vicino a te</h2></div><a href="/eventi">Tutti gli eventi →</a></div><div class="grid cards">${(events.results || []).length ? (events.results || []).map(card).join("") : empty("Nessun evento ancora pubblicato", "Gli eventi verificati compariranno qui automaticamente.")}</div></section>
 
