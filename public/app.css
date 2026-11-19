@@ -875,3 +875,16 @@ footer {
 .latest-grid {
   padding-top: 28px;
 }
+
+/* AHÓ ROMA — homepage responsive, 19 novembre 2026; tested mobile 320/390 px */
+@media (max-width: 760px) {
+  .news-front { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .news-front > * { min-width: 0; }
+  .lead-story { padding: 16px; }
+  .lead-story h1 { font-size: clamp(24px, 6.5vw, 31px); line-height: 1.13; overflow-wrap: break-word; }
+  .headline-list { grid-template-columns: minmax(0, 1fr); }
+  .headline-row h2 { font-size: 18px; line-height: 1.25; overflow-wrap: break-word; }
+  .news-intro-inner { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 12px; }
+  .location-tools { justify-content: flex-start; }
+  .location-status { text-align: left; }
+}
