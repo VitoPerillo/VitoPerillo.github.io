@@ -36,6 +36,7 @@ import {
   areaPage,
   listPage,
   sitemap,
+  rssFeed,
 } from "./render/pages.js";
 import { socialProvider } from "./social/adapter.js";
 import { MediaStorageAdapter } from "./media/adapter.js";
@@ -75,6 +76,8 @@ export default {
         return listPage(env.DB, "events");
       if (request.method === "GET" && p === "/attivita")
         return listPage(env.DB, "businesses");
+      if (request.method === "GET" && p === "/rss.xml")
+        return rssFeed(env.DB, request.url);
       if (request.method === "GET" && p === "/sitemap.xml")
         return sitemap(env.DB, request.url, false);
       if (request.method === "GET" && p === "/news-sitemap.xml")
