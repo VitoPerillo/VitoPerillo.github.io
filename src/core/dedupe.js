@@ -7,6 +7,11 @@ export async function fingerprint(record){
   return sha256(key);
 }
 export async function findExisting(db, fp, record){
+  // Reuse the canonical article for an official URL, even when its headline changes.
+  if(record.source_url){
+    const byUrl=await db.prepare("SELECT id,title,updated_at FROM la_content WHERE content_type='news' AND source_url=? ORDER BY id ASC LIMIT 1").bind(record.source_url).first();
+    if(byUrl)return byUrl;
+  }
   let row = await db.prepare('SELECT id,title,updated_at FROM la_content WHERE fingerprint=? LIMIT 1').bind(fp).first();
   if(row) return row;
   const day=(record.original_date||record.valid_from||'').slice(0,10);
