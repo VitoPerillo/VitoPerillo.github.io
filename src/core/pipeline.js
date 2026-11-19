@@ -91,7 +91,8 @@ export async function ingestItem(db,source,item){
     return Number(duplicate.id);
   }
   try{
-    const res=await db.prepare('INSERT INTO la_ingest(source_id,external_id,source_url,original_title,original_text,original_date,content_hash,status,detected_area,detected_category,raw_payload) VALUES(?,?,?,?,?,?,?,\'new\',?,?,?)').bind(source.id,ext,item.source_url,item.title,item.text,normalizeSourceDate(item.date),contentHash,detectedArea,detectedCategory,item.raw?JSON.stringify(item.raw).slice(0,200000):null).run();
+    const res=await db.prepare("INSERT INTO la_ingest(source_id,external_id,source_url,original_title,original_text,original_date,content_hash,status,detected_area,detected_category,raw_payload) SELECT ?,?,?,?,?,?,?,'new',?,?,? WHERE NOT EXISTS (SELECT 1 FROM la_ingest WHERE source_url=? OR (source_id=? AND content_hash=?))").bind(source.id,ext,item.source_url,item.title,item.text,normalizeSourceDate(item.date),contentHash,detectedArea,detectedCategory,item.raw?JSON.stringify(item.raw).slice(0,200000):null,item.source_url,source.id,contentHash).run();
+    if(Number(res.meta?.changes||0)===0)return null;
     return Number(res.meta.last_row_id);
   }catch(e){if(String(e).includes('UNIQUE'))return null; throw e;}
 }
