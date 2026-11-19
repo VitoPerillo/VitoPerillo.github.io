@@ -422,3 +422,19 @@ export async function sitemap(db, base, newsOnly = false) {
     { headers: { "content-type": "application/xml;charset=utf-8" } },
   );
 }
+
+/** RSS pubblico di AHÓ ROMA: nessuna connessione social e nessuna pubblicazione non approvata. */
+export async function rssFeed(db, requestUrl) {
+  const root = new URL(requestUrl).origin;
+  const q = await db.prepare(
+    "SELECT content_type,slug,title,summary,published_at,event_start,event_end,valid_until FROM la_content WHERE status IN ('published','updated') AND content_type IN ('news','event') AND (valid_until IS NULL OR datetime(valid_until)>=CURRENT_TIMESTAMP) AND (content_type<>'event' OR date(COALESCE(event_end,event_start,valid_until))>=date('now')) AND (content_type='event' OR published_at>=datetime('now','-14 days')) ORDER BY published_at DESC,id DESC LIMIT 30"
+  ).all();
+  const entries = (q.results || []).map(x => {
+    const url = root + routeFor(x);
+    const published = String(x.published_at || "");
+    const pubDate = new Date(published.replace(" ", "T") + (/[Z+-]\d\d:\d\d$/.test(published)?"":"Z")).toUTCString();
+    return `<item><title>${html(x.title)}</title><link>${html(url)}</link><guid isPermaLink="true">${html(url)}</guid><pubDate>${html(pubDate)}</pubDate><description>${html(x.summary || "")}</description><category>${x.content_type==="event"?"Eventi":"Notizie"}</category></item>`;
+  }).join("");
+  const xml = `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>AHÓ ROMA — Notizie ed eventi</title><link>${html(root+"/")}</link><description>Notizie locali ed eventi pubblicati di Roma Ovest e Sud-Ovest, con revisione editoriale.</description><language>it-IT</language><lastBuildDate>${new Date().toUTCString()}</lastBuildDate>${entries}</channel></rss>`;
+  return new Response(xml, {headers:{"content-type":"application/rss+xml; charset=utf-8","cache-control":"public, max-age=900","x-content-type-options":"nosniff"}});
+}
