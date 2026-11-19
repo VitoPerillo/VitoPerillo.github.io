@@ -888,3 +888,7 @@ footer {
   .location-tools { justify-content: flex-start; }
   .location-status { text-align: left; }
 }
+
+/* AHÓ ROMA — fotografia illustrativa per notizie ed eventi */
+.card-image,.lead-image{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;margin-bottom:12px}
+.lead-image{max-height:260px}
