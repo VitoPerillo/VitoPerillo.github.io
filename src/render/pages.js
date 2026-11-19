@@ -9,10 +9,12 @@ const routeFor = (x) =>
 const fmtDate = (x) => {
   try {
     const raw=String(x||"");
+    if(raw.length===10 && raw[4]==="-" && raw[7]==="-") return raw.slice(8,10)+"/"+raw.slice(5,7)+"/"+raw.slice(0,4);
     const iso=/[TZ]|[+-]\d\d:\d\d$/.test(raw) ? raw : raw.replace(" ", "T") + "Z";
     const d=new Date(iso);
     if(Number.isNaN(d.getTime())) return raw;
     return new Intl.DateTimeFormat("it-IT", {
+      timeZone: "Europe/Rome",
       day: "2-digit",
       month: "short",
       hour: "2-digit",
@@ -41,9 +43,11 @@ async function houseAd(db) {
 }
 const renderAd = () => "";
 const card = (x) => {
-  const d=x.content_type==="news"&&x.valid_from?x.valid_from:x.updated_at;
-  const label=x.content_type==="news"&&x.valid_from?"Fonte":"Aggiornato";
-  return `<article class="card"><div class="eyebrow">${html(x.area || x.category || "Roma Ovest")}</div><h3><a href="${html(routeFor(x))}">${html(x.title)}</a></h3><p>${html(x.summary || "")}</p><small>${label} ${html(fmtDate(d))}</small></article>`;
+  const isEvent = x.content_type === "event" && x.event_start;
+  const d = isEvent ? x.event_start : x.content_type === "news" && x.valid_from ? x.valid_from : x.updated_at;
+  const label = isEvent ? "Quando" : x.content_type === "news" && x.valid_from ? "Fonte" : "Aggiornato";
+  const photo = String(x.image_key || "").startsWith("https://images.unsplash.com/photo-") ? x.image_key : "";
+  return `<article class="card">${photo ? `<img class="card-image" src="${html(photo)}" alt="Fotografia illustrativa, non della specifica esperienza" loading="lazy" decoding="async">` : ""}<div class="eyebrow">${html(x.area || x.category || "Roma Ovest")}</div><h3><a href="${html(routeFor(x))}">${html(x.title)}</a></h3><p>${html(x.summary || "")}</p><small>${label} ${html(fmtDate(d))}</small></article>`;
 };
 const articleBody = (value) =>
   String(value || "")
@@ -66,12 +70,12 @@ export async function home(db) {
   const [latest, events, areas] = await Promise.all([
     db
       .prepare(
-        "SELECT c.id,c.content_type,c.slug,c.title,c.summary,c.updated_at,c.valid_from,a.name area,a.slug area_slug,k.name category FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id LEFT JOIN la_categories k ON k.id=c.category_id WHERE c.content_type='news' AND c.status IN ('published','updated') AND NOT (a.slug='municipio-i-trastevere' AND lower(COALESCE(c.title,'')||' '||COALESCE(c.summary,'')||' '||COALESCE(c.body,'')) NOT LIKE '%trastevere%' AND lower(COALESCE(c.title,'')||' '||COALESCE(c.summary,'')||' '||COALESCE(c.body,'')) NOT LIKE '%porta portese%') ORDER BY c.featured DESC,COALESCE(c.valid_from,c.published_at,c.updated_at) DESC LIMIT 12",
+        "SELECT c.id,c.content_type,c.slug,c.title,c.summary,c.image_key,c.event_start,c.organizer,c.updated_at,c.valid_from,a.name area,a.slug area_slug,k.name category FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id LEFT JOIN la_categories k ON k.id=c.category_id WHERE c.content_type='news' AND c.status IN ('published','updated') AND NOT (a.slug='municipio-i-trastevere' AND lower(COALESCE(c.title,'')||' '||COALESCE(c.summary,'')||' '||COALESCE(c.body,'')) NOT LIKE '%trastevere%' AND lower(COALESCE(c.title,'')||' '||COALESCE(c.summary,'')||' '||COALESCE(c.body,'')) NOT LIKE '%porta portese%') ORDER BY c.featured DESC,COALESCE(c.valid_from,c.published_at,c.updated_at) DESC LIMIT 12",
       )
       .all(),
     db
       .prepare(
-        "SELECT c.id,c.content_type,c.slug,c.title,c.summary,c.updated_at,c.valid_from,a.name area FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE c.content_type='event' AND c.status IN ('published','updated') AND (c.event_end IS NULL OR c.event_end>=CURRENT_TIMESTAMP) ORDER BY COALESCE(c.event_start,c.published_at) ASC LIMIT 4",
+        "SELECT c.id,c.content_type,c.slug,c.title,c.summary,c.image_key,c.event_start,c.organizer,c.updated_at,c.valid_from,a.name area FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE c.content_type='event' AND c.status IN ('published','updated') AND date(COALESCE(c.event_end,c.event_start,c.valid_until))>=date('now') ORDER BY COALESCE(c.event_start,c.published_at) ASC LIMIT 4",
       )
       .all(),
     db
@@ -90,7 +94,7 @@ export async function home(db) {
     .join("");
 
   const leadMarkup = lead
-    ? `<article class="lead-story"><div class="eyebrow">${html(lead.area || lead.category || "Roma")}</div><h1><a href="${html(routeFor(lead))}">${html(lead.title)}</a></h1><p>${html(lead.summary || "")}</p><small>Fonte ${html(fmtDate(lead.valid_from || lead.updated_at))}</small></article>`
+    ? `<article class="lead-story">${String(lead.image_key || "").startsWith("https://images.unsplash.com/photo-") ? `<img class="lead-image" src="${html(lead.image_key)}" alt="Fotografia panoramica illustrativa di Roma" loading="eager" decoding="async">` : ""}<div class="eyebrow">${html(lead.area || lead.category || "Roma")}</div><h1><a href="${html(routeFor(lead))}">${html(lead.title)}</a></h1><p>${html(lead.summary || "")}</p><small>Fonte ${html(fmtDate(lead.valid_from || lead.updated_at))}</small></article>`
     : empty("AHÓ ROMA è online", "Le notizie verificate compariranno qui appena disponibili.");
 
   const sideMarkup = side.length
@@ -237,14 +241,15 @@ export async function contentPage(db, slug, baseUrl) {
   const [related, ad] = await Promise.all([
     db
       .prepare(
-        "SELECT c.content_type,c.slug,c.title,c.summary,c.updated_at,c.valid_from,a.name area FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE c.id<>? AND c.status IN ('published','updated') AND (c.area_id=? OR c.category_id=?) ORDER BY c.updated_at DESC LIMIT 4",
+        "SELECT c.content_type,c.slug,c.title,c.summary,c.image_key,c.event_start,c.organizer,c.updated_at,c.valid_from,a.name area FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE c.id<>? AND c.status IN ('published','updated') AND (c.area_id=? OR c.category_id=?) ORDER BY c.updated_at DESC LIMIT 4",
       )
       .bind(x.id, x.area_id, x.category_id)
       .all(),
     houseAd(db),
   ]);
   const rel = (related.results || []).map(card).join("");
-  const imageUrl = x.image_key
+  const isRemotePhoto = String(x.image_key || "").startsWith("https://images.unsplash.com/photo-");
+  const imageUrl = isRemotePhoto ? x.image_key : x.image_key
     ? `${root}/media/${encodeURIComponent(x.image_key).replace(/%2F/g, "/")}`
     : null;
   const meta = `<link rel="canonical" href="${html(canonicalUrl)}"><meta name="description" content="${html(x.summary)}"><meta property="og:title" content="${html(x.title)}"><meta property="og:description" content="${html(x.summary)}"><meta property="og:url" content="${html(canonicalUrl)}">${imageUrl ? `<meta property="og:image" content="${html(imageUrl)}">` : ""}`;
@@ -298,7 +303,7 @@ export async function contentPage(db, slug, baseUrl) {
   return new Response(
     shell(
       x.title,
-      `<div class="wrap article-wrap">${crumbs}<article class="article"><div class="eyebrow">${html(x.area || "Roma Ovest / Sud-Ovest")}</div><h1>${html(x.title)}</h1><div class="facts">${facts}</div><div class="impact"><span>COSA CAMBIA PER TE</span><p>${html(x.summary)}</p></div>${x.image_key ? `<figure><img class="article-image" src="/media/${html(x.image_key)}" alt="Illustrazione della notizia locale per ${html(x.area || "Roma Ovest")}" loading="lazy"><figcaption>Illustrazione originale AHÓ ROMA · <a href="https://creativecommons.org/licenses/by/4.0/deed.it" rel="license noopener">CC BY 4.0</a></figcaption></figure>` : ""}<div class="article-body">${articleBody(x.body)}</div><p class="source">Sintesi originale revisionata a partire da una fonte ufficiale.${x.source_url ? ` <a rel="nofollow noopener" href="${html(x.source_url)}">Consulta la pagina integrale ↗</a>` : ""} · Aggiornato ${html(fmtDate(x.updated_at))}</p><details class="report-box"><summary>Segnala un problema con questo contenuto</summary><form onsubmit="return reportContent(event,${Number(x.id)})"><label>Motivo<select name="reason"><option value="false_info">Informazione errata</option><option value="privacy">Privacy o dati personali</option><option value="copyright">Diritti d'autore</option><option value="offensive">Contenuto offensivo</option><option value="illegal">Possibile illecito</option><option value="spam">Spam</option><option value="other">Altro</option></select></label><label>Dettagli<textarea name="details" maxlength="2000" required></textarea></label><label>Email facoltativa<input name="email" type="email"></label><button>Invia segnalazione</button><output></output></form></details><script>async function reportContent(e,id){e.preventDefault();const f=e.target,r=await fetch('/api/report',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...Object.fromEntries(new FormData(f)),content_id:id})});f.querySelector('output').textContent=r.ok?'Segnalazione ricevuta. Grazie.':'Invio non riuscito.';if(r.ok)f.reset();return false}</script><script type="application/ld+json">${JSON.stringify(schema).replace(/</g, "\\u003c")}</script></article>${renderAd(ad)}${rel ? `<section class="section"><div class="section-head"><h2>Contenuti correlati</h2></div><div class="grid cards">${rel}</div></section>` : ""}</div>`,
+      `<div class="wrap article-wrap">${crumbs}<article class="article"><div class="eyebrow">${html(x.area || "Roma Ovest / Sud-Ovest")}</div><h1>${html(x.title)}</h1><div class="facts">${facts}</div><div class="impact"><span>COSA CAMBIA PER TE</span><p>${html(x.summary)}</p></div>${x.image_key ? `<figure><img class="article-image" src="${html(imageUrl)}" alt="Illustrazione della notizia locale per ${html(x.area || "Roma Ovest")}" loading="lazy">${isRemotePhoto ? `<figcaption>Foto illustrativa da Unsplash, non della specifica attività.</figcaption>` : `<figcaption>Illustrazione originale AHÓ ROMA · <a href="https://creativecommons.org/licenses/by/4.0/deed.it" rel="license noopener">CC BY 4.0</a></figcaption>`}</figure>` : ""}<div class="article-body">${articleBody(x.body)}</div><p class="source">Sintesi originale revisionata a partire da una fonte ufficiale.${x.source_url ? ` <a rel="nofollow noopener" href="${html(x.source_url)}">Consulta la pagina integrale ↗</a>` : ""} · Aggiornato ${html(fmtDate(x.updated_at))}</p><details class="report-box"><summary>Segnala un problema con questo contenuto</summary><form onsubmit="return reportContent(event,${Number(x.id)})"><label>Motivo<select name="reason"><option value="false_info">Informazione errata</option><option value="privacy">Privacy o dati personali</option><option value="copyright">Diritti d'autore</option><option value="offensive">Contenuto offensivo</option><option value="illegal">Possibile illecito</option><option value="spam">Spam</option><option value="other">Altro</option></select></label><label>Dettagli<textarea name="details" maxlength="2000" required></textarea></label><label>Email facoltativa<input name="email" type="email"></label><button>Invia segnalazione</button><output></output></form></details><script>async function reportContent(e,id){e.preventDefault();const f=e.target,r=await fetch('/api/report',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...Object.fromEntries(new FormData(f)),content_id:id})});f.querySelector('output').textContent=r.ok?'Segnalazione ricevuta. Grazie.':'Invio non riuscito.';if(r.ok)f.reset();return false}</script><script type="application/ld+json">${JSON.stringify(schema).replace(/</g, "\\u003c")}</script></article>${renderAd(ad)}${rel ? `<section class="section"><div class="section-head"><h2>Contenuti correlati</h2></div><div class="grid cards">${rel}</div></section>` : ""}</div>`,
       meta,
     ),
     {
@@ -318,7 +323,7 @@ export async function areaPage(db, slug) {
   if (!area) return new Response("Not found", { status: 404 });
   const q = await db
     .prepare(
-      "SELECT c.content_type,c.slug,c.title,c.summary,c.updated_at,c.valid_from,a.name area FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE c.area_id=? AND c.status IN ('published','updated') ORDER BY c.updated_at DESC LIMIT 50",
+      "SELECT c.content_type,c.slug,c.title,c.summary,c.image_key,c.event_start,c.organizer,c.updated_at,c.valid_from,a.name area FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE c.area_id=? AND c.status IN ('published','updated') ORDER BY c.updated_at DESC LIMIT 50",
     )
     .bind(area.id)
     .all();
@@ -363,7 +368,7 @@ export async function listPage(db, type) {
     contentType === "event" ? "Eventi vicino a te" : "Attività locali";
   const q = await db
     .prepare(
-      "SELECT c.id,c.content_type,c.slug,c.title,c.summary,c.updated_at,c.valid_from,a.name area FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE c.content_type=? AND c.status IN ('published','updated') ORDER BY c.featured DESC,c.updated_at DESC LIMIT 100",
+      "SELECT c.id,c.content_type,c.slug,c.title,c.summary,c.image_key,c.event_start,c.organizer,c.updated_at,c.valid_from,a.name area FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE c.content_type=? AND c.status IN ('published','updated') AND (c.content_type<>'event' OR date(COALESCE(c.event_end,c.event_start,c.valid_until))>=date('now')) ORDER BY c.featured DESC,CASE WHEN c.content_type='event' THEN COALESCE(c.event_start,c.published_at) END ASC,c.updated_at DESC LIMIT 100",
     )
     .bind(contentType)
     .all();
