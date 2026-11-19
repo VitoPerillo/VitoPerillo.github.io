@@ -70,7 +70,7 @@ export async function home(db) {
   const [latest, events, areas] = await Promise.all([
     db
       .prepare(
-        "SELECT c.id,c.content_type,c.slug,c.title,c.summary,c.image_key,c.event_start,c.organizer,c.updated_at,c.valid_from,a.name area,a.slug area_slug,k.name category FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id LEFT JOIN la_categories k ON k.id=c.category_id WHERE c.content_type='news' AND c.status IN ('published','updated') AND NOT (a.slug='municipio-i-trastevere' AND lower(COALESCE(c.title,'')||' '||COALESCE(c.summary,'')||' '||COALESCE(c.body,'')) NOT LIKE '%trastevere%' AND lower(COALESCE(c.title,'')||' '||COALESCE(c.summary,'')||' '||COALESCE(c.body,'')) NOT LIKE '%porta portese%') ORDER BY c.featured DESC,COALESCE(c.valid_from,c.published_at,c.updated_at) DESC LIMIT 12",
+        "SELECT c.id,c.content_type,c.slug,c.title,c.summary,c.image_key,c.event_start,c.organizer,c.updated_at,c.valid_from,a.name area,a.slug area_slug,k.name category FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id LEFT JOIN la_categories k ON k.id=c.category_id WHERE c.content_type='news' AND c.status IN ('published','updated') AND (c.valid_until IS NULL OR datetime(c.valid_until)>=CURRENT_TIMESTAMP) AND NOT (a.slug='municipio-i-trastevere' AND lower(COALESCE(c.title,'')||' '||COALESCE(c.summary,'')||' '||COALESCE(c.body,'')) NOT LIKE '%trastevere%' AND lower(COALESCE(c.title,'')||' '||COALESCE(c.summary,'')||' '||COALESCE(c.body,'')) NOT LIKE '%porta portese%') ORDER BY c.featured DESC,COALESCE(c.valid_from,c.published_at,c.updated_at) DESC LIMIT 12",
       )
       .all(),
     db
@@ -324,7 +324,7 @@ export async function areaPage(db, slug) {
   if (!area) return new Response("Not found", { status: 404 });
   const q = await db
     .prepare(
-      "SELECT c.content_type,c.slug,c.title,c.summary,c.image_key,c.event_start,c.organizer,c.updated_at,c.valid_from,a.name area FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE c.area_id=? AND c.status IN ('published','updated') ORDER BY c.updated_at DESC LIMIT 50",
+      "SELECT c.content_type,c.slug,c.title,c.summary,c.image_key,c.event_start,c.organizer,c.updated_at,c.valid_from,a.name area FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE c.area_id=? AND c.status IN ('published','updated') AND (c.valid_until IS NULL OR datetime(c.valid_until)>=CURRENT_TIMESTAMP) AND (c.content_type<>'event' OR date(COALESCE(c.event_end,c.event_start))>=date('now')) ORDER BY c.updated_at DESC LIMIT 50",
     )
     .bind(area.id)
     .all();
