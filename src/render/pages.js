@@ -87,8 +87,9 @@ export async function home(db) {
 
   const news = latest.results || [];
   const lead = news[0] || null;
-  const side = news.slice(1,4);
-  const more = news.slice(4,10);
+  const recentCutoff = new Date(Date.now()-14*86400000).toISOString().slice(0,10);
+  const side = news.slice(1,4).filter(x => String(x.valid_from || x.updated_at).slice(0,10) >= recentCutoff);
+  const more = news.slice(1).filter(x => !side.some(y => y.slug === x.slug)).slice(0,9);
   const areaLinks = (areas.results || [])
     .map((a) => `<a class="chip" href="/zona/${html(a.slug)}">${html(a.name)}</a>`)
     .join("");
