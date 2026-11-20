@@ -4,13 +4,15 @@
 <style>
 .quick-report{max-width:760px;margin:18px auto 28px}.quick-report h1{margin:0 0 7px;font-size:clamp(25px,4vw,34px)}.quick-report p{margin:0 0 15px}.quick-report textarea[name="description"]{min-height:220px;width:100%;resize:vertical;box-sizing:border-box;font-size:16px}.quick-report details{margin:12px 0;padding:12px;border:1px solid var(--line,#ddd);border-radius:10px}.quick-report summary{cursor:pointer;font-weight:600}.quick-report details label{margin-top:11px}.quick-report .report-policy{font-size:13px;line-height:1.4}.quick-report .report-policy input{width:auto;min-height:0}.quick-report .report-button{width:100%;min-height:46px}.quick-report #out{margin-top:12px}.quick-report #out a{word-break:break-all}
 @media(max-width:560px){.quick-report{margin:12px auto 18px}.quick-report h1{font-size:26px}.quick-report textarea[name="description"]{min-height:180px}.quick-report details{padding:10px}}
+.quick-report .paste-button{min-height:42px;min-width:90px}.quick-report .paste-row{display:flex;gap:8px;align-items:center;margin:5px 0 10px}.quick-report .paste-row small{color:var(--muted)}.quick-report #rightsPolicy[hidden],.quick-report #again[hidden]{display:none!important}.quick-report #again{min-height:40px;margin-top:10px}.quick-report textarea[name="description"]{min-height:150px}
 </style></head>
 <body><header class="site-header"><div class="wrap header-inner"><a class="brand brand-official" href="/" aria-label="AHÓ ROMA — Home"><img class="brand-logo-image" src="/brand/logo-aho-roma.webp" width="902" height="303" alt="AHÓ ROMA — Che succede nel tuo quartiere?" decoding="async"></a><nav><a href="/#ultime">Ultime</a><a href="/quartieri">Quartieri</a><a href="/eventi">Eventi</a><a class="nav-cta" href="/">Home</a></nav></div></header>
 <main class="wrap"><section class="quick-report"><h1>Segnala una notizia</h1>
-<p>Incolla una notizia, un testo trovato su Google o uno o più link. <strong>Non devi scegliere il quartiere o inserire l'email.</strong> La redazione controlla le fonti prima di pubblicare.</p>
+<p>Incolla un link o un testo e invia. <strong>Niente email, quartiere o argomento obbligatori.</strong> Verifichiamo le fonti prima di pubblicare.</p>
 <form id="f" enctype="multipart/form-data">
 <label for="description">Notizia o link da condividere</label>
-<textarea id="description" name="description" minlength="20" maxlength="10000" required placeholder="Incolla qui il testo, anche lungo, oppure descrivi cosa è successo e dove. Puoi includere più link."></textarea>
+<textarea id="description" name="description" minlength="10" maxlength="20000" required placeholder="Incolla qui una notizia, uno o più link o un testo copiato da Google."></textarea>
+<div class="paste-row"><button id="pasteButton" class="paste-button" type="button">Incolla</button><small>Puoi inviare una notizia dopo l’altra.</small></div>
 <details id="extra"><summary>Altre informazioni (facoltative)</summary>
 <label>Tipo di segnalazione<select id="type" name="submission_type"><option value="report" selected>Notizia o informazione generica</option><option value="event">Evento</option><option value="business">Attività locale</option></select></label>
 <label>Titolo (facoltativo per le notizie)<input name="title" maxlength="140" placeholder="Se lo conosci"></label>
@@ -23,26 +25,34 @@
 <label>Foto tua o utilizzabile (facoltativa)<input name="image" type="file" accept="image/jpeg,image/png,image/webp"></label>
 </details>
 <input name="website_hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px"><input type="hidden" name="form_started_at" id="fst">
-<label class="report-policy" style="display:flex;align-items:flex-start;gap:8px"><input type="checkbox" name="rights_declared" value="1" required><span>Invio la segnalazione in buona fede e posso condividere le eventuali immagini allegate. La pubblicazione è soggetta a verifica.</span></label>
-<button id="submit" class="report-button" type="submit">Invia la segnalazione</button>
-</form><div id="out" role="status" aria-live="polite"></div>
+<label class="report-policy" id="rightsPolicy" hidden style="display:flex;align-items:flex-start;gap:8px"><input type="checkbox" name="rights_declared" value="1"><span>Invio la segnalazione in buona fede e posso condividere le eventuali immagini allegate. La pubblicazione è soggetta a verifica.</span></label>
+<button id="submit" class="report-button" type="submit">Invia</button>
+</form><div id="out" role="status" aria-live="polite"></div><button type="button" id="again" hidden>Invia un’altra notizia</button>
 </section></main>
 <footer><div class="wrap">AHÓ ROMA · Roma Ovest / Sud-Ovest</div></footer>
 <script>
-const form=document.getElementById('f'),out=document.getElementById('out'),type=document.getElementById('type'),area=document.getElementById('area'),category=document.getElementById('category'),eventFields=document.getElementById('eventFields'),businessFields=document.getElementById('businessFields'),send=document.getElementById('submit');
+const form=document.getElementById('f'),out=document.getElementById('out'),type=document.getElementById('type'),area=document.getElementById('area'),category=document.getElementById('category'),eventFields=document.getElementById('eventFields'),businessFields=document.getElementById('businessFields'),send=document.getElementById('submit'),policy=document.getElementById('rightsPolicy'),again=document.getElementById('again'),description=document.getElementById('description'),paste=document.getElementById('pasteButton');
 document.getElementById('fst').value=Date.now();let cats=[];
 async function init(){const [a,c]=await Promise.all([fetch('/api/areas').then(r=>r.json()),fetch('/api/categories').then(r=>r.json())]);area.innerHTML='<option value="">Non so / scegli se vuoi</option>'+a.filter(x=>x.slug!=='roma'&&!x.slug.startsWith('municipio')).map(x=>'<option value="'+Number(x.id)+'">'+x.name+'</option>').join('');cats=c;renderCats();}
 function renderCats(){const t=type.value;category.innerHTML='<option value="">Sceglie la redazione</option>'+cats.filter(x=>x.kind===(t==='report'?'news':t)||!x.kind).map(x=>'<option value="'+Number(x.id)+'">'+x.name+'</option>').join('');eventFields.hidden=t!=='event';businessFields.hidden=t!=='business';
 for(const x of eventFields.querySelectorAll('input'))x.required=t==='event'&&['start','venue'].includes(x.name);
 for(const x of businessFields.querySelectorAll('input'))x.required=t==='business'&&['address','cap'].includes(x.name);
 for(const x of [area,category,form.elements.email,form.elements.title])x.required=t!=='report';
+updateRights();
 }
+function updateRights(){const required=type.value!=='report'||(form.elements.image.files&&form.elements.image.files.length>0);policy.hidden=!required;form.elements.rights_declared.required=required;}
+form.elements.image.addEventListener('change',updateRights);
+paste.addEventListener('click',async()=>{try{const value=await navigator.clipboard.readText();if(value){description.value=(description.value?description.value+'\n':'')+value.slice(0,20000-description.value.length);description.focus();}}catch{out.textContent='Tieni premuto nel campo e scegli Incolla.';}});
+again.addEventListener('click',()=>{again.hidden=true;description.focus();out.textContent='';});
+const parameters=new URLSearchParams(location.search);
+const shared=[parameters.get('text'),parameters.get('url'),parameters.get('title')].filter(Boolean).join('\n').slice(0,20000);
+if(shared)description.value=shared;
 type.onchange=renderCats;renderCats();
-form.onsubmit=async event=>{event.preventDefault();send.disabled=true;out.textContent='Invio in corso…';try{
+form.onsubmit=async event=>{event.preventDefault();send.disabled=true;again.hidden=true;out.textContent='Invio in corso…';try{
 const r=await fetch('/api/submission',{method:'POST',body:new FormData(form)}),j=await r.json().catch(()=>({}));
 if(!r.ok){out.textContent='Invio non riuscito: '+(j.error==='rate_limited'?'troppi invii, riprova più tardi':j.error||r.status);return;}
 if(j.duplicate){out.textContent='Questa segnalazione risulta già ricevuta. Non serve inviarla di nuovo.';return;}
-if(j.status==='held'){out.textContent='Segnalazione ricevuta. La redazione verificherà i fatti prima di pubblicare. ';if(j.manage_url){const a=document.createElement('a');a.href=j.manage_url;a.textContent='Conserva questo link per modificare o ritirare la segnalazione';out.appendChild(a);}form.reset();renderCats();document.getElementById('fst').value=Date.now();return;}
+if(j.status==='held'){out.textContent='Ricevuto. Verifichiamo le fonti prima di pubblicare. ';if(j.manage_url){const a=document.createElement('a');a.href=j.manage_url;a.textContent='Conserva questo link per modificare o ritirare la segnalazione';out.appendChild(a);}form.reset();renderCats();document.getElementById('fst').value=Date.now();again.hidden=false;return;}
 out.textContent='Invio ricevuto. Controlla l’email per confermare soltanto se hai inviato un evento o un’attività.';
 }catch(e){out.textContent='Problema di connessione, riprova.'}finally{send.disabled=false}};
 init().catch(()=>{out.textContent='Le opzioni aggiuntive non sono disponibili; puoi comunque inviare una segnalazione generica.'});

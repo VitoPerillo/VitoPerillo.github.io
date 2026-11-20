@@ -1,4 +1,5 @@
 import { riskGate, valueGate } from "../core/gates.js";
+import { fetchArticleDetails, reviewFactSheet } from "../core/article.js";
 
 // This is an editorial selection gate, NOT a publishing permit.
 // News and citizen reports remain on hold until a sourced, original draft is approved.
@@ -76,6 +77,35 @@ export function needsFullPrimarySource(row, now = new Date()) {
   return true;
 }
 
+
+/**
+ * Use the existing hourly editorial cron to enrich up to two fresh, trusted
+ * source leads. Never generates an article or changes a moderation decision.
+ */
+export async function enrichOfficialBriefs(candidates, fetcher = fetchArticleDetails) {
+  for (const item of candidates.filter(c =>
+    ["awaiting_editorial_verification","fetch_full_primary_source_before_review"].includes(c.decision)
+  ).slice(0, 2)) {
+    let hostname="";
+    try {const u=new URL(item.source_url);if(u.protocol==="https:")hostname=u.hostname.toLowerCase();}
+    catch {item.evidence_status="invalid_url";continue;}
+    if (!PRIMARY_HOSTS.has(hostname)) {item.evidence_status="requires_primary_source";continue;}
+    try {
+      const detail=await fetcher(item.source_url);
+      const title=String(detail.title||"").trim(),text=String(detail.text||"").trim();
+      if(title.length<12||text.length<300||riskGate({title,text},95).level!=="GREEN"){
+        item.evidence_status="insufficient_or_sensitive_full_source";continue;
+      }
+      item.evidence_status="source_retrieved_original_draft_required";
+      item.verified_source_title=title.slice(0,180);
+      item.verified_source_date=detail.date||null;
+      item.source_fact_brief=reviewFactSheet(detail).slice(0,4).map(x=>String(x.text||"").slice(0,220));
+      item.full_source_characters=text.length;
+    }catch{item.evidence_status="primary_source_unavailable";}
+  }
+  return candidates;
+}
+
 export async function hourlyEditorialReview(db, now = new Date()) {
   const hour = editorialHourKey(now);
   // The existing 15-minute cron/foreground tick can overlap; one conditional DB
@@ -119,6 +149,7 @@ export async function hourlyEditorialReview(db, now = new Date()) {
           "awaiting_editorial_verification" : "fetch_full_primary_source_before_review" });
     }
   }
+  await enrichOfficialBriefs(shortlist);
   const publishedToday = Number(published?.n || 0);
   const digest = {
     hour_utc: hour, day_start_utc: romeDayStartUtc(now),
