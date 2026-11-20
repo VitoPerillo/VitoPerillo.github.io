@@ -49,6 +49,7 @@ import {
 import { reviewedBatch20261009 } from "./editorial/reviewed-batch-2026-10-09.js";
 import { reviewedBatch20261009B } from "./editorial/reviewed-batch-2026-10-09-b.js";
 import { reviewedBatch20261021 } from "./editorial/reviewed-batch-2026-10-21.js";
+import { hourlyEditorialReview } from "./editorial/hourly-review.js";
 
 export default {
   async fetch(request, env, ctx) {
@@ -204,6 +205,11 @@ async function tick(env) {
   await sourceTick(env);
   await ensureOfficialBridgeJobs(env.DB);
   await prepareDiscoveryReview(env.DB);
+  // Select recent primary-source stories once per hour; never bypass editorial approval.
+  try { await hourlyEditorialReview(env.DB); }
+  catch (error) {
+    await log(env.DB, "warning", "editorial_hourly", String(error).slice(0, 240)).catch(() => {});
+  }
   const max = Math.max(1, Math.min(10, Number(env.MAX_QUEUE_BATCH || 8)));
   for (let i = 0; i < max; i++) {
     const job = await claimOne(env.DB);
