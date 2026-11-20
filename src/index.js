@@ -29,7 +29,7 @@ import {
   ensureAdminAuthTables,
   requireAdminSession,
 } from "./security/admin-auth.js";
-import { riskGate, ugcModerationGate } from "./core/gates.js";
+import { riskGate, ugcModerationGate, factGate } from "./core/gates.js";
 import {
   home,
   contentPage,
@@ -50,6 +50,7 @@ import { reviewedBatch20261009 } from "./editorial/reviewed-batch-2026-10-09.js"
 import { reviewedBatch20261009B } from "./editorial/reviewed-batch-2026-10-09-b.js";
 import { reviewedBatch20261021 } from "./editorial/reviewed-batch-2026-10-21.js";
 import { hourlyEditorialReview } from "./editorial/hourly-review.js";
+import { similarity } from "./core/dedupe.js";
 
 export default {
   async fetch(request, env, ctx) {
@@ -482,6 +483,8 @@ async function submission(request, env) {
     return responseJson({ error: "invalid_area_or_category" }, 400);
   if (type !== "report" && category.kind !== type)
     return responseJson({ error: "category_type_mismatch" }, 400);
+  if (type === "report" && data.source_url && (!safeSourceUrl(String(data.source_url)) || !String(data.source_url).startsWith("https://")))
+    return responseJson({ error: "invalid_source_url" }, 400);
   if (file && !validUpload(file))
     return responseJson({ error: "invalid_image" }, 400);
   const payload = { ...data };
@@ -589,12 +592,13 @@ async function reviewSubmission(env, id) {
     .run();
 }
 
-async function publishApprovedSubmission(env, id) {
+async function publishApprovedSubmission(env, id, reviewedNews = null) {
   const s = await env.DB.prepare("SELECT * FROM la_submissions WHERE id=?")
     .bind(id)
     .first();
   if (!s || !["verified", "held"].includes(s.status)) return;
   const p = safeJson(s.payload_json, {});
+  if (s.submission_type === "report" && (!reviewedNews || s.content_id)) return;
   const r = riskGate({ title: p.title, text: p.description }, 70);
   if (r.level !== "GREEN") {
     await env.DB.prepare(
@@ -605,9 +609,9 @@ async function publishApprovedSubmission(env, id) {
     return;
   }
   const type = s.submission_type === "report" ? "news" : s.submission_type;
-  const title = String(p.title),
-    summary = String(p.description).slice(0, 220),
-    body = String(p.description);
+  const title = reviewedNews?.headline || String(p.title),
+    summary = reviewedNews?.summary || String(p.description).slice(0, 220),
+    body = reviewedNews?.body || String(p.description);
   const ugcFp = await sha256(
     [
       type,
@@ -644,6 +648,7 @@ async function publishApprovedSubmission(env, id) {
       return;
     }
   }
+  if (existing && s.submission_type === "report") return;
   if (existing) {
     await env.DB.prepare(
       "UPDATE la_content SET title=?,summary=?,body=?,area_id=?,category_id=?,updated_at=CURRENT_TIMESTAMP,status='updated',image_key=? WHERE id=?",
@@ -674,7 +679,7 @@ async function publishApprovedSubmission(env, id) {
       .slice(0, 80) || `contenuto-${id}`;
   const slug = `${slugBase}-${id}`;
   const res = await env.DB.prepare(
-    "INSERT INTO la_content(content_type,slug,title,summary,body,area_id,category_id,fingerprint,status,published_at,updated_at,event_start,event_end,venue,address,price_type,external_url,organizer,phone,private_email,website,social,verified_email,image_key,auto_generated,risk_level) VALUES(?,?,?,?,?,?,?,?,'published',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,?,?,?,?,?,?,?,?,?,?,?,?,1,?,0,'GREEN')",
+    "INSERT INTO la_content(content_type,slug,title,summary,body,area_id,category_id,fingerprint,source_url,status,published_at,updated_at,event_start,event_end,venue,address,price_type,external_url,organizer,phone,private_email,website,social,verified_email,image_key,auto_generated,risk_level) VALUES(?,?,?,?,?,?,?,?,?,'published',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,?,?,?,?,?,?,?,?,?,?,?,?,1,?,0,'GREEN')",
   )
     .bind(
       type,
@@ -685,6 +690,7 @@ async function publishApprovedSubmission(env, id) {
       Number(p.area_id),
       Number(p.category_id),
       ugcFp,
+      reviewedNews?.source_url || null,
       p.start || null,
       p.end || null,
       p.venue || null,
@@ -1196,7 +1202,7 @@ async function adminRoute(request, env, p) {
   }
   if (p === "/api/admin/submissions" && request.method === "GET") {
     const q = await env.DB.prepare(
-      "SELECT id,submission_type,json_extract(payload_json,'$.title') title,status,risk_score,content_id,created_at,verified_at FROM la_submissions ORDER BY id DESC LIMIT 100",
+      "SELECT id,submission_type,json_extract(payload_json,'$.title') title,json_extract(payload_json,'$.source_url') source_url,status,risk_score,content_id,created_at,verified_at FROM la_submissions ORDER BY id DESC LIMIT 100",
     ).all();
     return responseJson(q.results || []);
   }
@@ -1205,7 +1211,7 @@ async function adminRoute(request, env, p) {
     const id = Number(d.id || 0),
       action = String(d.action || "");
     const row = await env.DB.prepare(
-      "SELECT id,status FROM la_submissions WHERE id=?",
+      "SELECT id,status,submission_type,content_id FROM la_submissions WHERE id=?",
     )
       .bind(id)
       .first();
@@ -1227,7 +1233,38 @@ async function adminRoute(request, env, p) {
     }
     if (action !== "approve")
       return responseJson({ error: "invalid_action" }, 400);
-    await publishApprovedSubmission(env, id);
+    let reviewedNews = null;
+    if (row.submission_type === "report") {
+      if (row.content_id) return responseJson({ error: "duplicate_or_existing_story" }, 409);
+      const sourceUrl = String(d.source_url || "").trim();
+      if (!safeSourceUrl(sourceUrl) || !sourceUrl.startsWith("https://"))
+        return responseJson({ error: "verified_source_required" }, 422);
+      const notes = String(d.notes || "").trim();
+      if (notes.length < 25) return responseJson({ error: "review_notes_required" }, 422);
+      let source;
+      try { source = await fetchArticleDetails(sourceUrl); }
+      catch { return responseJson({ error: "independent_source_unavailable" }, 422); }
+      if (String(source.text || "").length < 300)
+        return responseJson({ error: "independent_source_incomplete" }, 422);
+      const draft = d.draft || {};
+      const editorial = editorialDraftGate(source.text, draft);
+      const facts = factGate({ title: source.title, text: source.text }, draft);
+      if (!editorial.pass || !facts.pass || String(draft.headline || "").trim().length < 12)
+        return responseJson({ error: "editorial_evidence_failed", reasons: [...editorial.violations, ...facts.violations] }, 422);
+      const citizenRow = await env.DB.prepare("SELECT payload_json FROM la_submissions WHERE id=?").bind(id).first();
+      const citizen = safeJson(citizenRow?.payload_json, {});
+      if (riskGate({ title: citizen.title, text: citizen.description }, 70).level !== "GREEN" ||
+          riskGate({ title: draft.headline, text: draft.body }, 70).level !== "GREEN")
+        return responseJson({ error: "sensitive_report_requires_review" }, 422);
+      const rows = await env.DB.prepare("SELECT id,title,source_url FROM la_content WHERE content_type='news' AND status IN ('published','updated') AND (source_url=? OR area_id=?) ORDER BY id DESC LIMIT 200").bind(sourceUrl,Number(citizen.area_id)).all();
+      const duplicate = (rows.results || []).find(x => x.source_url === sourceUrl || similarity(x.title, draft.headline) >= 0.72);
+      if (duplicate) {
+        await log(env.DB, "info", "dedupe", "Citizen news duplicate kept on hold", { submission_id:id, content_id:duplicate.id });
+        return responseJson({ error:"duplicate_story", content_id:duplicate.id },409);
+      }
+      reviewedNews = { headline:String(draft.headline).trim(), summary:String(draft.summary).trim(), body:String(draft.body).trim(), source_url:sourceUrl };
+    }
+    await publishApprovedSubmission(env, id, reviewedNews);
     const updated = await env.DB.prepare(
       "SELECT status,content_id FROM la_submissions WHERE id=?",
     )
