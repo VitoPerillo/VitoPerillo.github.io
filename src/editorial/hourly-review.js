@@ -1,4 +1,4 @@
-import { riskGate } from "../core/gates.js";
+import { riskGate, valueGate } from "../core/gates.js";
 
 // This is an editorial selection gate, NOT a publishing permit.
 // News and citizen reports remain on hold until a sourced, original draft is approved.
@@ -42,6 +42,11 @@ export function classifyHourlyCandidate(row, now = new Date()) {
     return "secondary_source_needs_primary_verification";
   if (riskGate({ title, text }, Number(row.trust_level)).level !== "GREEN")
     return "sensitive_needs_editor";
+  if (!valueGate({ title, text, area_id: row.detected_area, original_date: row.original_date }).pass)
+    return "low_local_utility";
+  // The Municipio I feed can carry citywide material; AHÓ covers only Trastevere/Porta Portese there.
+  if (Number(row.detected_area) === 5 && !/trastevere|porta portese/i.test(title + " " + text))
+    return "outside_editorial_scope";
   return "source_candidate_needs_original_draft";
 }
 
