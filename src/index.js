@@ -679,7 +679,7 @@ async function publishApprovedSubmission(env, id, reviewedNews = null) {
       .slice(0, 80) || `contenuto-${id}`;
   const slug = `${slugBase}-${id}`;
   const res = await env.DB.prepare(
-    "INSERT INTO la_content(content_type,slug,title,summary,body,area_id,category_id,fingerprint,source_url,status,published_at,updated_at,event_start,event_end,venue,address,price_type,external_url,organizer,phone,private_email,website,social,verified_email,image_key,auto_generated,risk_level) VALUES(?,?,?,?,?,?,?,?,?,'published',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,?,?,?,?,?,?,?,?,?,?,?,?,1,?,0,'GREEN')",
+    "INSERT INTO la_content(content_type,slug,title,summary,body,area_id,category_id,fingerprint,source_url,status,published_at,updated_at,event_start,event_end,venue,address,price_type,external_url,organizer,phone,private_email,website,social,verified_email,image_key,auto_generated,risk_level) VALUES(?,?,?,?,?,?,?,?,?,'published',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,?,?,?,?,?,?,?,?,?,?,?,1,?,0,'GREEN')",
   )
     .bind(
       type,
