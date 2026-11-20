@@ -50,6 +50,7 @@ import { reviewedBatch20261009 } from "./editorial/reviewed-batch-2026-10-09.js"
 import { reviewedBatch20261009B } from "./editorial/reviewed-batch-2026-10-09-b.js";
 import { reviewedBatch20261021 } from "./editorial/reviewed-batch-2026-10-21.js";
 import { hourlyEditorialReview } from "./editorial/hourly-review.js";
+import { publishVerifiedLocalStory } from "./editorial/verified-local-story-2026-11-21.js";
 import { similarity } from "./core/dedupe.js";
 
 export default {
@@ -207,6 +208,8 @@ async function tick(env) {
   await ensureOfficialBridgeJobs(env.DB);
   await prepareDiscoveryReview(env.DB);
   // Select recent primary-source stories once per hour; never bypass editorial approval.
+  try { await publishVerifiedLocalStory(env.DB); }
+  catch (error) { await log(env.DB, "warning", "verified_local_story", String(error).slice(0,240)).catch(() => {}); }
   try { await hourlyEditorialReview(env.DB); }
   catch (error) {
     await log(env.DB, "warning", "editorial_hourly", String(error).slice(0, 240)).catch(() => {});
@@ -594,27 +597,36 @@ async function verifySubmission(request, env) {
   const u = new URL(request.url),
     id = Number(u.searchParams.get("id") || 0),
     token = u.searchParams.get("token") || "";
-  const s = await env.DB.prepare("SELECT * FROM la_submissions WHERE id=?")
-    .bind(id)
-    .first();
-  if (
-    !s ||
-    s.status !== "pending_email" ||
-    Date.parse(String(s.expires_at || "").replace(" ", "T") + "Z") <
-      Date.now() ||
-    (await sha256(token)) !== s.verification_token_hash
-  )
-    return responseJson({ error: "invalid_or_expired" }, 400);
-  await env.DB.prepare(
-    "UPDATE la_submissions SET status='verified',verified_at=CURRENT_TIMESTAMP,verification_token_hash=NULL WHERE id=?",
-  )
-    .bind(id)
-    .run();
-  await enqueue(env.DB, "submission_review", id, {}, 100);
-  return new Response(
-    "Email verificata. La segnalazione è stata presa in carico.",
-    { headers: { "content-type": "text/plain;charset=utf-8" } },
+  const s = id > 0 && token
+    ? await env.DB.prepare("SELECT * FROM la_submissions WHERE id=?").bind(id).first()
+    : null;
+  // Email scanners and double taps may open the very same signed link again.
+  // Verification is idempotent, but only for the original HMAC-bearing link.
+  const authentic = s?.expires_at && token
+    ? (await hmacToken(env.TOKEN_SECRET, `verify:${id}:${s.expires_at}`)) === token
+    : false;
+  const friendly = (message, status = 200) => new Response(
+    '<!doctype html><html lang="it"><head><meta charset="utf-8">' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<title>Segnalazione AHÓ ROMA</title></head><body style="font:16px system-ui;max-width:42rem;margin:3rem auto;padding:1rem">' +
+    '<h1>AHÓ ROMA</h1><p>' + html(message) + '</p>' +
+    '<p><a href="/segnala">Invia una nuova segnalazione</a> · <a href="/">Torna alle notizie</a></p>' +
+    '</body></html>',
+    { status, headers: { "content-type":"text/html;charset=utf-8", "cache-control":"no-store" } }
   );
+  if (!authentic) return friendly("Questo collegamento non è valido o non è più disponibile.", 410);
+  if (["verified","held","approved"].includes(s.status))
+    return friendly("La segnalazione è già stata verificata e presa in carico.");
+  if (s.status !== "pending_email" ||
+      Date.parse(String(s.expires_at).replace(" ", "T") + "Z") < Date.now())
+    return friendly("Il collegamento è scaduto. Le nuove notizie si inviano senza conferma email.", 410);
+  const result = await env.DB.prepare(
+    "UPDATE la_submissions SET status='verified',verified_at=CURRENT_TIMESTAMP,verification_token_hash=NULL " +
+    "WHERE id=? AND status='pending_email' AND verification_token_hash=?"
+  ).bind(id, await sha256(token)).run();
+  if (Number(result.meta?.changes || 0) === 1)
+    await enqueue(env.DB, "submission_review", id, {}, 100);
+  return friendly("Email confermata. La segnalazione è stata presa in carico.");
 }
 async function reviewSubmission(env, id) {
   await ensureSafeModuleTables(env.DB);
