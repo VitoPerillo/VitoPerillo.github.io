@@ -74,7 +74,8 @@ test("hourly review is idempotent and cannot publish an article", async () => {
   const first=await hourlyEditorialReview(db,now);
   assert.equal(first.status,"review_only_no_unsupervised_publication");
   assert.equal(first.published_today_rome,3);
-  assert.equal(first.target_daily,10);
+  assert.equal(first.target_daily,20);
+  assert.equal(first.remaining_to_target,17);
   assert.equal(first.candidates.length,1);
   assert.equal(dbState.digest.candidates[0].ingest_id,221);
   const repeat=await hourlyEditorialReview(db,now);

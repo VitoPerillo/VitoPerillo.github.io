@@ -4,7 +4,8 @@ import { riskGate, valueGate } from "../core/gates.js";
 // News and citizen reports remain on hold until a sourced, original draft is approved.
 const PRIMARY_HOSTS = new Set(["www.comune.roma.it", "comune.roma.it", "www.atac.roma.it", "atac.roma.it", "www.rfi.it", "rfi.it"]);
 const MAX_SOURCE_AGE_HOURS = 72;
-const TARGET_PER_DAY = 10;
+const TARGET_PER_DAY = 20;
+const MAX_REVIEW_CANDIDATES = 20;
 
 export function editorialHourKey(now = new Date()) {
   return new Date(now).toISOString().slice(0, 13);
@@ -50,6 +51,31 @@ export function classifyHourlyCandidate(row, now = new Date()) {
   return "source_candidate_needs_original_draft";
 }
 
+
+/**
+ * A short official feed excerpt is NOT a publishable article. However, a
+ * fresh primary-source lead can be flagged for full-source verification
+ * rather than buried among stale/unsafe records. Never grants approval.
+ */
+export function needsFullPrimarySource(row, now = new Date()) {
+  if (row.content_id || row.already_published) return false;
+  const date = Date.parse(String(row.original_date || ""));
+  if (!Number.isFinite(date) || date < now.valueOf() - MAX_SOURCE_AGE_HOURS * 3600000 ||
+      date > now.valueOf() + 3600000) return false;
+  const title = String(row.original_title || "").trim();
+  const excerpt = String(row.original_text || "").trim();
+  if (!Number(row.detected_area) || title.length < 12) return false;
+  if (!["official", "official_bridge"].includes(String(row.source_type)) ||
+      Number(row.trust_level) < 90) return false;
+  let url;
+  try { url = new URL(String(row.source_url || "")); } catch { return false; }
+  if (url.protocol !== "https:" || !PRIMARY_HOSTS.has(url.hostname.toLowerCase())) return false;
+  if (riskGate({title, text:excerpt}, Number(row.trust_level)).level !== "GREEN") return false;
+  if (Number(row.detected_area) === 5 && !/trastevere|porta portese/i.test(title + " " + excerpt))
+    return false;
+  return true;
+}
+
 export async function hourlyEditorialReview(db, now = new Date()) {
   const hour = editorialHourKey(now);
   // The existing 15-minute cron/foreground tick can overlap; one conditional DB
@@ -70,7 +96,7 @@ export async function hourlyEditorialReview(db, now = new Date()) {
       "OR (c.content_type='news' AND lower(c.title)=lower(i.original_title))) AS already_published " +
       "FROM la_ingest i JOIN la_sources s ON s.id=i.source_id " +
       "WHERE i.status='held' AND s.usage_policy='discovery' AND i.original_date>=? " +
-      "ORDER BY i.original_date DESC,i.id DESC LIMIT 60"
+      "ORDER BY i.original_date DESC,i.id DESC LIMIT 160"
     ).bind(freshCutoff).all(),
     db.prepare(
       "SELECT count(*) AS n FROM la_content WHERE content_type='news' " +
@@ -83,15 +109,25 @@ export async function hourlyEditorialReview(db, now = new Date()) {
   for (const row of rows.results || []) {
     const decision = classifyHourlyCandidate(row, now);
     counts[decision] = (counts[decision] || 0) + 1;
-    if (decision === "source_candidate_needs_original_draft" && shortlist.length < 8) {
+    if (shortlist.length < MAX_REVIEW_CANDIDATES &&
+       (decision === "source_candidate_needs_original_draft" ||
+       (["insufficient_local_facts","low_local_utility"].includes(decision) &&
+        needsFullPrimarySource(row, now)))) {
       shortlist.push({ ingest_id: Number(row.id), source_url: row.source_url,
         title: row.original_title, source: row.source_name,
-        date: row.original_date, decision: "awaiting_editorial_verification" });
+        date: row.original_date, decision: decision === "source_candidate_needs_original_draft" ?
+          "awaiting_editorial_verification" : "fetch_full_primary_source_before_review" });
     }
   }
+  const publishedToday = Number(published?.n || 0);
   const digest = {
-    hour_utc: hour, target_daily: TARGET_PER_DAY,
-    published_today_rome: Number(published?.n || 0),
+    hour_utc: hour, day_start_utc: romeDayStartUtc(now),
+    target_daily: TARGET_PER_DAY,
+    published_today_rome: publishedToday,
+    remaining_to_target: Math.max(0, TARGET_PER_DAY - publishedToday),
+    candidate_count: shortlist.length,
+    primary_source_expansions: shortlist.filter(x => x.decision ===
+      "fetch_full_primary_source_before_review").length,
     status: "review_only_no_unsupervised_publication",
     candidates: shortlist, decisions: counts
   };
