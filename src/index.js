@@ -35,6 +35,7 @@ import {
   contentPage,
   areaPage,
   listPage,
+  newsPage,
   sitemap,
   rssFeed,
 } from "./render/pages.js";
@@ -58,6 +59,8 @@ export default {
         ctx?.waitUntil?.(maybeForegroundTick(env));
         return home(env.DB);
       }
+      if (request.method === "GET" && p === "/notizie")
+        return newsPage(env.DB, request.url);
       if (request.method === "GET" && p.startsWith("/notizie/"))
         return contentPage(env.DB, decodeURIComponent(p.slice(9)), request.url);
       if (request.method === "GET" && p.startsWith("/eventi/"))
