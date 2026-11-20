@@ -427,11 +427,13 @@ async function readBody(request) {
   const ct = request.headers.get("content-type") || "";
   if (ct.includes("multipart/form-data")) {
     const fd = await request.formData();
+    const image = fd.get("image");
     return {
       data: Object.fromEntries(
         [...fd.entries()].filter(([k, v]) => typeof v === "string"),
       ),
-      file: fd.get("image") instanceof File ? fd.get("image") : null,
+      // Browsers send an empty File even when no photo was selected.
+      file: image instanceof File && image.size > 0 ? image : null,
     };
   }
   return { data: await request.json(), file: null };
@@ -453,7 +455,7 @@ async function submission(request, env) {
     return responseJson({ error: "rate_limited" }, 429);
   const { data, file } = await readBody(request);
   if (data.website_hp) return responseJson({ ok: true }, 202);
-  if (!validFormTiming(data.form_started_at))
+  if (!validFormTiming(data.form_started_at, data.submission_type === "report" ? 1 : 3))
     return responseJson({ error: "invalid_form_timing" }, 400);
   if (String(data.rights_declared || "") !== "1")
     return responseJson({ error: "rights_required" }, 400);
@@ -463,31 +465,58 @@ async function submission(request, env) {
   const email = String(data.email || "")
     .trim()
     .toLowerCase();
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
+  if ((email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) ||
+      (type !== "report" && !email))
     return responseJson({ error: "invalid_email" }, 400);
-  if (!data.title || !data.description || !data.area_id || !data.category_id)
+  const description = String(data.description || "").trim();
+  if (type === "report") {
+    // Pasted Google results or a single link are leads, not publishable drafts.
+    if (description.length < 20 || description.length > 10000)
+      return responseJson({ error: "description_length" }, 400);
+    data.title = String(data.title || "").trim().slice(0, 140) ||
+      description.replace(/https?:\/\/\S+/g, "link").replace(/\s+/g, " ").slice(0, 110);
+    data.description = description;
+  }
+  if (!data.title || !data.description ||
+      (type !== "report" && (!data.area_id || !data.category_id)))
     return responseJson({ error: "missing_required" }, 400);
   if (type === "event" && (!data.start || !data.venue))
     return responseJson({ error: "missing_event_fields" }, 400);
   if (type === "business" && (!data.address || !data.cap))
     return responseJson({ error: "missing_business_fields" }, 400);
   const [area, category] = await Promise.all([
-    env.DB.prepare("SELECT id FROM la_areas WHERE id=? AND active=1")
-      .bind(Number(data.area_id))
-      .first(),
-    env.DB.prepare("SELECT id,kind FROM la_categories WHERE id=? AND active=1")
-      .bind(Number(data.category_id))
-      .first(),
+    type === "report" && !data.area_id
+      ? env.DB.prepare("SELECT id FROM la_areas WHERE slug='roma' AND active=1").first()
+      : env.DB.prepare("SELECT id FROM la_areas WHERE id=? AND active=1")
+          .bind(Number(data.area_id)).first(),
+    type === "report" && !data.category_id
+      ? env.DB.prepare("SELECT id,kind FROM la_categories WHERE slug='avvisi-utili' AND kind='news' AND active=1").first()
+      : env.DB.prepare("SELECT id,kind FROM la_categories WHERE id=? AND active=1")
+          .bind(Number(data.category_id)).first(),
   ]);
   if (!area || !category)
     return responseJson({ error: "invalid_area_or_category" }, 400);
-  if (type !== "report" && category.kind !== type)
+  if ((type !== "report" && category.kind !== type) ||
+      (type === "report" && category.kind !== "news"))
     return responseJson({ error: "category_type_mismatch" }, 400);
+  data.area_id = Number(area.id);
+  data.category_id = Number(category.id);
+  let submissionFingerprint = null;
+  if (type === "report") {
+    submissionFingerprint = await sha256(description.toLocaleLowerCase("it").replace(/\s+/g, " ").trim());
+    const duplicate = await env.DB.prepare(
+      "SELECT id FROM la_submissions WHERE submission_type='report' AND " +
+      "json_extract(payload_json,'$.submission_fp')=? AND created_at>=datetime('now','-7 days') " +
+      "AND status NOT IN ('rejected') LIMIT 1"
+    ).bind(submissionFingerprint).first();
+    if (duplicate) return responseJson({ ok:true, status:"held", duplicate:true }, 202);
+  }
   if (type === "report" && data.source_url && (!safeSourceUrl(String(data.source_url)) || !String(data.source_url).startsWith("https://")))
     return responseJson({ error: "invalid_source_url" }, 400);
   if (file && !validUpload(file))
     return responseJson({ error: "invalid_image" }, 400);
   const payload = { ...data };
+  if (submissionFingerprint) payload.submission_fp = submissionFingerprint;
   delete payload.email;
   delete payload.form_started_at;
   delete payload.rights_declared;
@@ -502,6 +531,21 @@ async function submission(request, env) {
       return responseJson({ error: "media_storage_unavailable" }, 503);
     await media.put(imageKey, cleaned, file.type);
     payload.image_key = imageKey;
+  }
+  if (type === "report") {
+    const manageToken = randomToken(32);
+    const anonymousEmailHash = email
+      ? await sha256(email) : await sha256("anonymous:" + randomToken(32));
+    const received = await env.DB.prepare(
+      "INSERT INTO la_submissions(submission_type,email,email_hash,payload_json,status,edit_token_hash) " +
+      "VALUES('report',?,?,?,'held',?)"
+    ).bind(email,anonymousEmailHash,JSON.stringify(payload),await sha256(manageToken)).run();
+    const id = Number(received.meta.last_row_id);
+    await enqueue(env.DB, "submission_review", id, {}, 100);
+    return responseJson({
+      ok:true, id, status:"held",
+      manage_url:"/gestisci?id=" + id + "&token=" + encodeURIComponent(manageToken)
+    }, 202);
   }
   const res = await env.DB.prepare(
     "INSERT INTO la_submissions(submission_type,email,email_hash,payload_json,status,expires_at) VALUES(?,?,?,?,'pending_email',datetime('now','+24 hours'))",
