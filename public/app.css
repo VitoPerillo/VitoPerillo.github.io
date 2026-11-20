@@ -1024,3 +1024,23 @@ footer {
   body:has(main .news-search-area) .latest-grid .card h3 { font-size:18px; line-height:1.24; margin:5px 0 7px; }
   body:has(main .news-search-area) .latest-grid .card p { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; font-size:14px; line-height:1.4; margin:0 0 9px; }
 }
+
+/* AHÓ ROMA — MOBILE Home: remove the entire redundant intro/headline area.
+   Keep accessible geo action inside existing search and manual selection in nav. */
+.news-search-row .geo-search-btn, .location-status-mobile { display:none; }
+@media (max-width:560px) {
+  body:has(main .news-search-area) .news-intro { display:none; }
+  body:has(main .news-search-area) .breaking > .compact-head { display:none; }
+  body:has(main .news-search-area) .breaking { padding-top:4px; }
+  body:has(main .news-search-area) .news-search-row .geo-search-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    flex:0 0 40px; width:40px; height:40px; min-height:40px;
+    padding:0; font-size:17px; border-radius:9px;
+  }
+  body:has(main .news-search-area) .news-search-row .geo-search-btn:focus-visible {
+    outline:2px solid var(--blue); outline-offset:2px;
+  }
+  body:has(main .news-search-area) .location-status-mobile:not(:empty) {
+    display:block; padding:4px 0 0; color:var(--muted); font-size:12px;
+  }
+}

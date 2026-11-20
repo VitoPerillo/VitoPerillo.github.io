@@ -141,7 +141,8 @@ export async function home(db) {
       <section class="news-search-area wrap" aria-label="Cerca notizie">
         <form class="news-search-form" action="/notizie" method="get" role="search">
           <label for="home-news-query">Cerca tra le notizie pubblicate</label>
-          <div class="news-search-row"><input id="home-news-query" type="search" name="q" maxlength="100" placeholder="Cerca una notizia…" aria-label="Parola da cercare"><button type="submit">Cerca</button></div>
+          <div class="news-search-row"><input id="home-news-query" type="search" name="q" maxlength="100" placeholder="Cerca una notizia…" aria-label="Parola da cercare"><button type="submit">Cerca</button><button class="geo-search-btn" id="geoBtnMobile" type="button" title="Trova il mio quartiere" aria-label="Trova il mio quartiere">📍</button></div>
+          <span id="geoStatusMobile" class="location-status-mobile" role="status" aria-live="polite"></span>
         </form>
       </section>
 
@@ -189,6 +190,21 @@ export async function home(db) {
         const areas = ${geoData};
         const btn = document.getElementById('geoBtn');
         const status = document.getElementById('geoStatus');
+        const mobileBtn = document.getElementById('geoBtnMobile');
+        const mobileStatus = document.getElementById('geoStatusMobile');
+        const notify = message => {
+          status.innerHTML = message;
+          mobileStatus.innerHTML = message;
+        };
+        const mobileLabel = message => {
+          mobileBtn.setAttribute('aria-label', message);
+          mobileBtn.title = message;
+        };
+        const busy = active => {
+          btn.disabled = active;
+          mobileBtn.disabled = active;
+          mobileLabel(active ? 'Ricerca del quartiere in corso' : 'Trova il mio quartiere');
+        };
         const dist = (lat1,lon1,lat2,lon2) => {
           const r=6371, dLat=(lat2-lat1)*Math.PI/180, dLon=(lon2-lon1)*Math.PI/180;
           const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
@@ -198,31 +214,36 @@ export async function home(db) {
         if(saved?.slug && saved?.name){
           btn.textContent='📍 '+saved.name;
           btn.onclick=()=>location.href='/zona/'+encodeURIComponent(saved.slug);
+          mobileBtn.onclick=()=>location.href='/zona/'+encodeURIComponent(saved.slug);
+          mobileLabel('Apri quartiere '+saved.name);
           status.innerHTML='<a href="/quartieri">Cambia quartiere</a>';
           return;
         }
-        btn?.addEventListener('click', () => {
+        const findMyArea = () => {
           if(!navigator.geolocation){
-            status.textContent='Posizione non disponibile. Scegli il quartiere.';
+            notify('Posizione non disponibile. <a href="/quartieri">Scegli manualmente</a>.');
             return;
           }
-          btn.disabled=true; btn.textContent='📍 Sto cercando…';
+          busy(true); btn.textContent='📍 Sto cercando…';
           navigator.geolocation.getCurrentPosition(pos => {
             const lat=pos.coords.latitude, lon=pos.coords.longitude;
             const nearest=areas.map(a=>({slug:a[0],name:a[1],km:dist(lat,lon,a[2],a[3])})).sort((a,b)=>a.km-b.km)[0];
-            btn.disabled=false;
+            busy(false);
             if(!nearest || nearest.km>18){
               btn.textContent='📍 Fuori area';
-              status.innerHTML='Per ora copriamo Roma Ovest / Sud-Ovest. <a href="/quartieri">Scegli un quartiere</a>.';
+              mobileLabel('Fuori area: scegli il quartiere');
+              notify('Per ora copriamo Roma Ovest / Sud-Ovest. <a href="/quartieri">Scegli un quartiere</a>.');
               return;
             }
             localStorage.setItem('ahoRomaArea',JSON.stringify({slug:nearest.slug,name:nearest.name}));
             location.href='/zona/'+encodeURIComponent(nearest.slug);
           }, () => {
-            btn.disabled=false; btn.textContent='📍 Trova il mio quartiere';
-            status.innerHTML='Posizione non concessa. <a href="/quartieri">Scegli manualmente</a>.';
+            busy(false); btn.textContent='📍 Trova il mio quartiere';
+            notify('Posizione non concessa. <a href="/quartieri">Scegli manualmente</a>.');
           }, {enableHighAccuracy:false,timeout:7000,maximumAge:900000});
-        });
+        };
+        btn?.addEventListener('click', findMyArea);
+        mobileBtn?.addEventListener('click', findMyArea);
       })();
       </script>
     `,
