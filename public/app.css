@@ -892,3 +892,8 @@ footer {
 /* AHÓ ROMA — fotografia illustrativa per notizie ed eventi */
 .card-image,.lead-image{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;margin-bottom:12px}
 .lead-image{max-height:260px}
+
+/* AHÓ ROMA — only approved brand header, leave rest of layout untouched. */
+.brand-official { display: flex; align-items: center; min-width: 0; flex-shrink: 1; }
+.brand-logo-image { display: block; width: clamp(195px, 32vw, 355px); height: auto; max-width: 100%; object-fit: contain; }
+@media (max-width: 760px) { .brand-logo-image { width: clamp(150px, 45vw, 240px); } }
