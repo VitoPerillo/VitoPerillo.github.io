@@ -40,3 +40,18 @@ test("Real browser multipart/form-data with empty image does not fail",async()=>
   assert.equal(db.sqlite.prepare("SELECT count(*) n FROM la_submissions").get().n,1);
  }finally{db.close()}
 });
+
+test("Text-only report sends without rights/photo checkbox",async()=>{
+ const db=new D1();try{const r=await send(db,{rights_declared:""});assert.equal(r.status,202,JSON.stringify(r));assert.equal(r.json.status,"held");assert.equal(db.sqlite.prepare("SELECT count(*) n FROM la_submissions").get().n,1);}finally{db.close()}
+});
+test("Photo and event submissions still require explicit rights declaration",async()=>{
+ const db=new D1();try{
+  let r=await send(db,{submission_type:"event",rights_declared:"",email:"event@example.invalid",area_id:7,category_id:8,start:"2026-11-30T12:00",venue:"Quartiere"});
+  assert.equal(r.status,400);assert.equal(r.json.error,"rights_required");
+  const form=new FormData();
+  for(const [k,v] of Object.entries({submission_type:"report",description:"Una notizia locale con fotografia da condividere, descrizione sufficientemente lunga.",form_started_at:String(Date.now()-5000)}))form.append(k,v);
+  form.append("image",new File([new Uint8Array([137,80,78,71])],"test.png",{type:"image/png"}));
+  const resp=await worker.fetch(new Request(origin+"/api/submission",{method:"POST",headers:{"cf-connecting-ip":"203.0.113.88"},body:form}),{DB:db,TOKEN_SECRET:"synthetic-test-secret"},{waitUntil(){}});
+  const data=await resp.json();assert.equal(resp.status,400,JSON.stringify(data));assert.equal(data.error,"rights_required");
+ }finally{db.close()}
+});

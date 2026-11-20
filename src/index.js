@@ -457,7 +457,10 @@ async function submission(request, env) {
   if (data.website_hp) return responseJson({ ok: true }, 202);
   if (!validFormTiming(data.form_started_at, data.submission_type === "report" ? 1 : 3))
     return responseJson({ error: "invalid_form_timing" }, 400);
-  if (String(data.rights_declared || "") !== "1")
+  // Text-only citizen news is a lead for fact-checking, not a copyrighted upload.
+  // Preserve the declaration for photos and legacy event/business submissions.
+  if ((data.submission_type !== "report" || Boolean(file && file.size > 0)) &&
+      String(data.rights_declared || "") !== "1")
     return responseJson({ error: "rights_required" }, 400);
   const type = String(data.submission_type || "");
   if (!["event", "business", "report"].includes(type))

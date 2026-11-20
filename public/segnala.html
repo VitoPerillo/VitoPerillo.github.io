@@ -21,9 +21,9 @@
 <div id="eventFields" hidden><label>Inizio evento<input name="start" type="datetime-local"></label><label>Luogo<input name="venue"></label></div>
 <div id="businessFields" hidden><label>Indirizzo<input name="address"></label><label>CAP<input name="cap"></label><label>Sito web<input name="website" type="url"></label></div>
 <label>Foto tua o utilizzabile (facoltativa)<input name="image" type="file" accept="image/jpeg,image/png,image/webp"></label>
+<label class="report-policy" style="display:flex;align-items:flex-start;gap:8px"><input type="checkbox" name="rights_declared" value="1"><span>Posso condividere l'eventuale foto allegata o i materiali dell'evento/attività.</span></label>
 </details>
 <input name="website_hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px"><input type="hidden" name="form_started_at" id="fst">
-<label class="report-policy" style="display:flex;align-items:flex-start;gap:8px"><input type="checkbox" name="rights_declared" value="1" required><span>Invio la segnalazione in buona fede e posso condividere le eventuali immagini allegate. La pubblicazione è soggetta a verifica.</span></label>
 <button id="submit" class="report-button" type="submit">Invia la segnalazione</button>
 </form><div id="out" role="status" aria-live="polite"></div>
 </section></main>
@@ -36,8 +36,9 @@ function renderCats(){const t=type.value;category.innerHTML='<option value="">Sc
 for(const x of eventFields.querySelectorAll('input'))x.required=t==='event'&&['start','venue'].includes(x.name);
 for(const x of businessFields.querySelectorAll('input'))x.required=t==='business'&&['address','cap'].includes(x.name);
 for(const x of [area,category,form.elements.email,form.elements.title])x.required=t!=='report';
+form.elements.rights_declared.required=t!=='report'||Boolean(form.elements.image.files[0]?.size);
 }
-type.onchange=renderCats;renderCats();
+type.onchange=renderCats;form.elements.image.onchange=renderCats;renderCats();
 form.onsubmit=async event=>{event.preventDefault();send.disabled=true;out.textContent='Invio in corso…';try{
 const r=await fetch('/api/submission',{method:'POST',body:new FormData(form)}),j=await r.json().catch(()=>({}));
 if(!r.ok){out.textContent='Invio non riuscito: '+(j.error==='rate_limited'?'troppi invii, riprova più tardi':j.error||r.status);return;}
