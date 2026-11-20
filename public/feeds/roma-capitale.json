@@ -1,12 +1,30 @@
 [
   {
+    "id": "https://www.comune.roma.it/web/it/notizia/mun12-il-filo-rosso-delle-sibille-2026.page",
+    "url": "https://www.comune.roma.it/web/it/notizia/mun12-il-filo-rosso-delle-sibille-2026.page",
+    "title": "Municipio XII. \"Il Filo rosso delle Sibille\" dal 23 al 28 novembre",
+    "text": "Municipio XII. In occasione della Giornata internazionale per l'eliminazione della violenza contro le donne.",
+    "date": "2026-11-20T13:47:00+02:00",
+    "area_slug": "municipio-xii",
+    "category_slug": "servizi-municipio"
+  },
+  {
     "id": "https://www.comune.roma.it/web/it/notizia/cie-open-day-21-22-novembre-2026.page",
     "url": "https://www.comune.roma.it/web/it/notizia/cie-open-day-21-22-novembre-2026.page",
     "title": "CIE, open day 21 e 22 novembre",
     "text": "Municipio XII. Aperti gli ex PIT, via Petroselli e i Municipi III, IV, VIII, IX, XII e XV.",
-    "date": "2026-11-18T15:22:00+02:00",
+    "date": "2026-11-20T13:09:00+02:00",
     "area_slug": "municipio-xii",
     "category_slug": "avvisi-utili"
+  },
+  {
+    "id": "https://www.comune.roma.it/web/it/notizia/mun11-eventi-25-novembre-2026.page",
+    "url": "https://www.comune.roma.it/web/it/notizia/mun11-eventi-25-novembre-2026.page",
+    "title": "Municipio XI. \"Il nostro ricordo, le nostre donne\", gli eventi del 25 novembre",
+    "text": "Municipio XI. Iniziative in memoria di Sara Di Pietrantonio, Manuela Petrangeli e Badda Liyanage.",
+    "date": "2026-11-20T08:56:00+02:00",
+    "area_slug": "municipio-xi",
+    "category_slug": "servizi-municipio"
   },
   {
     "id": "https://www.comune.roma.it/web/it/notizia/bastogi-palazzina-f-parte-bonifica-amianto.page",
