@@ -427,11 +427,13 @@ async function readBody(request) {
   const ct = request.headers.get("content-type") || "";
   if (ct.includes("multipart/form-data")) {
     const fd = await request.formData();
+    const image = fd.get("image");
     return {
       data: Object.fromEntries(
         [...fd.entries()].filter(([k, v]) => typeof v === "string"),
       ),
-      file: fd.get("image") instanceof File ? fd.get("image") : null,
+      // Browsers send an empty File even when no photo was selected.
+      file: image instanceof File && image.size > 0 ? image : null,
     };
   }
   return { data: await request.json(), file: null };

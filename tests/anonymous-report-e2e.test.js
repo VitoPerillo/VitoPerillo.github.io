@@ -26,3 +26,17 @@ test("Repeated identical submission is idempotent and no extra jobs",async()=>{c
 test("Optional email does not require OTP and remains on hold",async()=>{const db=new D1();try{const r=await send(db,{email:"tipster@example.invalid"});assert.equal(r.status,202,JSON.stringify(r));const row=db.sqlite.prepare("SELECT email,status FROM la_submissions").get();assert.equal(row.email,"tipster@example.invalid");assert.equal(row.status,"held");assert.equal(db.sqlite.prepare("SELECT count(*) n FROM la_jobs WHERE job_type='send_verify_email'").get().n,0);}finally{db.close()}});
 test("Non-report flows still require email and other metadata; bad source denied",async()=>{const db=new D1();try{let r=await send(db,{submission_type:"event"});assert.equal(r.status,400);assert.equal(r.json.error,"invalid_email");r=await send(db,{source_url:"http://example.com"});assert.equal(r.status,400);assert.equal(r.json.error,"invalid_source_url");assert.equal(db.sqlite.prepare("SELECT count(*) n FROM la_submissions").get().n,0);}finally{db.close()}});
 test("Honeypot does not add content or jobs",async()=>{const db=new D1();try{const r=await send(db,{website_hp:"spam"});assert.equal(r.status,202);assert.equal(db.sqlite.prepare("SELECT count(*) n FROM la_submissions").get().n,0);}finally{db.close()}});
+
+test("Real browser multipart/form-data with empty image does not fail",async()=>{
+ const db=new D1();try{
+  const form=new FormData();
+  for(const [key,value] of Object.entries({submission_type:"report",description:"Questo è un testo locale di prova sufficientemente lungo e documentabile.",rights_declared:"1",form_started_at:String(Date.now()-5000),email:"",area_id:"",category_id:""}))form.append(key,value);
+  form.append("image",new File([],"",{type:"application/octet-stream"}));
+  const request=new Request(origin+"/api/submission",{method:"POST",headers:{"cf-connecting-ip":"203.0.113.77"},body:form});
+  const response=await worker.fetch(request,{DB:db,TOKEN_SECRET:"synthetic-test-secret"},{waitUntil(){}});
+  const payload=await response.json();
+  assert.equal(response.status,202,JSON.stringify(payload));
+  assert.equal(payload.status,"held");
+  assert.equal(db.sqlite.prepare("SELECT count(*) n FROM la_submissions").get().n,1);
+ }finally{db.close()}
+});
