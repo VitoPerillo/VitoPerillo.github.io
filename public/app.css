@@ -1011,3 +1011,16 @@ footer {
   .breaking .lead-story { padding:13px; }
   .breaking .lead-story h1 { font-size:clamp(23px,6vw,28px); line-height:1.12; margin:5px 0 7px; }
 }
+
+/* AHÓ ROMA — mobile Home news cards only: 3-line excerpts, full article pages untouched. */
+@media (max-width:560px){
+  body:has(main .news-search-area) .breaking .lead-story { padding:11px; }
+  body:has(main .news-search-area) .breaking .lead-story h1 { font-size:21px; line-height:1.16; margin:4px 0 6px; }
+  body:has(main .news-search-area) .breaking .lead-story p { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; font-size:14px; line-height:1.4; margin:0 0 7px; }
+  body:has(main .news-search-area) .breaking .lead-story small { font-size:12px; }
+  body:has(main .news-search-area) .breaking .headline-row { padding:10px 2px; }
+  body:has(main .news-search-area) .breaking .headline-row h2 { font-size:17px; line-height:1.22; margin:3px 0 5px; }
+  body:has(main .news-search-area) .latest-grid .card { padding:14px; min-height:0; }
+  body:has(main .news-search-area) .latest-grid .card h3 { font-size:18px; line-height:1.24; margin:5px 0 7px; }
+  body:has(main .news-search-area) .latest-grid .card p { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; font-size:14px; line-height:1.4; margin:0 0 9px; }
+}
