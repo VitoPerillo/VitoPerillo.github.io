@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/citizen-e2e.test.js",
-    "check": "node --check src/index.js && node --check tests/citizen-e2e.test.js"
+    "test": "node --test tests/home-mobile-ui.test.js",
+    "check": "node --check src/render/pages.js && node --check tests/home-mobile-ui.test.js"
   },
   "devDependencies": {
     "wrangler": "^4.0.0"
