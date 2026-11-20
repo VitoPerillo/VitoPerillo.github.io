@@ -305,9 +305,9 @@ export async function newsPage(db, requestUrl) {
     `<option value="${html(a.name)}"></option>`
   ).join("");
   const navigation = `<nav class="news-pages news-pages-inline" aria-label="Sfoglia le notizie">
-    ${page < pages ? `<a href="${html(pageHref(page + 1))}" aria-label="Notizie precedenti" title="Notizie precedenti">‹</a>` : '<span aria-disabled="true" aria-label="Nessuna notizia precedente">‹</span>'}
-    <span class="news-page-number">${page} / ${pages}</span>
-    ${page > 1 ? `<a href="${html(pageHref(page - 1))}" aria-label="Notizie successive" title="Notizie successive">›</a>` : '<span aria-disabled="true" aria-label="Nessuna notizia successiva">›</span>'}
+    ${page > 1 ? `<a href="${html(pageHref(page - 1))}" rel="prev" aria-label="Vai alle notizie più recenti">← Più recenti</a>` : '<span aria-disabled="true">← Più recenti</span>'}
+    <span class="news-page-number">Pagina ${page} di ${pages}</span>
+    ${page < pages ? `<a href="${html(pageHref(page + 1))}" rel="next" aria-label="Vai alle notizie più vecchie">Più vecchie →</a>` : '<span aria-disabled="true">Più vecchie →</span>'}
   </nav>`;
   const body = `
     <section class="news-search-area wrap">
@@ -324,6 +324,7 @@ export async function newsPage(db, requestUrl) {
       <div class="section-head news-history-head"><div><span class="kicker">NOTIZIE</span><h1>Notizie</h1></div>${navigation}</div>
       <p class="news-result-count">${total} ${total === 1 ? "notizia trovata" : "notizie trovate"}</p>
       <div class="news-history-list">${rows || empty("Nessuna notizia trovata", "Prova altre parole o un altro quartiere.")}</div>
+      <div class="news-history-bottom">${navigation}</div>
     </section>`;
   return new Response(shell("Tutte le notizie — AHÓ ROMA", body), {
     headers: { "content-type": "text/html;charset=utf-8", "cache-control": "public,max-age=60" }
@@ -345,7 +346,7 @@ export async function contentPage(db, slug, baseUrl) {
   }
   const root = new URL(baseUrl).origin,
     canonicalUrl = root + routeFor(x);
-  const [related, ad] = await Promise.all([
+  const [related, ad, olderNews, newerNews] = await Promise.all([
     db
       .prepare(
         "SELECT c.content_type,c.slug,c.title,c.summary,c.image_key,c.event_start,c.organizer,c.updated_at,c.valid_from,a.name area FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE c.id<>? AND c.status IN ('published','updated') AND (c.area_id=? OR c.category_id=?) ORDER BY c.updated_at DESC LIMIT 4",
@@ -353,6 +354,16 @@ export async function contentPage(db, slug, baseUrl) {
       .bind(x.id, x.area_id, x.category_id)
       .all(),
     houseAd(db),
+    x.content_type === "news" ? db.prepare(
+      "SELECT slug,title FROM la_content WHERE content_type='news' AND status IN ('published','updated','resolved','expired') " +
+      "AND (published_at<? OR (published_at=? AND id<?)) " +
+      "ORDER BY published_at DESC,id DESC LIMIT 1"
+    ).bind(x.published_at,x.published_at,x.id).first() : Promise.resolve(null),
+    x.content_type === "news" ? db.prepare(
+      "SELECT slug,title FROM la_content WHERE content_type='news' AND status IN ('published','updated','resolved','expired') " +
+      "AND (published_at>? OR (published_at=? AND id>?)) " +
+      "ORDER BY published_at ASC,id ASC LIMIT 1"
+    ).bind(x.published_at,x.published_at,x.id).first() : Promise.resolve(null)
   ]);
   const rel = (related.results || []).map(card).join("");
   const isRemotePhoto = String(x.image_key || "").startsWith("https://images.unsplash.com/photo-");
@@ -399,6 +410,13 @@ export async function contentPage(db, slug, baseUrl) {
       author: { "@type": "Organization", name: "AHÓ ROMA" },
       mainEntityOfPage: canonicalUrl,
     };
+  const articlePager = x.content_type === "news"
+    ? `<nav class="news-article-pager" aria-label="Notizie precedenti e successive">
+         ${newerNews ? `<a href="/notizie/${html(newerNews.slug)}" rel="next" aria-label="Notizia più recente: ${html(newerNews.title)}">← Più recente</a>` : '<span aria-disabled="true">← Più recente</span>'}
+         <a class="news-archive-link" href="/notizie">Tutte le notizie</a>
+         ${olderNews ? `<a href="/notizie/${html(olderNews.slug)}" rel="prev" aria-label="Notizia precedente: ${html(olderNews.title)}">Più vecchia →</a>` : '<span aria-disabled="true">Più vecchia →</span>'}
+       </nav>`
+    : "";
   const crumbs = `<nav class="breadcrumbs" aria-label="breadcrumb"><a href="/">Home</a>${x.area_slug ? ` › <a href="/zona/${html(x.area_slug)}">${html(x.area)}</a>` : ""} › ${html(x.title)}</nav>`;
   const facts = [
     x.area,
@@ -413,7 +431,7 @@ export async function contentPage(db, slug, baseUrl) {
   return new Response(
     shell(
       x.title,
-      `<div class="wrap article-wrap">${crumbs}<article class="article"><div class="eyebrow">${html(x.area || "Roma Ovest / Sud-Ovest")}</div>${x.content_type === "news" ? `<p class="news-date">Pubblicata il ${html(fmtDate(x.published_at))}</p>` : ""}<h1>${html(x.title)}</h1><div class="facts">${facts}</div><div class="impact"><span>COSA CAMBIA PER TE</span><p>${html(x.summary)}</p></div>${x.image_key ? `<figure><img class="article-image" src="${html(imageUrl)}" alt="Illustrazione della notizia locale per ${html(x.area || "Roma Ovest")}" loading="lazy">${isRemotePhoto ? `<figcaption>Foto illustrativa da Unsplash, non della specifica attività.</figcaption>` : `<figcaption>Illustrazione originale AHÓ ROMA · <a href="https://creativecommons.org/licenses/by/4.0/deed.it" rel="license noopener">CC BY 4.0</a></figcaption>`}</figure>` : ""}<div class="article-body">${articleBody(x.body)}</div>${x.content_type === "news" ? `<p class="news-share"><a href="${html(shareUrl)}" target="_blank" rel="noopener noreferrer nofollow">Condividi questa notizia su Facebook</a> · <a href="https://www.facebook.com/groups/1306770406039807" target="_blank" rel="noopener noreferrer nofollow">Apri il gruppo di quartiere</a></p>` : ""}<p class="source">Sintesi originale revisionata a partire da una fonte ufficiale.${x.source_url ? ` <a rel="nofollow noopener" href="${html(x.source_url)}">Consulta la pagina integrale ↗</a>` : ""} · Aggiornato ${html(fmtDate(x.updated_at))}</p><details class="report-box"><summary>Segnala un problema con questo contenuto</summary><form onsubmit="return reportContent(event,${Number(x.id)})"><label>Motivo<select name="reason"><option value="false_info">Informazione errata</option><option value="privacy">Privacy o dati personali</option><option value="copyright">Diritti d'autore</option><option value="offensive">Contenuto offensivo</option><option value="illegal">Possibile illecito</option><option value="spam">Spam</option><option value="other">Altro</option></select></label><label>Dettagli<textarea name="details" maxlength="2000" required></textarea></label><label>Email facoltativa<input name="email" type="email"></label><button>Invia segnalazione</button><output></output></form></details><script>async function reportContent(e,id){e.preventDefault();const f=e.target,r=await fetch('/api/report',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...Object.fromEntries(new FormData(f)),content_id:id})});f.querySelector('output').textContent=r.ok?'Segnalazione ricevuta. Grazie.':'Invio non riuscito.';if(r.ok)f.reset();return false}</script><script type="application/ld+json">${JSON.stringify(schema).replace(/</g, "\\u003c")}</script></article>${renderAd(ad)}${rel ? `<section class="section"><div class="section-head"><h2>Contenuti correlati</h2></div><div class="grid cards">${rel}</div></section>` : ""}</div>`,
+      `<div class="wrap article-wrap">${crumbs}<article class="article"><div class="eyebrow">${html(x.area || "Roma Ovest / Sud-Ovest")}</div>${x.content_type === "news" ? `<p class="news-date">Pubblicata il ${html(fmtDate(x.published_at))}</p>` : ""}<h1>${html(x.title)}</h1><div class="facts">${facts}</div><div class="impact"><span>COSA CAMBIA PER TE</span><p>${html(x.summary)}</p></div>${x.image_key ? `<figure><img class="article-image" src="${html(imageUrl)}" alt="Illustrazione della notizia locale per ${html(x.area || "Roma Ovest")}" loading="lazy">${isRemotePhoto ? `<figcaption>Foto illustrativa da Unsplash, non della specifica attività.</figcaption>` : `<figcaption>Illustrazione originale AHÓ ROMA · <a href="https://creativecommons.org/licenses/by/4.0/deed.it" rel="license noopener">CC BY 4.0</a></figcaption>`}</figure>` : ""}<div class="article-body">${articleBody(x.body)}</div>${x.content_type === "news" ? `<p class="news-share"><a href="${html(shareUrl)}" target="_blank" rel="noopener noreferrer nofollow">Condividi questa notizia su Facebook</a> · <a href="https://www.facebook.com/groups/1306770406039807" target="_blank" rel="noopener noreferrer nofollow">Apri il gruppo di quartiere</a></p>` : ""}<p class="source">Sintesi originale revisionata a partire da una fonte ufficiale.${x.source_url ? ` <a rel="nofollow noopener" href="${html(x.source_url)}">Consulta la pagina integrale ↗</a>` : ""} · Aggiornato ${html(fmtDate(x.updated_at))}</p><details class="report-box"><summary>Segnala un problema con questo contenuto</summary><form onsubmit="return reportContent(event,${Number(x.id)})"><label>Motivo<select name="reason"><option value="false_info">Informazione errata</option><option value="privacy">Privacy o dati personali</option><option value="copyright">Diritti d'autore</option><option value="offensive">Contenuto offensivo</option><option value="illegal">Possibile illecito</option><option value="spam">Spam</option><option value="other">Altro</option></select></label><label>Dettagli<textarea name="details" maxlength="2000" required></textarea></label><label>Email facoltativa<input name="email" type="email"></label><button>Invia segnalazione</button><output></output></form></details><script>async function reportContent(e,id){e.preventDefault();const f=e.target,r=await fetch('/api/report',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...Object.fromEntries(new FormData(f)),content_id:id})});f.querySelector('output').textContent=r.ok?'Segnalazione ricevuta. Grazie.':'Invio non riuscito.';if(r.ok)f.reset();return false}</script><script type="application/ld+json">${JSON.stringify(schema).replace(/</g, "\\u003c")}</script></article>${articlePager}${renderAd(ad)}${rel ? `<section class="section"><div class="section-head"><h2>Contenuti correlati</h2></div><div class="grid cards">${rel}</div></section>` : ""}</div>`,
       meta,
     ),
     {

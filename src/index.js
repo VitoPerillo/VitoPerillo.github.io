@@ -454,17 +454,19 @@ async function ensureSafeModuleTables(db) {
   ]);
 }
 async function submission(request, env) {
-  if (!(await rateLimit(env.DB, request, "submission", 5, 3600)))
-    return responseJson({ error: "rate_limited" }, 429);
   const { data, file } = await readBody(request);
   if (data.website_hp) return responseJson({ ok: true }, 202);
-  if (!validFormTiming(data.form_started_at, data.submission_type === "report" ? 1 : 3))
-    return responseJson({ error: "invalid_form_timing" }, 400);
-  if (String(data.rights_declared || "") !== "1")
-    return responseJson({ error: "rights_required" }, 400);
   const type = String(data.submission_type || "");
   if (!["event", "business", "report"].includes(type))
     return responseJson({ error: "invalid_type" }, 400);
+  // A normal text/link report needs no email, licensing checkbox or artificial delay.
+  // Photo uploads and business/event submissions retain explicit rights consent.
+  if (!validFormTiming(data.form_started_at, type === "report" ? 0 : 3))
+    return responseJson({ error: "invalid_form_timing" }, 400);
+  if (!(await rateLimit(env.DB, request, type === "report" ? "submission_report" : "submission", type === "report" ? 12 : 5, 3600)))
+    return responseJson({ error: "rate_limited" }, 429);
+  if ((file || type !== "report") && String(data.rights_declared || "") !== "1")
+    return responseJson({ error: "rights_required" }, 400);
   const email = String(data.email || "")
     .trim()
     .toLowerCase();
@@ -474,7 +476,7 @@ async function submission(request, env) {
   const description = String(data.description || "").trim();
   if (type === "report") {
     // Pasted Google results or a single link are leads, not publishable drafts.
-    if (description.length < 20 || description.length > 10000)
+    if (description.length < 10 || description.length > 20000)
       return responseJson({ error: "description_length" }, 400);
     data.title = String(data.title || "").trim().slice(0, 140) ||
       description.replace(/https?:\/\/\S+/g, "link").replace(/\s+/g, " ").slice(0, 110);

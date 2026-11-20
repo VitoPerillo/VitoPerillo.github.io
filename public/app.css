@@ -1044,3 +1044,17 @@ footer {
     display:block; padding:4px 0 0; color:var(--muted); font-size:12px;
   }
 }
+
+/* AHÓ ROMA — navigazione esplicita nell'archivio e nei singoli articoli. */
+.news-pages,.news-article-pager{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:7px}
+.news-history-bottom{margin:22px 0 7px}
+.news-pages a,.news-article-pager a{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:7px 12px;border:1px solid var(--line);border-radius:10px;text-decoration:none;font-weight:650}
+.news-pages span[aria-disabled="true"],.news-article-pager span[aria-disabled="true"]{opacity:.46;white-space:nowrap}
+.news-article-pager{padding:12px 0;margin:16px 0 6px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.news-article-pager .news-archive-link{font-size:12px}
+@media(max-width:560px){
+  .news-pages,.news-article-pager{gap:7px;font-size:12px}
+  .news-pages a,.news-article-pager a{padding:6px 9px;min-height:42px}
+  .news-history-head{flex-wrap:wrap;gap:8px}
+  .news-page-number{white-space:nowrap}
+}
