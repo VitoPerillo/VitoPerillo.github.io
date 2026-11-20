@@ -977,3 +977,37 @@ footer {
  .news-pages-inline a, .news-pages-inline span[aria-disabled="true"] {width:30px; height:30px;}
  .news-history-head h1 {font-size:22px;}
 }
+
+/* AHÓ ROMA — compact mobile HOME only; original logo/colours and other pages unchanged. */
+@media (max-width: 560px) {
+  body:has(main .news-search-area) .site-header .header-inner { height:auto; min-height:0; flex-direction:column; align-items:stretch; gap:0; padding-top:3px; padding-bottom:3px; }
+  body:has(main .news-search-area) .site-header .brand-official { align-self:flex-start; }
+  body:has(main .news-search-area) .site-header nav { display:flex; align-items:center; flex-wrap:nowrap; gap:4px; width:100%; white-space:nowrap; overflow-x:auto; overflow-y:hidden; min-height:34px; font-size:12px; scrollbar-width:none; }
+  body:has(main .news-search-area) .site-header nav::-webkit-scrollbar { display:none; }
+  body:has(main .news-search-area) .site-header nav a:not(.nav-cta) { display:inline-flex; }
+  body:has(main .news-search-area) .site-header nav a { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; min-height:32px; padding:4px 8px; }
+  body:has(main .news-search-area) .site-header nav .nav-cta { padding:5px 9px; border-radius:8px; }
+  body:has(main .news-search-area) .site-header nav a:focus-visible { outline:2px solid var(--blue); outline-offset:-2px; }
+  .news-search-area { padding-top:6px; padding-bottom:3px; }
+  .news-search-area .news-search-form { display:block; padding:7px 9px; border-radius:12px; }
+  .news-search-area .news-search-form > label { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; margin:0; padding:0; }
+  .news-search-area .news-search-row { gap:7px; }
+  .news-search-area .news-search-row input { height:40px; min-height:40px; padding:7px 9px; font-size:16px; }
+  .news-search-area .news-search-row button { height:40px; min-height:40px; padding:6px 12px; font-size:13px; }
+  .news-intro { padding:8px 0 9px; }
+  .news-intro-inner { display:grid; gap:7px; align-items:start; }
+  .news-intro .kicker { display:none; }
+  .news-intro h2 { font-size:21px; line-height:1.13; letter-spacing:-.025em; margin:0 0 2px; }
+  .news-intro p { font-size:12.5px; line-height:1.25; margin:0; }
+  .location-tools { display:flex; flex-wrap:wrap; gap:5px 11px; align-items:center; justify-content:flex-start; }
+  .location-btn { width:auto; min-height:36px; padding:7px 11px; font-size:12px; line-height:1.25; border-radius:9px; }
+  .location-manual { font-size:12px; line-height:1.2; }
+  .location-status:empty { display:none; }
+  .breaking { padding-top:10px; }
+  .breaking .compact-head { margin-bottom:7px; }
+  .breaking .compact-head h2 { font-size:20px; line-height:1.15; }
+  .breaking .compact-head > a { white-space:nowrap; font-size:12px; }
+  .breaking .news-front { gap:8px; }
+  .breaking .lead-story { padding:13px; }
+  .breaking .lead-story h1 { font-size:clamp(23px,6vw,28px); line-height:1.12; margin:5px 0 7px; }
+}
