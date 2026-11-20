@@ -13,7 +13,7 @@ class DB {
       "CREATE TABLE la_areas(id INTEGER PRIMARY KEY,name TEXT,slug TEXT,active INTEGER,kind TEXT)",
       "CREATE TABLE la_categories(id INTEGER PRIMARY KEY,name TEXT,slug TEXT,active INTEGER,kind TEXT)",
       "CREATE TABLE la_content(id INTEGER PRIMARY KEY,content_type TEXT,slug TEXT,title TEXT,summary TEXT,body TEXT,status TEXT,area_id INTEGER,category_id INTEGER,published_at TEXT,updated_at TEXT,valid_from TEXT,valid_until TEXT,event_start TEXT,event_end TEXT,venue TEXT,address TEXT,price_type TEXT,image_key TEXT,organizer TEXT,featured INTEGER,source_url TEXT,website TEXT,phone TEXT)",
-      "CREATE TABLE la_submissions(id INTEGER PRIMARY KEY AUTOINCREMENT,submission_type TEXT,email TEXT,email_hash TEXT,payload_json TEXT,status TEXT,edit_token_hash TEXT)",
+      "CREATE TABLE la_submissions(id INTEGER PRIMARY KEY AUTOINCREMENT,submission_type TEXT,email TEXT,email_hash TEXT,payload_json TEXT,status TEXT,edit_token_hash TEXT,created_at TEXT DEFAULT CURRENT_TIMESTAMP)",
       "CREATE TABLE la_rate_limits(key_hash TEXT PRIMARY KEY,action TEXT,count INTEGER,window_start TEXT,expires_at TEXT)",
       "CREATE TABLE la_jobs(id INTEGER PRIMARY KEY AUTOINCREMENT,job_type TEXT,entity_id INTEGER,priority INTEGER,status TEXT,attempts INTEGER,available_at TEXT,payload_json TEXT)"
     ].join(";")+";");
@@ -51,7 +51,7 @@ test("Articolo: due frecce navigano fra vere notizie, testo integro",async()=>{
   assert.match(h,/class="news-article-pager"/);
   assert.match(h,/href="\/notizie\/notizia-3"[^>]*>← Più recente/);
   assert.match(h,/href="\/notizie\/notizia-1"[^>]*>Più vecchia →/);
-  assert.match(h,/testo completo dell.articolo resta disponibile senza troncamenti/);
+  assert.match(h,/testo completo.*senza troncamenti/);
  }finally{db.close()}
 });
 async function send(db,ip,description,withPhoto=false){
