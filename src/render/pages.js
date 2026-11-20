@@ -241,10 +241,7 @@ export async function home(db) {
 export async function newsPage(db, requestUrl) {
   const url = new URL(requestUrl);
   const keyword = String(url.searchParams.get("q") || "").trim().slice(0, 100);
-  const zone = String(url.searchParams.get("quartiere") || "").trim();
-  const areaSlug = /^[a-z0-9-]{1,80}$/.test(zone) ? zone : "";
-  const rawDate = String(url.searchParams.get("data") || "");
-  const date = /^\d{4}-\d{2}-\d{2}$/.test(rawDate) && !Number.isNaN(Date.parse(rawDate + "T12:00:00Z")) ? rawDate : "";
+  const zone = String(url.searchParams.get("quartiere") || "").trim().slice(0, 80);
   const wantedPage = Math.max(1, Math.min(500, Number.parseInt(url.searchParams.get("pagina") || "1", 10) || 1));
   const conditions = [
     "c.content_type='news'",
@@ -256,8 +253,7 @@ export async function newsPage(db, requestUrl) {
     conditions.push("(instr(lower(c.title),lower(?))>0 OR instr(lower(c.summary),lower(?))>0 OR instr(lower(c.body),lower(?))>0)");
     params.push(keyword, keyword, keyword);
   }
-  if (areaSlug) { conditions.push("a.slug=?"); params.push(areaSlug); }
-  if (date) { conditions.push("date(c.published_at)=?"); params.push(date); }
+  if (zone) { conditions.push("(instr(lower(a.name),lower(?))>0 OR instr(lower(a.slug),lower(?))>0)"); params.push(zone, zone); }
   const from = " FROM la_content c LEFT JOIN la_areas a ON a.id=c.area_id WHERE " + conditions.join(" AND ");
   const [countRow, zones] = await Promise.all([
     db.prepare("SELECT count(*) AS n" + from).bind(...params).first(),
@@ -274,43 +270,39 @@ export async function newsPage(db, requestUrl) {
   const pageHref = (p) => {
     const qs = new URLSearchParams();
     if (keyword) qs.set("q", keyword);
-    if (areaSlug) qs.set("quartiere", areaSlug);
-    if (date) qs.set("data", date);
+    if (zone) qs.set("quartiere", zone);
     qs.set("pagina", String(p));
     return "/notizie?" + qs.toString();
   };
   const rows = (q.results || []).map(x => `
     <article class="news-history-item">
-      <div class="eyebrow">${html(x.area || "Roma")}${x.is_past ? ' · <span class="news-past-tag">Informazione passata</span>' : ""}</div>
+      <div class="eyebrow">${html(x.area || "Roma")}${x.is_past ? ' · <span class="news-past-tag">Avviso scaduto</span>' : ""}</div>
       <h2><a href="/notizie/${html(x.slug)}">${html(x.title)}</a></h2>
       <p>${html(x.summary || "")}</p><small>Pubblicata il ${html(fmtDate(x.published_at))}</small>
     </article>`).join("");
   const zonesOptions = (zones.results || []).map(a =>
-    `<option value="${html(a.slug)}"${a.slug === areaSlug ? " selected" : ""}>${html(a.name)}</option>`
+    `<option value="${html(a.name)}"></option>`
   ).join("");
-  const navigation = `<nav class="news-pages" aria-label="Naviga le pagine delle notizie">
-    ${page < pages ? `<a href="${html(pageHref(page + 1))}">← Precedenti</a>` : '<span aria-disabled="true">← Precedenti</span>'}
-    <span>Pagina ${page} di ${pages}</span>
-    ${page > 1 ? `<a href="${html(pageHref(page - 1))}">Successive →</a>` : '<span aria-disabled="true">Successive →</span>'}
+  const navigation = `<nav class="news-pages news-pages-inline" aria-label="Sfoglia le notizie">
+    ${page < pages ? `<a href="${html(pageHref(page + 1))}" aria-label="Notizie precedenti" title="Notizie precedenti">‹</a>` : '<span aria-disabled="true" aria-label="Nessuna notizia precedente">‹</span>'}
+    <span class="news-page-number">${page} / ${pages}</span>
+    ${page > 1 ? `<a href="${html(pageHref(page - 1))}" aria-label="Notizie successive" title="Notizie successive">›</a>` : '<span aria-disabled="true" aria-label="Nessuna notizia successiva">›</span>'}
   </nav>`;
   const body = `
     <section class="news-search-area wrap">
-      <form class="news-search-form" role="search" method="get" action="/notizie">
-        <label for="all-news-query">Cerca tra le notizie pubblicate</label>
-        <div class="news-search-row"><input id="all-news-query" name="q" type="search" maxlength="100" placeholder="Cerca una notizia…" value="${html(keyword)}" aria-label="Parola da cercare"><button type="submit">Cerca</button></div>
-        <div class="news-filter-row">
-          <label>Quartiere<select name="quartiere"><option value="">Tutti i quartieri</option>${zonesOptions}</select></label>
-          <label>Data di pubblicazione<input type="date" name="data" value="${html(date)}"></label>
-          <button type="submit">Filtra</button>
-          <a href="/notizie">Azzera filtri</a>
-        </div>
+      <form class="news-search-form news-search-compact" role="search" method="get" action="/notizie">
+        <label class="news-search-sr-only" for="all-news-query">Cerca tra le notizie pubblicate</label>
+        <input id="all-news-query" name="q" type="search" maxlength="100" placeholder="Cerca notizie…" value="${html(keyword)}" aria-label="Cerca notizie">
+        <label class="news-search-sr-only" for="all-news-area">Quartiere</label>
+        <input id="all-news-area" name="quartiere" type="search" list="news-areas" maxlength="80" placeholder="Quartiere…" value="${html(zone)}" autocomplete="off" aria-label="Digita il quartiere">
+        <datalist id="news-areas">${zonesOptions}</datalist>
+        <button type="submit">Cerca</button>
       </form>
     </section>
     <section class="section wrap news-history">
-      <div class="section-head"><div><span class="kicker">NOTIZIE</span><h1>Le notizie, anche quelle passate</h1><p>Consulta le notizie pubblicate: quelle concluse sono indicate chiaramente.</p></div></div>
+      <div class="section-head news-history-head"><div><span class="kicker">NOTIZIE</span><h1>Notizie</h1></div>${navigation}</div>
       <p class="news-result-count">${total} ${total === 1 ? "notizia trovata" : "notizie trovate"}</p>
-      <div class="news-history-list">${rows || empty("Nessuna notizia trovata", "Prova a modificare parola, quartiere o data.")}</div>
-      ${navigation}
+      <div class="news-history-list">${rows || empty("Nessuna notizia trovata", "Prova altre parole o un altro quartiere.")}</div>
     </section>`;
   return new Response(shell("Tutte le notizie — AHÓ ROMA", body), {
     headers: { "content-type": "text/html;charset=utf-8", "cache-control": "public,max-age=60" }
@@ -400,7 +392,7 @@ export async function contentPage(db, slug, baseUrl) {
   return new Response(
     shell(
       x.title,
-      `<div class="wrap article-wrap">${crumbs}<article class="article"><div class="eyebrow">${html(x.area || "Roma Ovest / Sud-Ovest")}</div>${x.content_type === "news" && (x.status === "expired" || (x.valid_until && Date.parse(String(x.valid_until).replace(" ", "T") + "Z") < Date.now())) ? '<p class="news-past">Notizia passata: controlla sempre la data prima di utilizzare queste informazioni.</p>' : ""}<h1>${html(x.title)}</h1><div class="facts">${facts}</div><div class="impact"><span>COSA CAMBIA PER TE</span><p>${html(x.summary)}</p></div>${x.image_key ? `<figure><img class="article-image" src="${html(imageUrl)}" alt="Illustrazione della notizia locale per ${html(x.area || "Roma Ovest")}" loading="lazy">${isRemotePhoto ? `<figcaption>Foto illustrativa da Unsplash, non della specifica attività.</figcaption>` : `<figcaption>Illustrazione originale AHÓ ROMA · <a href="https://creativecommons.org/licenses/by/4.0/deed.it" rel="license noopener">CC BY 4.0</a></figcaption>`}</figure>` : ""}<div class="article-body">${articleBody(x.body)}</div>${x.content_type === "news" ? `<p class="news-share"><a href="${html(shareUrl)}" target="_blank" rel="noopener noreferrer nofollow">Condividi questa notizia su Facebook</a> · <a href="https://www.facebook.com/groups/1306770406039807" target="_blank" rel="noopener noreferrer nofollow">Apri il gruppo di quartiere</a></p>` : ""}<p class="source">Sintesi originale revisionata a partire da una fonte ufficiale.${x.source_url ? ` <a rel="nofollow noopener" href="${html(x.source_url)}">Consulta la pagina integrale ↗</a>` : ""} · Aggiornato ${html(fmtDate(x.updated_at))}</p><details class="report-box"><summary>Segnala un problema con questo contenuto</summary><form onsubmit="return reportContent(event,${Number(x.id)})"><label>Motivo<select name="reason"><option value="false_info">Informazione errata</option><option value="privacy">Privacy o dati personali</option><option value="copyright">Diritti d'autore</option><option value="offensive">Contenuto offensivo</option><option value="illegal">Possibile illecito</option><option value="spam">Spam</option><option value="other">Altro</option></select></label><label>Dettagli<textarea name="details" maxlength="2000" required></textarea></label><label>Email facoltativa<input name="email" type="email"></label><button>Invia segnalazione</button><output></output></form></details><script>async function reportContent(e,id){e.preventDefault();const f=e.target,r=await fetch('/api/report',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...Object.fromEntries(new FormData(f)),content_id:id})});f.querySelector('output').textContent=r.ok?'Segnalazione ricevuta. Grazie.':'Invio non riuscito.';if(r.ok)f.reset();return false}</script><script type="application/ld+json">${JSON.stringify(schema).replace(/</g, "\\u003c")}</script></article>${renderAd(ad)}${rel ? `<section class="section"><div class="section-head"><h2>Contenuti correlati</h2></div><div class="grid cards">${rel}</div></section>` : ""}</div>`,
+      `<div class="wrap article-wrap">${crumbs}<article class="article"><div class="eyebrow">${html(x.area || "Roma Ovest / Sud-Ovest")}</div>${x.content_type === "news" && (x.status === "expired" || (x.valid_until && Date.parse(String(x.valid_until).replace(" ", "T") + "Z") < Date.now())) ? '<p class="news-past">Avviso scaduto · Pubblicato il ${html(fmtDate(x.published_at))}</p>' : ""}<h1>${html(x.title)}</h1><div class="facts">${facts}</div><div class="impact"><span>COSA CAMBIA PER TE</span><p>${html(x.summary)}</p></div>${x.image_key ? `<figure><img class="article-image" src="${html(imageUrl)}" alt="Illustrazione della notizia locale per ${html(x.area || "Roma Ovest")}" loading="lazy">${isRemotePhoto ? `<figcaption>Foto illustrativa da Unsplash, non della specifica attività.</figcaption>` : `<figcaption>Illustrazione originale AHÓ ROMA · <a href="https://creativecommons.org/licenses/by/4.0/deed.it" rel="license noopener">CC BY 4.0</a></figcaption>`}</figure>` : ""}<div class="article-body">${articleBody(x.body)}</div>${x.content_type === "news" ? `<p class="news-share"><a href="${html(shareUrl)}" target="_blank" rel="noopener noreferrer nofollow">Condividi questa notizia su Facebook</a> · <a href="https://www.facebook.com/groups/1306770406039807" target="_blank" rel="noopener noreferrer nofollow">Apri il gruppo di quartiere</a></p>` : ""}<p class="source">Sintesi originale revisionata a partire da una fonte ufficiale.${x.source_url ? ` <a rel="nofollow noopener" href="${html(x.source_url)}">Consulta la pagina integrale ↗</a>` : ""} · Aggiornato ${html(fmtDate(x.updated_at))}</p><details class="report-box"><summary>Segnala un problema con questo contenuto</summary><form onsubmit="return reportContent(event,${Number(x.id)})"><label>Motivo<select name="reason"><option value="false_info">Informazione errata</option><option value="privacy">Privacy o dati personali</option><option value="copyright">Diritti d'autore</option><option value="offensive">Contenuto offensivo</option><option value="illegal">Possibile illecito</option><option value="spam">Spam</option><option value="other">Altro</option></select></label><label>Dettagli<textarea name="details" maxlength="2000" required></textarea></label><label>Email facoltativa<input name="email" type="email"></label><button>Invia segnalazione</button><output></output></form></details><script>async function reportContent(e,id){e.preventDefault();const f=e.target,r=await fetch('/api/report',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...Object.fromEntries(new FormData(f)),content_id:id})});f.querySelector('output').textContent=r.ok?'Segnalazione ricevuta. Grazie.':'Invio non riuscito.';if(r.ok)f.reset();return false}</script><script type="application/ld+json">${JSON.stringify(schema).replace(/</g, "\\u003c")}</script></article>${renderAd(ad)}${rel ? `<section class="section"><div class="section-head"><h2>Contenuti correlati</h2></div><div class="grid cards">${rel}</div></section>` : ""}</div>`,
       meta,
     ),
     {
