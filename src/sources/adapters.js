@@ -28,7 +28,18 @@ export function parseJson(text,source){
 export function parseRss(text,source){
   const blocks=[...text.matchAll(/<(?:item|entry)\b[\s\S]*?<\/(?:item|entry)>/gi)].map(m=>m[0]);
   const tag=(b,n)=>{const m=b.match(new RegExp(`<${n}\\b[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/${n}>`,'i'));return m?stripTags(m[1].replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&')):''};
-  return blocks.slice(0,50).map(b=>({external_id:tag(b,'guid')||tag(b,'id')||null,source_url:abs(tag(b,'link')||source.url,source.url),title:tag(b,'title'),text:tag(b,'description')||tag(b,'summary')||tag(b,'content'),date:tag(b,'pubDate')||tag(b,'updated')||null,raw:null})).filter(x=>x.title&&x.text);
+  const items=blocks.slice(0,50).map(b=>({external_id:tag(b,'guid')||tag(b,'id')||null,source_url:abs(tag(b,'link')||source.url,source.url),title:tag(b,'title'),text:tag(b,'description')||tag(b,'summary')||tag(b,'content'),date:tag(b,'pubDate')||tag(b,'updated')||null,raw:null})).filter(x=>x.title&&x.text);
+  const cfg=safeJson(source.config_json,{});
+  // Optional allowlist for citywide RSS feeds. No setting means unchanged behavior
+  // for existing trusted sources; a malformed nonempty setting fails closed.
+  if(!Object.prototype.hasOwnProperty.call(cfg,'include_terms'))return items;
+  const terms=Array.isArray(cfg.include_terms)?
+    cfg.include_terms.slice(0,50).filter(t=>typeof t==='string'&&t.trim().length>=4&&t.trim().length<=60).map(t=>t.trim().toLocaleLowerCase('it-IT')):[];
+  if(!terms.length)return [];
+  return items.filter(item=>{
+    const headlineAndLead=`${item.title} ${item.text}`.toLocaleLowerCase('it-IT');
+    return terms.some(term=>headlineAndLead.includes(term));
+  });
 }
 export function parseHtml(text,source){
   const cfg=safeJson(source.config_json,{}); if(!cfg.item_regex||!cfg.title_regex||!cfg.body_regex) throw new Error('html_config_requires_regex');
