@@ -34,6 +34,13 @@ export async function processIngest(env,id,{editorApproved=false,editorDraft=nul
   const approvedMinimum=record.title.length>=12&&record.text.length>=20&&Number(record.area_id||0)>0;
   const officialMinimum=row.source_type==='official_bridge'&&Number(row.trust_level||0)>=90&&record.title.length>=12&&record.text.length>=70&&Number(record.area_id||0)>0&&Boolean(record.original_date);
   if(!value.pass&&!(editorApproved&&approvedMinimum)&&!officialMinimum){await setStatus(env.DB,id,'rejected',fp); return 'rejected';}
+  // No unsupervised publishing until there is independently verified source evidence,
+  // an original article draft and a documented zero-cost, hard-stop inference route.
+  // The existing admin approval path (editorApproved + editorDraft) remains available.
+  if(!editorApproved){
+    await setStatus(env.DB,id,'held',fp);
+    return 'held';
+  }
   let generated;
   if(editorApproved){
     if(!editorDraft)throw new Error('editor_draft_required');
