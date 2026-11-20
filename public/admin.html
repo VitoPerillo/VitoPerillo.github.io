@@ -178,9 +178,17 @@
       }
       function moderationCards(rows,kind) {
         if (!rows?.length) return '<p style="color:#6b7280">Nessun elemento in attesa.</p>';
-        return rows.map(r=>`<article style="border-top:1px solid #e5e7eb;padding:14px 0"><small>${esc(r.status)} · rischio ${esc(r.risk_score??'—')}</small><h3>${esc(r.title||r.business_name||('Contenuto '+r.content_id))}</h3><p>${esc(r.area_name||r.reason||r.submission_type||'')}</p>${kind==='submission'?`<button onclick="reviewSubmission(${Number(r.id)},'approve')">Approva e pubblica</button> <button onclick="reviewSubmission(${Number(r.id)},'reject')">Rifiuta</button>`:kind==='ad'?`<button onclick="reviewAd(${Number(r.id)},'approve_test')">Approva test</button> <button onclick="reviewAd(${Number(r.id)},'reject')">Rifiuta</button>`:`<button onclick="resolveReport(${Number(r.id)},'dismiss')">Archivia</button> <button onclick="resolveReport(${Number(r.id)},'remove')">Rimuovi contenuto</button>`}</article>`).join('');
+        return rows.map(r=>`<article style="border-top:1px solid #e5e7eb;padding:14px 0"><small>${esc(r.status)} · rischio ${esc(r.risk_score??'—')}</small><h3>${esc(r.title||r.business_name||('Contenuto '+r.content_id))}</h3><p>${esc(r.area_name||r.reason||r.submission_type||'')}</p>${kind==='submission'?`${r.submission_type==='report' ? `<details><summary>Verifica fonti e pubblicazione</summary><label>Fonte indipendente HTTPS<input type="url" id="citizen-source-${Number(r.id)}" value="${esc(r.source_url||'')}"></label><label>Titolo riscritto<input id="citizen-title-${Number(r.id)}"></label><label>Sommario originale (70–320 caratteri)<textarea rows="3" id="citizen-summary-${Number(r.id)}"></textarea></label><label>Articolo originale (140–700 parole)<textarea rows="10" id="citizen-body-${Number(r.id)}"></textarea></label><label>Note di verifica (almeno 25 caratteri)<textarea rows="3" id="citizen-notes-${Number(r.id)}"></textarea></label><button onclick="reviewSubmission(${Number(r.id)},'approve')">Verifica e pubblica</button></details>` : `<button onclick="reviewSubmission(${Number(r.id)},'approve')">Approva e pubblica</button>`} <button onclick="reviewSubmission(${Number(r.id)},'reject')">Rifiuta</button>`:kind==='ad'?`<button onclick="reviewAd(${Number(r.id)},'approve_test')">Approva test</button> <button onclick="reviewAd(${Number(r.id)},'reject')">Rifiuta</button>`:`<button onclick="resolveReport(${Number(r.id)},'dismiss')">Archivia</button> <button onclick="resolveReport(${Number(r.id)},'remove')">Rimuovi contenuto</button>`}</article>`).join('');
       }
-      async function reviewSubmission(id,action){try{await post('/api/admin/submissions/review',{id,action});await openDash();}catch(e){alert(e.message)}}
+      async function reviewSubmission(id,action){try{
+        const payload={id,action};
+        if(action==='approve' && document.getElementById('citizen-source-'+id)){
+          const field=(key)=>document.getElementById('citizen-'+key+'-'+id)?.value||'';
+          payload.source_url=field('source');payload.notes=field('notes');
+          payload.draft={headline:field('title'),summary:field('summary'),body:field('body')};
+        }
+        await post('/api/admin/submissions/review',payload);await openDash();
+      }catch(e){alert(e.message)}}
       async function reviewAd(id,action){try{await post('/api/admin/ad-orders/review',{id,action});await openDash();}catch(e){alert(e.message)}}
       async function resolveReport(id,action){try{await post('/api/admin/reports/resolve',{id,action});await openDash();}catch(e){alert(e.message)}}
       async function previewIngest(id) {
