@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { ahoAutonomyPermission,ahoStageReviewedAutonomy } from '../src/editorial/autonomy-stage.js';
+const source={"source_type":"official","usage_policy":"discovery","active":1,"trust_level":95,"config_json":"{\"autonomy_rights_verified\":true,\"autonomy_rights_ref\":\"reference-approved-example\",\"autonomy_format\":\"cie_service_notice\"}"};
+const env={"AHO_AUTONOMY_GO":"legal-applicative-v1","AHO_EDITORIAL_QUEUE":"preview","AHO_EDITORIAL_DATABASE":"3ecc563f-a959-45e6-8f37-d3d1e9c7e44c"};
+test('approved preview',()=>assert.equal(ahoAutonomyPermission(env,source),true));
+test('GO missing',()=>assert.equal(ahoAutonomyPermission({...env,AHO_AUTONOMY_GO:undefined},source),false));
+test('wrong environment',()=>assert.equal(ahoAutonomyPermission({...env,AHO_EDITORIAL_DATABASE:'other'},source),false));
+test('rights missing',()=>assert.equal(ahoAutonomyPermission(env,{...source,config_json:'{}'}),false));
+test('inactive source',()=>assert.equal(ahoAutonomyPermission(env,{...source,active:0}),false));
+test('no database access without GO',async()=>assert.equal((await ahoStageReviewedAutonomy({},null,null,null,null,null,null,null,null)).reason,'go_disabled'));

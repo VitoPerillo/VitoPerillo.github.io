@@ -1,10 +1,10 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-function ahoApply552Patch(source,scheduler,engine){
+function ahoApply552Patch(source,scheduler,engine,services,stage){
   const replace=(old,next)=>{const a=source.indexOf(old);if(a<0||source.indexOf(old,a+old.length)!==-1)throw new Error("patch_anchor_mismatch");source=source.slice(0,a)+next+source.slice(a+old.length);};
   const sourceAnchor='async function sourceTick(env) {\n  const q = await env.DB.prepare(\n    "SELECT * FROM la_sources WHERE active=1 AND usage_policy!=\'blocked\' AND (last_checked_at IS NULL OR datetime(last_checked_at, \'+\'||interval_minutes||\' minutes\') <= CURRENT_TIMESTAMP) ORDER BY COALESCE(last_checked_at,\'1970-01-01\') LIMIT 5"\n  ).all();\n  for (const s of q.results || []) {\n    await env.DB.prepare(\n      "UPDATE la_sources SET last_checked_at=CURRENT_TIMESTAMP WHERE id=?"\n    ).bind(s.id).run();';
-  if(/\b(?:const|let|var|function)\s+(?:POLL_LIMIT|WINDOW_MS|DUE_AT|FEED|ELIGIBLE|claimSourceWindow|selectDueSources|claimDueSource|ahoBuildEventDraft)\b/.test(source))throw new Error("scheduler_name_collision");
-  replace(sourceAnchor,scheduler.replace(/^export /gm,"")+'\n'+engine.replace(/^export /gm,"")+'\nasync function sourceTick(env) {\n  const now = new Date();\n  if (!await claimSourceWindow(env.DB, now)) return;\n  for (const s of await selectDueSources(env.DB, now)) {\n    if (!await claimDueSource(env.DB, s.id, now)) continue;');
+  if(/\b(?:const|let|var|function)\s+(?:POLL_LIMIT|WINDOW_MS|DUE_AT|FEED|ELIGIBLE|claimSourceWindow|selectDueSources|claimDueSource|ahoBuildEventDraft|ahoBuildServiceDraft|ahoPlanReviewedHandoff|ahoAutonomyPermission|ahoStageReviewedAutonomy)\b/.test(source))throw new Error("scheduler_name_collision");
+  replace(sourceAnchor,scheduler.replace(/^export /gm,"")+'\n'+engine.replace(/^export /gm,"")+'\n'+services.replace(/^export /gm,"")+'\n'+stage.replace(/^export /gm,"")+'\nasync function sourceTick(env) {\n  const now = new Date();\n  if (!await claimSourceWindow(env.DB, now)) return;\n  for (const s of await selectDueSources(env.DB, now)) {\n    if (!await claimDueSource(env.DB, s.id, now)) continue;');
   const start='function ahoOfficialAutoBrief(record,detail){';
   const end='\nasync function processIngest(env, id,';
   const p=source.indexOf(start),q=source.indexOf(end,p);
@@ -17,22 +17,27 @@ function ahoApply552Patch(source,scheduler,engine){
   const safe=`  if(autoOfficial){
     // No implicit approval: keep proposals held. Existing reviewed publisher is unchanged.
     const risk=riskGate(record,Number(row.trust_level));
-    const proposal=risk.level==="GREEN" ? ahoBuildEventDraft(record,detail) : {draft:null};
+    const service=risk.level==="GREEN" ? ahoBuildServiceDraft(record,detail) : {draft:null};
+    const proposal=service.draft?service:(risk.level==="GREEN"?ahoBuildEventDraft(record,detail):{draft:null});
     let gates=null;
     if(proposal.draft){
       const g=proposal.draft;
-      gates={risk,value:valueGate(record),editorial:editorialDraftGate(record.text,g),facts:factGate(record,g),expiry:ahoEventExpiryGate("news",g.headline,record.title+" "+record.text,g.valid_until,null)};
+      gates={risk,value:valueGate(record),editorial:editorialDraftGate(record.text,g),facts:factGate(record,g),expiry:ahoEventExpiryGate(g.valid_until?"event":"news",g.headline,record.title+" "+record.text,g.valid_until,null)};
     }
     await setStatus(env.DB,id,"held",fp);
-    // Persist only a bounded draft and gate decisions, never a publishing permit.
+    const handoff=await ahoStageReviewedAutonomy(env,row,record,detail,proposal,gates,existing,sha256,normalizeSourceDate);
+    // Record a held or queued proposal; never publish directly.
     if(proposal.draft){
-      await env.DB.prepare("INSERT INTO la_settings(key,value,updated_at) VALUES(?,?,CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=CURRENT_TIMESTAMP WHERE la_settings.value<>excluded.value").bind("aho_autonomy_draft_v1:"+id,JSON.stringify({ingest_id:id,content_hash:row.content_hash,source_url:row.source_url,status:"held",draft:proposal.draft,gates})).run();
+      await env.DB.prepare("INSERT INTO la_settings(key,value,updated_at) VALUES(?,?,CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=CURRENT_TIMESTAMP WHERE la_settings.value<>excluded.value").bind("aho_autonomy_draft_v1:"+id,JSON.stringify({ingest_id:id,content_hash:row.content_hash,source_url:row.source_url,status:handoff.status,draft:proposal.draft,gates,handoff})).run();
     }
     return "held";
   }`;
   source=source.slice(0,x)+safe+source.slice(z);
+  const publisherAnchor='  if (!row || !safeJson(row.raw_payload, {}).editorial_queue_v1 || row.content_hash !== p.expected_ingest_hash) throw new Error("editorial_ingest_mismatch");';
+  const publisherGuard=publisherAnchor+'\n  if(p.origin==="aho-deterministic-v1"||safeJson(row.raw_payload,{}).autonomy_v1){const src=await env.DB.prepare("SELECT active,source_type,usage_policy,trust_level,config_json FROM la_sources WHERE id=?").bind(row.source_id).first();if(p.origin!=="aho-deterministic-v1"||!safeJson(row.raw_payload,{}).autonomy_v1||!ahoAutonomyPermission(env,src))throw new Error("autonomy_revoked_or_unapproved");}';
+  replace(publisherAnchor,publisherGuard);
   return source;
 }
 export { ahoApply552Patch };
 const [input,output,expected='71347087f177c0d3aaaa5233c23e10dbf3e00672eecdfcdcb34d3845fc4babf3']=process.argv.slice(2);
-if(input&&output){const original=readFileSync(input);if(createHash('sha256').update(original).digest('hex')!==expected)throw new Error('verified_base_hash_required');const scheduler=readFileSync(new URL('../src/sources/source-schedule.js',import.meta.url),'utf8');const engine=readFileSync(new URL('../src/editorial/deterministic-event-draft.js',import.meta.url),'utf8');const candidate=ahoApply552Patch(original.toString('utf8'),scheduler,engine);writeFileSync(output,candidate,{flag:'wx'});console.log(JSON.stringify({base:expected,candidate:createHash('sha256').update(candidate).digest('hex')}));}
+if(input&&output){const original=readFileSync(input);if(createHash('sha256').update(original).digest('hex')!==expected)throw new Error('verified_base_hash_required');const scheduler=readFileSync(new URL('../src/sources/source-schedule.js',import.meta.url),'utf8');const engine=readFileSync(new URL('../src/editorial/deterministic-event-draft.js',import.meta.url),'utf8');const services=readFileSync(new URL('../src/editorial/local-service-draft.js',import.meta.url),'utf8');const stage=readFileSync(new URL('../src/editorial/autonomy-stage.js',import.meta.url),'utf8');const candidate=ahoApply552Patch(original.toString('utf8'),scheduler,engine,services,stage);writeFileSync(output,candidate,{flag:'wx'});console.log(JSON.stringify({base:expected,candidate:createHash('sha256').update(candidate).digest('hex')}));}
