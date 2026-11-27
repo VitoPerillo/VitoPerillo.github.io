@@ -1,0 +1,92 @@
+{
+  "version": "2026-11-27",
+  "status": "candidate_only_not_loaded_at_runtime",
+  "activation_requires": [
+    "source XML and parser E2E",
+    "source rights and geographic classification",
+    "verified quota/cost budget",
+    "compatible isolated release baseline"
+  ],
+  "candidates": [
+    {
+      "name": "Dipartimento Protezione Civile — notizie",
+      "url": "https://api.protezionecivile.it/default/dpcPortalGenerateRss?categoria=notizia",
+      "documentation": "https://www.protezionecivile.gov.it/it/rss/",
+      "rights_url": "https://www.protezionecivile.gov.it/it/approfondimento/note-legali-0/index.html",
+      "license": "CC BY 4.0, except third-party and separately licensed material",
+      "attribution": "Fonte: Dipartimento della Protezione Civile-Presidenza del Consiglio dei Ministri",
+      "source_type": "official",
+      "parser_type": "rss",
+      "trust_level": 95,
+      "usage_policy": "discovery",
+      "active": 0,
+      "interval_minutes": 60,
+      "config_json": {
+        "poll_kind": "feed",
+        "include_terms": [
+          "Roma",
+          "Lazio"
+        ]
+      },
+      "notes": "Never autopublish emergencies. XML endpoint identified from official RSS page; item parsing not verified."
+    },
+    {
+      "name": "Dipartimento Protezione Civile — comunicati stampa",
+      "url": "https://api.protezionecivile.it/default/dpcPortalGenerateRss?categoria=comunicato_stampa",
+      "documentation": "https://www.protezionecivile.gov.it/it/rss/",
+      "rights_url": "https://www.protezionecivile.gov.it/it/approfondimento/note-legali-0/index.html",
+      "license": "CC BY 4.0, except third-party and separately licensed material",
+      "attribution": "Fonte: Dipartimento della Protezione Civile-Presidenza del Consiglio dei Ministri",
+      "source_type": "official",
+      "parser_type": "rss",
+      "trust_level": 95,
+      "usage_policy": "discovery",
+      "active": 0,
+      "interval_minutes": 60,
+      "config_json": {
+        "poll_kind": "feed",
+        "include_terms": [
+          "Roma",
+          "Lazio"
+        ]
+      },
+      "notes": "Never autopublish emergencies. XML endpoint identified; item parsing not verified."
+    }
+  ],
+  "pending_rights": [
+    {
+      "name": "Regione Lazio — notizie",
+      "url": "https://www.regione.lazio.it/rss-news-regione",
+      "documentation": "https://www.regione.lazio.it/rss",
+      "rights_url": "https://www.regione.lazio.it/note-legali",
+      "status": "blocked_until_editorial_reuse_authorized"
+    },
+    {
+      "name": "Regione Lazio — Giunta",
+      "url": "https://www.regione.lazio.it/rss-giunta-regionale",
+      "documentation": "https://www.regione.lazio.it/rss",
+      "rights_url": "https://www.regione.lazio.it/note-legali",
+      "status": "blocked_until_editorial_reuse_authorized"
+    },
+    {
+      "name": "INPS — news",
+      "url": "https://www.inps.it/it/it.rss.news.xml",
+      "documentation": "https://www.inps.it/it/it/rss.html",
+      "status": "rights_and_parser_not_verified"
+    },
+    {
+      "name": "INPS — comunicati",
+      "url": "https://www.inps.it/it/it.rss.comunicati.xml",
+      "documentation": "https://www.inps.it/it/it/rss.html",
+      "status": "rights_and_parser_not_verified"
+    }
+  ],
+  "excluded": [
+    {
+      "name": "ANSA",
+      "documentation": "https://www.ansa.it/sito/static/ansa_rss.html",
+      "rights_url": "https://www.ansa.it/sito/static/condizioni_generali_di_servizio.html",
+      "status": "blocked_without_specific_written_authorization"
+    }
+  ]
+}
