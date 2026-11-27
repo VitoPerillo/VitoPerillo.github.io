@@ -6,7 +6,7 @@ const DUE_AT = `CASE WHEN datetime(last_checked_at) IS NULL THEN '1970-01-01 00:
  WHEN datetime(last_success_at) IS NULL OR datetime(last_success_at) < datetime(last_checked_at)
  THEN min(10080,max(30,2*max(1,interval_minutes))) ELSE max(1,interval_minutes) END || ' minutes') END`;
 const FEED = `CASE WHEN parser_type IN ('rss','json') OR
- (source_type='official' AND url LIKE 'https://www.comune.roma.it/web/it/notizie.page?mun=%') OR
+ (source_type='official' AND substr(url,1,length('https://www.comune.roma.it/web/it/notizie.page?mun='))='https://www.comune.roma.it/web/it/notizie.page?mun=') OR
  (CASE WHEN json_valid(config_json) THEN json_extract(config_json,'$.poll_kind') ELSE NULL END)='feed'
  THEN 1 ELSE 0 END`;
 const ELIGIBLE = "active=1 AND usage_policy!='blocked'";
