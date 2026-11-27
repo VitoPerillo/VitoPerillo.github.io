@@ -1,3 +1,4 @@
+import { claimSourceWindow, selectDueSources, claimDueSource } from "./sources/source-schedule.js";
 import {
   responseJson,
   sha256,
@@ -365,15 +366,10 @@ async function ensureOfficialBridgeJobs(db) {
 }
 
 async function sourceTick(env) {
-  const q = await env.DB.prepare(
-    "SELECT * FROM la_sources WHERE active=1 AND usage_policy!='blocked' AND (last_checked_at IS NULL OR datetime(last_checked_at, '+'||interval_minutes||' minutes') <= CURRENT_TIMESTAMP) ORDER BY COALESCE(last_checked_at,'1970-01-01') LIMIT 5",
-  ).all();
-  for (const s of q.results || []) {
-    await env.DB.prepare(
-      "UPDATE la_sources SET last_checked_at=CURRENT_TIMESTAMP WHERE id=?",
-    )
-      .bind(s.id)
-      .run();
+  const now = new Date();
+  if (!await claimSourceWindow(env.DB, now)) return;
+  for (const s of await selectDueSources(env.DB, now)) {
+    if (!await claimDueSource(env.DB, s.id, now)) continue;
     try {
       const items = await fetchSource(s);
       for (const item of items) {
