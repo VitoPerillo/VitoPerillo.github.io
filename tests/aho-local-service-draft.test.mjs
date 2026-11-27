@@ -1,0 +1,17 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { ahoBuildServiceDraft, ahoPlanReviewedHandoff } from '../src/editorial/local-service-draft.js';
+const url='https://www.comune.roma.it/web/it/informazione-di-servizio.page?contentId=IDS123';
+const text='Roma, Municipio Roma VII, avviso del 25 novembre 2026. Sabato 28 novembre 2026 gli sportelli anagrafici di Piazza Esempio, 11 e Via Prova, 71 aprono in via straordinaria dalle ore 8:30 alle ore 16:00 per il rilascio della Carta d’Identità Elettronica (CIE). Prenotazione obbligatoria dalle ore 9:00 di venerdì 27 novembre fino a esaurimento disponibilità tramite Agenda CIE. Portare ticket di prenotazione, fototessera (anche caricabile online durante la prenotazione), carta di pagamento elettronico e vecchio documento. Consultare la scheda del servizio.';
+const record={title:'Roma Municipio VII CIE',text,source_url:url,area_id:1,original_date:'2026-11-25'},detail={source_url:url,text};
+const proposal=ahoBuildServiceDraft(record,detail);const gates={risk:{level:'GREEN'},value:{pass:true},editorial:{pass:true},facts:{pass:true},expiry:{pass:true}};const args={proposal,gates,record,detail,row:{id:99,source_url:url,status:'held',content_id:null},context:{go:true,rightsVerified:true,freshPrimary:true,duplicate:false},sourceHash:'a'.repeat(64),verifiedAt:'2026-11-27T13:00:00Z'};
+test('CIE draft no filler',()=>{assert.equal(proposal.status,'draft');assert.ok(proposal.draft.body.split(/\\s+/).length>=140)});
+test('invalid time',()=>assert.equal(ahoBuildServiceDraft(record,{...detail,text:text.replace('16:00','25:00')}).status,'held'));
+test('missing documents',()=>assert.equal(ahoBuildServiceDraft(record,{...detail,text:text.replace('vecchio documento','altro')}).status,'held'));
+test('GO required',()=>assert.equal(ahoPlanReviewedHandoff({...args,context:{...args.context,go:false}}).reason,'legal_or_source_gate_missing'));
+test('all native gates required',()=>assert.equal(ahoPlanReviewedHandoff({...args,gates:{...gates,editorial:{pass:false}}}).reason,'native_gate_failed'));
+test('archive dedup required',()=>assert.equal(ahoPlanReviewedHandoff({...args,context:{...args.context,duplicate:true}}).reason,'archive_dedup_required'));
+test('shared URL stays held',()=>assert.equal(ahoPlanReviewedHandoff({...args,proposal:{...proposal,sharedCalendar:true}}).reason,'shared_url_requires_event_identity'));
+test('source evidence exact',()=>assert.equal(ahoPlanReviewedHandoff({...args,detail:{...detail,text:'other'}}).reason,'source_contract_invalid'));
+test('already published remains untouched',()=>assert.equal(ahoPlanReviewedHandoff({...args,row:{...args.row,content_id:1}}).reason,'ingest_not_available'));
+test('reviewed publisher payload schema',()=>assert.equal(ahoPlanReviewedHandoff(args).payload.schema,'aho-reviewed-editorial/1'));
